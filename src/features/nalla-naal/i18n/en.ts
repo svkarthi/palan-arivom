@@ -20,7 +20,7 @@ const en: typeof ta = {
     karana: 'Karanam',
     tapHint: 'Tap for details',
     noReasons: 'Nothing notable for or against.',
-    useNalla: 'See the best hours of the day on the Nalla Neram page.',
+    timesTitle: 'Nalla Neram for this day',
   },
   reason: {
     goodTithi: 'Favourable tithi: {{name}}',

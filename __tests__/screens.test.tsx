@@ -54,5 +54,7 @@ describe('feature screens render', () => {
     expect(screen.getAllByText(/விவரம் பார்க்க தொடவும்/).length).toBeGreaterThan(20);
     await fireEvent.press(screen.getAllByText(/விவரம் பார்க்க தொடவும்/)[0]);
     expect(screen.getAllByText(/விவரம் பார்க்க தொடவும்/).length).toBeGreaterThan(20);
+    expect(screen.getByText(/இந்த நாளின் நல்ல நேரம்/)).toBeTruthy();
+    expect(screen.getAllByText(/ராகு காலம்/).length).toBeGreaterThan(0);
   });
 });

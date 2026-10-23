@@ -53,6 +53,10 @@ function spansBetween(angle: AngleFn, width: number, count: number, from: Date, 
   return result;
 }
 
+/** Tithi (0-29) and nakshatra (0-26) at an instant. */
+export const tithiIndexAt = (at: Date): number => Math.floor(elongation(julianDay(at)) / 12) % 30;
+export const nakshatraIndexAt = (at: Date): number => Math.floor(moonAngle(julianDay(at)) / NAKSHATRA_WIDTH) % 27;
+
 export const tithiSpans = (from: Date, until: Date) => spansBetween(elongation, 12, 30, from, until);
 export const karanaSpans = (from: Date, until: Date) => spansBetween(elongation, 6, 60, from, until);
 export const nakshatraSpans = (from: Date, until: Date) => spansBetween(moonAngle, NAKSHATRA_WIDTH, 27, from, until);

@@ -51,6 +51,7 @@ Everything is computed on the device, with no network or API key.
 5. Set `route` on its entry in `src/features/registry.ts`.
 
 ## Notes
+- Observance days (Pournami, Amavasai, Pradosham, Sankashta / Vinayaka Chaturthi, Shashti, Karthigai and Karthigai Deepam) are in `src/core/astro/specialDays.ts`, each reckoned by the tithi or nakshatra at the time of day it is traditionally judged by. Checked against 2025 dates (for example Pradosham on 4 and 18 Oct, Pournami on 6 Oct, Karthigai Deepam on 3 Dec); moonrise is approximated, and some almanacs differ by a day. They do not affect Nalla Naal scores.
 - Nalla Naal's rules (good tithis and nakshatras per purpose, months to avoid, weekday preferences) are common textbook rules that I wrote down; they must be reviewed by an astrologer before release. They live in `src/features/nalla-naal/data/purposes.ts` and `logic.ts`.
 - Nalla Neram's "good times" are the benefic horas (Jupiter, Venus, Mercury, Moon) minus Rahu Kalam, Yamagandam and Kuligai. It does not use Gowri panchangam.
 - Results use the Thirukanitha (Drik) method; traditional Vakya panchangams can differ by minutes, and occasionally by a tithi or nakshatra boundary.

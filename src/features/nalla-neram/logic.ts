@@ -2,6 +2,7 @@ import { abhijit, dayPart, goodHoraWindows, horas, type Hora } from '@core/astro
 import { subtractIntervals, type Interval } from '@core/astro/intervals';
 import { dayPanchang, type DayPanchang } from '@core/astro/panchang';
 import type { Place } from '@core/astro/sunrise';
+import { specialDays, type SpecialDay } from '@core/astro/specialDays';
 import { weekdayOf, type CivilDate } from '@core/astro/time';
 
 const MIN_WINDOW_MS = 15 * 60_000;
@@ -14,6 +15,8 @@ export type NallaNeramDay = {
   kuligai: Interval;
   abhijit: Interval | null;
   horas: Hora[];
+  /** Observance days such as Pournami, Pradosham, Karthigai. */
+  specials: SpecialDay[];
   /** Good-hora windows with Rahu Kalam, Yamagandam and Kuligai removed. */
   goodWindows: Interval[];
 };
@@ -29,7 +32,7 @@ export function nallaNeramDay(date: CivilDate, place: Place): NallaNeramDay {
   const goodWindows = subtractIntervals(goodHoraWindows(list), [rahu, yama, kuligai]).filter(
     (w) => w.end - w.start >= MIN_WINDOW_MS,
   );
-  return { weekday, panchang, rahu, yama, kuligai, abhijit: abhijit(weekday, sunrise, sunset), horas: list, goodWindows };
+  return { weekday, panchang, rahu, yama, kuligai, abhijit: abhijit(weekday, sunrise, sunset), horas: list, specials: specialDays(panchang), goodWindows };
 }
 
 export type NowStatus =

@@ -1,4 +1,6 @@
 import { dayPanchang, dominantSpan, isVishti, moonRashiAt, tithiPosition, type DayPanchang, type TamilDate } from '@core/astro/panchang';
+import { AVOIDED_TITHI_POSITIONS, BAD_NAKSHATRAS, BAD_YOGAS } from '@core/astro/inauspicious';
+import { specialDays, type SpecialDay } from '@core/astro/specialDays';
 import type { Place } from '@core/astro/sunrise';
 import { julianDay, weekdayOf, type CivilDate } from '@core/astro/time';
 import type { Bilingual } from '@core/i18n';
@@ -6,11 +8,6 @@ import { NAKSHATRAS, RASHIS, TAMIL_MONTHS, WEEKDAYS, YOGAS, karanaName, tithiNam
 
 import type { Purpose } from './data/purposes';
 
-/** Nakshatras traditionally avoided for new beginnings (fierce / sharp types). */
-const BAD_NAKSHATRAS = [1, 2, 5, 8, 10, 17, 19, 24];
-/** Yogas considered inauspicious: Vishkumbha, Atiganda, Shoola, Ganda, Vyaghata, Vajra, Vyatipata, Parigha, Vaidhriti. */
-const BAD_YOGAS = [0, 5, 8, 9, 12, 14, 16, 18, 26];
-const RIKTA_AND_ASHTAMI = [4, 8, 9, 14];
 
 export type ReasonCode =
   | 'goodTithi' | 'badTithi' | 'amavasai'
@@ -35,6 +32,8 @@ export type DayVerdict = {
   score: number;
   grade: Grade;
   reasons: Reason[];
+  /** Observance days (Pournami, Pradosham …); they do not change the score. */
+  specials: SpecialDay[];
 };
 
 export const gradeOf = (score: number): Grade =>
@@ -65,7 +64,7 @@ export function judgeDay(panchang: DayPanchang, purpose: Purpose, profile: Profi
   if (tithi === 29) {
     hardAvoid = true;
     add('amavasai', false, -40, tithiLabel);
-  } else if (RIKTA_AND_ASHTAMI.includes(position)) {
+  } else if (AVOIDED_TITHI_POSITIONS.includes(position)) {
     add('badTithi', false, -20, tithiLabel);
   } else if (purpose.goodTithis.includes(position)) {
     add('goodTithi', true, 15, tithiLabel);
@@ -119,6 +118,7 @@ export function judgeDay(panchang: DayPanchang, purpose: Purpose, profile: Profi
     score,
     grade: gradeOf(score),
     reasons,
+    specials: specialDays(panchang),
   };
 }
 

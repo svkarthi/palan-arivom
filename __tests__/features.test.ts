@@ -74,3 +74,38 @@ describe('nallaNaal scoring', () => {
     expect(gradeOf(10)).toBe('poor');
   });
 });
+
+describe('special days', () => {
+  const idsOn = (y: number, m: number, d: number) =>
+    nallaNeramDay({ y, m, d }, chennai).specials.map((x) => x.id);
+
+  it('finds Pournami on the evening of the full moon tithi', () => {
+    expect(idsOn(2025, 10, 6)).toContain('pournami');
+    expect(idsOn(2025, 10, 7)).not.toContain('pournami');
+    expect(idsOn(2025, 11, 5)).toContain('pournami');
+  });
+
+  it('finds Amavasai in the afternoon', () => {
+    expect(idsOn(2025, 10, 21)).toContain('amavasai');
+    expect(idsOn(2025, 10, 20)).not.toContain('amavasai');
+  });
+
+  it('finds Pradosham with its evening window', () => {
+    for (const [m, d] of [[10, 4], [10, 18]]) expect(idsOn(2025, m, d)).toContain('pradosham');
+    const window = nallaNeramDay({ y: 2025, m: 10, d: 4 }, chennai).specials.find((s) => s.id === 'pradosham')!.window!;
+    expect(window.end - window.start).toBe(144 * 60_000);
+    expect(idsOn(2025, 10, 5)).not.toContain('pradosham');
+  });
+
+  it('marks Karthigai Deepam on 3 Dec 2025 and plain Karthigai in other months', () => {
+    expect(idsOn(2025, 12, 3)).toContain('karthigaiDeepam');
+    expect(idsOn(2025, 12, 31)).toContain('karthigai');
+    expect(idsOn(2025, 12, 31)).not.toContain('karthigaiDeepam');
+  });
+
+  it('adds specials to Nalla Naal verdicts without changing the score', () => {
+    const p = dayPanchang({ y: 2025, m: 10, d: 6 }, chennai);
+    const v = judgeDay(p, PURPOSE_BY_ID.travel, none);
+    expect(v.specials.map((x) => x.id)).toContain('pournami');
+  });
+});

@@ -104,6 +104,17 @@ export const TAMIL_YEARS: Bilingual[] = [
   pair('ருத்ரோத்காரி', 'Rudhrothgari'), pair('ரக்தாட்சி', 'Rakthakshi'), pair('குரோதன', 'Krodhana'), pair('அட்சய', 'Akshaya'),
 ];
 
+export const SPECIAL_DAYS: Record<string, Bilingual> = {
+  pournami: pair('பௌர்ணமி', 'Pournami'),
+  amavasai: pair('அமாவாசை', 'Amavasai'),
+  pradosham: pair('பிரதோஷம்', 'Pradosham'),
+  sankashti: pair('சங்கடஹர சதுர்த்தி', 'Sankashta Chaturthi'),
+  vinayakaChaturthi: pair('வளர்பிறை சதுர்த்தி (விநாயகர்)', 'Vinayaka Chaturthi'),
+  shashti: pair('சஷ்டி', 'Shashti'),
+  karthigai: pair('கார்த்திகை (முருகன்)', 'Karthigai (Murugan)'),
+  karthigaiDeepam: pair('கார்த்திகை தீபம்', 'Karthigai Deepam'),
+};
+
 export const GREGORIAN_MONTHS: Bilingual[] = [
   pair('ஜனவரி', 'Jan'), pair('பிப்ரவரி', 'Feb'), pair('மார்ச்', 'Mar'), pair('ஏப்ரல்', 'Apr'),
   pair('மே', 'May'), pair('ஜூன்', 'Jun'), pair('ஜூலை', 'Jul'), pair('ஆகஸ்ட்', 'Aug'),

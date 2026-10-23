@@ -1,4 +1,6 @@
-import { GREGORIAN_MONTHS, NAKSHATRAS, RASHIS, TAMIL_MONTHS, WEEKDAYS, YOGAS, karanaName, tithiName } from '@core/astro/names';
+import { GREGORIAN_MONTHS, NAKSHATRAS, RASHIS, SPECIAL_DAYS, TAMIL_MONTHS, WEEKDAYS, YOGAS, karanaName, tithiName } from '@core/astro/names';
+import { isAvoidedTithi } from '@core/astro/inauspicious';
+import type { Place } from '@core/astro/sunrise';
 import { addDays } from '@core/astro/time';
 import PlacePicker from '@core/components/PlacePicker';
 import { AppText, Button, Card, Chip, Stepper } from '@core/components/ui';
@@ -12,8 +14,10 @@ import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Switch, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
+import DayTimes from '../../nalla-neram/components/DayTimes';
+import { nallaNeramDay } from '../../nalla-neram/logic';
 import { PURPOSES, PURPOSE_BY_ID, type PurposeId } from '../data/purposes';
-import { judgeMonth, type Grade } from '../logic';
+import { judgeMonth, type DayVerdict, type Grade } from '../logic';
 
 const GRADE_COLOR: Record<Grade, string> = {
   excellent: colors.good,
@@ -21,6 +25,20 @@ const GRADE_COLOR: Record<Grade, string> = {
   fair: colors.ok,
   poor: colors.bad,
 };
+
+/** The Nalla Neram of one day, computed only when the day is opened. */
+function DayDetail({ verdict, place }: { verdict: DayVerdict; place: Place }) {
+  const { t } = useTranslation('nallaNaal');
+  const day = useMemo(() => nallaNeramDay(verdict.date, place), [verdict.date, place]);
+  return (
+    <View style={styles.gap}>
+      <AppText bold size={16} color={colors.primaryDark}>
+        {t('details.timesTitle')}
+      </AppText>
+      <DayTimes day={day} date={verdict.date} place={place} />
+    </View>
+  );
+}
 
 export default function NallaNaalScreen() {
   const { t } = useTranslation('nallaNaal');
@@ -172,7 +190,11 @@ export default function NallaNaalScreen() {
                       {t('tamilShort', { month: tr(TAMIL_MONTHS[v.tamil.month]), day: v.tamil.day })}
                     </AppText>
                     <AppText size={12} color={colors.muted}>
-                      {tr(tithiName(v.tithi))} · {tr(NAKSHATRAS[v.nakshatra])}
+                      <AppText size={12} color={isAvoidedTithi(v.tithi) ? colors.bad : colors.muted} bold={isAvoidedTithi(v.tithi)}>
+                        {tr(tithiName(v.tithi))}
+                      </AppText>
+                      {' · '}
+                      {tr(NAKSHATRAS[v.nakshatra])}
                     </AppText>
                   </View>
                   <View style={styles.badge}>
@@ -182,6 +204,13 @@ export default function NallaNaalScreen() {
                     </AppText>
                   </View>
                 </View>
+                {v.specials.length > 0 ? (
+                  <View style={styles.wrap}>
+                    {v.specials.map((s) => (
+                      <Chip key={s.id} label={`🪔 ${tr(SPECIAL_DAYS[s.id])}`} color={colors.primary} />
+                    ))}
+                  </View>
+                ) : null}
                 {open ? (
                   <View style={styles.gap}>
                     <View style={styles.wrap}>
@@ -202,9 +231,7 @@ export default function NallaNaalScreen() {
                     <AppText size={12} color={colors.muted}>
                       {t('details.yoga')}: {tr(YOGAS[v.yoga])} · {t('details.karana')}: {tr(karanaName(v.karana))}
                     </AppText>
-                    <AppText size={12} color={colors.muted}>
-                      {t('details.useNalla')}
-                    </AppText>
+                    <DayDetail verdict={v} place={place} />
                   </View>
                 ) : (
                   <AppText size={11} color={colors.muted}>
