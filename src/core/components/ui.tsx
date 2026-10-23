@@ -114,7 +114,47 @@ export function Segmented<T extends string>({ options, value, onChange }: Segmen
   );
 }
 
+type StepperProps = { label: string; onPrev: () => void; onNext: () => void; onReset?: () => void; resetLabel?: string };
+
+/** ‹ label › control for stepping through days or months. */
+export function Stepper({ label, onPrev, onNext, onReset, resetLabel }: StepperProps) {
+  return (
+    <View style={styles.stepper}>
+      <Pressable accessibilityRole="button" accessibilityLabel="previous" onPress={onPrev} hitSlop={10} style={styles.stepButton}>
+        <AppText bold size={22} color={colors.primary}>
+          ‹
+        </AppText>
+      </Pressable>
+      <Pressable accessibilityRole="button" disabled={!onReset} onPress={onReset} style={styles.stepLabel}>
+        <AppText bold size={16} center>
+          {label}
+        </AppText>
+        {onReset && resetLabel ? (
+          <AppText size={11} color={colors.primary} center>
+            {resetLabel}
+          </AppText>
+        ) : null}
+      </Pressable>
+      <Pressable accessibilityRole="button" accessibilityLabel="next" onPress={onNext} hitSlop={10} style={styles.stepButton}>
+        <AppText bold size={22} color={colors.primary}>
+          ›
+        </AppText>
+      </Pressable>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
+  stepper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.card,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  stepButton: { paddingHorizontal: spacing.md, paddingVertical: spacing.sm },
+  stepLabel: { flex: 1, alignItems: 'center' },
   button: {
     paddingVertical: 11,
     paddingHorizontal: spacing.md,

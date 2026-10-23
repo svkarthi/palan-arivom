@@ -3,6 +3,8 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Pressable, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
+import NallaNaalScreen from '../../features/nalla-naal/screens/NallaNaalScreen';
+import NallaNeramScreen from '../../features/nalla-neram/screens/NallaNeramScreen';
 import VastuNavigator from '../../features/vastu/navigation/VastuNavigator';
 import HomeScreen from '../screens/HomeScreen';
 import SettingsScreen from '../screens/SettingsScreen';
@@ -50,6 +52,8 @@ export default function RootNavigator() {
         />
         <Stack.Screen name="Settings" component={SettingsScreen} options={{ title: t('settings.title') }} />
         <Stack.Screen name="Vastu" component={VastuNavigator} options={{ headerShown: false }} />
+        <Stack.Screen name="NallaNeram" component={NallaNeramScreen} options={{ title: t('title', { ns: 'nallaNeram' }) }} />
+        <Stack.Screen name="NallaNaal" component={NallaNaalScreen} options={{ title: t('title', { ns: 'nallaNaal' }) }} />
       </Stack.Navigator>
     </NavigationContainer>
   );

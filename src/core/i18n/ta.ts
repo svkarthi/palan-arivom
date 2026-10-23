@@ -13,6 +13,13 @@ const ta = {
     openSettings: 'அமைப்புகள்',
     back: 'முகப்பு',
   },
+  place: {
+    choose: 'நகரத்தைத் தேர்வு செய்க',
+  },
+  datetime: {
+    nextDay: 'மறுநாள்',
+    today: 'இன்று',
+  },
   settings: {
     title: 'அமைப்புகள்',
     language: 'மொழி',

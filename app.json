@@ -8,13 +8,13 @@
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.example.utilityapp",
+      "bundleIdentifier": "com.utilityapp",
       "infoPlist": {
         "NSPhotoLibraryUsageDescription": "வீட்டு வரைபடத்தைத் தேர்வு செய்ய புகைப்படங்கள் தேவை. / Needed to pick your floor plan image."
       }
     },
     "android": {
-      "package": "com.example.utilityapp",
+      "package": "com.utilityapp",
       "adaptiveIcon": {
         "backgroundColor": "#FFF3E0",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -29,6 +29,12 @@
     "plugins": [
       "expo-font",
       "expo-sharing"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "f475bcdd-3972-45d8-a1ff-8a3517324dba"
+      }
+    },
+    "owner": "svkarthi"
   }
 }

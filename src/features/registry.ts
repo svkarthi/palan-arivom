@@ -26,14 +26,14 @@ export const FEATURES: FeatureTile[] = [
     id: 'nalla-neram',
     icon: '⏰',
     title: { ta: 'நல்ல நேரம்', en: 'Nalla Neram' },
-    description: { ta: 'தினசரி நல்ல நேரம், ராகு காலம், எமகண்டம்', en: 'Daily auspicious times, Rahu Kalam, Yamagandam' },
-    route: null,
+    description: { ta: 'தினசரி நல்ல நேரம், ராகு காலம், எமகண்டம், பஞ்சாங்கம்', en: 'Daily good times, Rahu Kalam, Yamagandam, panchangam' },
+    route: 'NallaNeram',
   },
   {
     id: 'nalla-naal',
     icon: '📅',
     title: { ta: 'நல்ல நாள்', en: 'Nalla Naal' },
-    description: { ta: 'சுப காரியங்களுக்கான நல்ல நாட்கள்', en: 'Auspicious days for important events' },
-    route: null,
+    description: { ta: 'திருமணம், கிரகப்பிரவேசம் போன்றவற்றுக்கான நல்ல நாட்கள்', en: 'Auspicious days for marriage, house-warming and more' },
+    route: 'NallaNaal',
   },
 ];

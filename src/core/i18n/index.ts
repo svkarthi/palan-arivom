@@ -1,6 +1,10 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
+import nallaNaalEn from '../../features/nalla-naal/i18n/en';
+import nallaNaalTa from '../../features/nalla-naal/i18n/ta';
+import nallaNeramEn from '../../features/nalla-neram/i18n/en';
+import nallaNeramTa from '../../features/nalla-neram/i18n/ta';
 import vastuEn from '../../features/vastu/i18n/en';
 import vastuTa from '../../features/vastu/i18n/ta';
 import en from './en';
@@ -18,8 +22,8 @@ export type Bilingual = Record<Lang, string>;
  */
 void i18n.use(initReactI18next).init({
   resources: {
-    ta: { translation: ta, vastu: vastuTa },
-    en: { translation: en, vastu: vastuEn },
+    ta: { translation: ta, vastu: vastuTa, nallaNeram: nallaNeramTa, nallaNaal: nallaNaalTa },
+    en: { translation: en, vastu: vastuEn, nallaNeram: nallaNeramEn, nallaNaal: nallaNaalEn },
   },
   lng: DEFAULT_LANG,
   fallbackLng: 'en',

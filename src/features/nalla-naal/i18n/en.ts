@@ -1,0 +1,55 @@
+import type ta from './ta';
+
+const en: typeof ta = {
+  title: 'Nalla Naal',
+  purpose: 'What is the day for?',
+  onlyGood: 'Good days only',
+  noGoodDays: 'No suitable day this month. Try another month.',
+  dayHeader: '{{day}} {{month}}',
+  tamilShort: '{{month}} {{day}}',
+  grade: {
+    excellent: 'Excellent day',
+    good: 'Good day',
+    fair: 'Fair day',
+    poor: 'Avoid',
+  },
+  details: {
+    tithi: 'Tithi',
+    nakshatra: 'Nakshatra',
+    yoga: 'Yogam',
+    karana: 'Karanam',
+    tapHint: 'Tap for details',
+    noReasons: 'Nothing notable for or against.',
+    useNalla: 'See the best hours of the day on the Nalla Neram page.',
+  },
+  reason: {
+    goodTithi: 'Favourable tithi: {{name}}',
+    badTithi: 'Unfavourable tithi: {{name}}',
+    amavasai: 'Amavasai — avoid',
+    goodNakshatra: 'Favourable nakshatra: {{name}}',
+    badNakshatra: 'Unfavourable nakshatra: {{name}}',
+    badYoga: 'Unfavourable yogam: {{name}}',
+    vishti: 'Bhadra karanam ({{name}})',
+    goodWeekday: 'Favourable weekday: {{name}}',
+    badWeekday: 'Unfavourable weekday: {{name}}',
+    avoidMonth: '{{name}} is not suited to this',
+    cautionMonth: '{{name}} — be cautious',
+    taraGood: 'Tarabalam favourable',
+    taraBad: 'Tarabalam unfavourable',
+    chandraGood: 'Chandrabalam favourable ({{name}})',
+    chandraBad: 'Chandrabalam unfavourable ({{name}})',
+    chandrashtama: 'Chandrashtamam ({{name}}) — avoid',
+  },
+  profile: {
+    title: 'Your birth star / rashi (optional)',
+    hint: 'Choose them to include Tarabalam and Chandrabalam.',
+    nakshatra: 'Birth nakshatra',
+    rashi: 'Birth rashi',
+    clear: 'Clear selection',
+    show: 'Personalise',
+    hide: 'Hide',
+  },
+  note: 'A guide based on common traditional rules only; traditions and regional customs differ. For important events such as marriage or house-warming, confirm with an experienced astrologer or priest.',
+};
+
+export default en;

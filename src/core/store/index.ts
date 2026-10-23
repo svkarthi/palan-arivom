@@ -13,12 +13,13 @@ import {
 
 import compass from '../../features/vastu/store/compassSlice';
 import plan from '../../features/vastu/store/planSlice';
+import profile from './profileSlice';
 import settings from './settingsSlice';
 
-const rootReducer = combineReducers({ settings, plan, compass });
+const rootReducer = combineReducers({ settings, profile, plan, compass });
 
 const persistedReducer = persistReducer(
-  { key: 'utility-root', version: 1, storage: AsyncStorage, whitelist: ['settings', 'plan', 'compass'] },
+  { key: 'utility-root', version: 1, storage: AsyncStorage, whitelist: ['settings', 'profile', 'plan', 'compass'] },
   rootReducer,
 );
 

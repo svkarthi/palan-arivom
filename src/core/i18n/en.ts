@@ -17,6 +17,13 @@ const en: Translation = {
     openSettings: 'Settings',
     back: 'Home',
   },
+  place: {
+    choose: 'Choose a city',
+  },
+  datetime: {
+    nextDay: 'next day',
+    today: 'Today',
+  },
   settings: {
     title: 'Settings',
     language: 'Language',
