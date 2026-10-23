@@ -1,20 +1,48 @@
+import { NotoSansTamil_400Regular } from '@expo-google-fonts/noto-sans-tamil/400Regular';
+import { NotoSansTamil_700Bold } from '@expo-google-fonts/noto-sans-tamil/700Bold';
+import { useFonts } from 'expo-font';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { useEffect } from 'react';
+import { ActivityIndicator, View } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { Provider } from 'react-redux';
+import { PersistGate } from 'redux-persist/integration/react';
 
-export default function App() {
-  return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
+import i18n from './src/core/i18n/index';
+import RootNavigator from './src/core/navigation/RootNavigator';
+import { persistor, store } from './src/core/store/index';
+import { useAppSelector } from './src/core/store/hooks';
+import { colors } from './src/core/theme';
+
+/** Keeps i18next in step with the persisted language setting. */
+function LanguageSync() {
+  const language = useAppSelector((s) => s.settings.language);
+  useEffect(() => {
+    void i18n.changeLanguage(language);
+  }, [language]);
+  return null;
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+const Loading = (
+  <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bg }}>
+    <ActivityIndicator color={colors.primary} size="large" />
+  </View>
+);
+
+export default function App() {
+  const [fontsLoaded] = useFonts({ NotoSansTamil_400Regular, NotoSansTamil_700Bold });
+
+  if (!fontsLoaded) return Loading;
+
+  return (
+    <Provider store={store}>
+      <PersistGate loading={Loading} persistor={persistor}>
+        <SafeAreaProvider>
+          <LanguageSync />
+          <RootNavigator />
+          <StatusBar style="dark" />
+        </SafeAreaProvider>
+      </PersistGate>
+    </Provider>
+  );
+}

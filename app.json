@@ -1,17 +1,22 @@
 {
   "expo": {
-    "name": "vastu-app",
-    "slug": "vastu-app",
+    "name": "Utility App",
+    "slug": "utility-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.example.utilityapp",
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "வீட்டு வரைபடத்தைத் தேர்வு செய்ய புகைப்படங்கள் தேவை. / Needed to pick your floor plan image."
+      }
     },
     "android": {
+      "package": "com.example.utilityapp",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#FFF3E0",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -20,6 +25,10 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      "expo-font",
+      "expo-sharing"
+    ]
   }
 }
