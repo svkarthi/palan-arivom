@@ -32,6 +32,7 @@ const ta = {
     badWeekday: 'கிழமை பாதகம்: {{name}}',
     avoidMonth: '{{name}} மாதம் இதற்கு உகந்ததல்ல',
     cautionMonth: '{{name}} மாதம் — எச்சரிக்கை',
+    karinaal: 'கரிநாள் — தவிர்க்கவும்',
     taraGood: 'தாராபலம் சாதகம்',
     taraBad: 'தாராபலம் பாதகம்',
     chandraGood: 'சந்திரபலம் சாதகம் ({{name}})',

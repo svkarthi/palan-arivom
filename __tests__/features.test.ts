@@ -1,3 +1,4 @@
+import { nokkuNaal } from '../src/core/astro/dayExtras';
 import { dayPanchang } from '../src/core/astro/panchang';
 import { placeById } from '../src/core/astro/places';
 import { PURPOSE_BY_ID } from '../src/features/nalla-naal/data/purposes';
@@ -107,5 +108,17 @@ describe('special days', () => {
     const p = dayPanchang({ y: 2025, m: 10, d: 6 }, chennai);
     const v = judgeDay(p, PURPOSE_BY_ID.travel, none);
     expect(v.specials.map((x) => x.id)).toContain('pournami');
+  });
+});
+
+describe('Nokku Naal', () => {
+  it('classifies the 27 nakshatras 9 / 8 / 10 and matches the printed calendar of 23 Oct 2026', () => {
+    const kinds = Array.from({ length: 27 }, (_, i) => nokkuNaal(i));
+    expect(kinds.filter((k) => k === 'mel')).toHaveLength(9);
+    expect(kinds.filter((k) => k === 'keezh')).toHaveLength(8);
+    expect(kinds.filter((k) => k === 'sama')).toHaveLength(10);
+    // The printed page shows Poorattathi at sunrise as "Keezh Nokku Naal".
+    const day = nallaNeramDay({ y: 2026, m: 10, d: 23 }, chennai);
+    expect(nokkuNaal(day.panchang.nakshatra[0].index)).toBe('keezh');
   });
 });

@@ -1,10 +1,13 @@
+import { AYANA, isDakshinayana, ritu, sakaYear } from '@core/astro/dayExtras';
 import { GREGORIAN_MONTHS, PLANETS, TAMIL_MONTHS, TAMIL_YEARS, WEEKDAYS } from '@core/astro/names';
 import { addDays, formatClock, sameDate, toLocal, type CivilDate } from '@core/astro/time';
 import PlacePicker from '@core/components/PlacePicker';
-import { AppText, Button, Card, Chip, Stepper } from '@core/components/ui';
+import { AppText, Button, Card, Chip, Segmented, Stepper } from '@core/components/ui';
 import { useLang } from '@core/hooks/useLang';
 import { useNow } from '@core/hooks/useNow';
 import { usePlace } from '@core/hooks/usePlace';
+import { useAppDispatch, useAppSelector } from '@core/store/hooks';
+import { setDayPartBasis } from '@core/store/profileSlice';
 import { colors, spacing } from '@core/theme';
 import { useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
@@ -19,6 +22,8 @@ export default function NallaNeramScreen() {
   const { t } = useTranslation('nallaNeram');
   const { tr } = useLang();
   const place = usePlace();
+  const dispatch = useAppDispatch();
+  const basis = useAppSelector((s) => s.profile.dayPartBasis) ?? 'sun';
   const now = useNow();
   const today = useMemo(() => toLocal(now, place.utcOffsetMin).date, [now, place.utcOffsetMin]);
   const [picked, setPicked] = useState<CivilDate | null>(null);
@@ -26,7 +31,7 @@ export default function NallaNeramScreen() {
 
   const date = picked ?? today;
   const isToday = sameDate(date, today);
-  const day = useMemo(() => nallaNeramDay(date, place), [date, place]);
+  const day = useMemo(() => nallaNeramDay(date, place, basis), [date, place, basis]);
   const status = isToday ? statusAt(day, now.getTime()) : null;
 
   const clock = (ms: number | Date) => formatClock(new Date(ms), place.utcOffsetMin);
@@ -61,6 +66,14 @@ export default function NallaNeramScreen() {
             day: tamil.day,
           })}
         </AppText>
+        <AppText size={13} color={colors.primary} center>
+          {t('calendar.ritu', {
+            ayana: tr(isDakshinayana(tamil.month) ? AYANA.dakshinayana : AYANA.uttarayana),
+            ritu: tr(ritu(tamil.month).sanskrit),
+            season: tr(ritu(tamil.month).tamil),
+            saka: sakaYear(tamil.yearStartGregorian),
+          })}
+        </AppText>
         <AppText size={13} color={colors.muted}>
           🌅 {t('date.sunrise')} {clock(day.panchang.sunrise)}   🌇 {t('date.sunset')} {clock(day.panchang.sunset)}
         </AppText>
@@ -73,6 +86,23 @@ export default function NallaNeramScreen() {
           </AppText>
         </Card>
       ) : null}
+
+      <Card style={styles.gap}>
+        <AppText bold size={14}>
+          {t('basis.label')}
+        </AppText>
+        <Segmented
+          value={basis}
+          onChange={(v) => dispatch(setDayPartBasis(v))}
+          options={[
+            { value: 'sun', label: t('basis.sun') },
+            { value: 'fixed', label: t('basis.fixed') },
+          ]}
+        />
+        <AppText size={12} color={colors.muted}>
+          {t('basis.hint')}
+        </AppText>
+      </Card>
 
       <DayTimes day={day} date={date} place={place} />
 

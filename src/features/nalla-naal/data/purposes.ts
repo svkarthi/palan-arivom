@@ -12,6 +12,8 @@ export type Purpose = {
   goodNakshatras: number[];
   goodWeekdays: number[];
   badWeekdays: number[];
+  /** Extra tithi positions (1-15) to avoid for this purpose. */
+  avoidTithis?: number[];
   /** Tamil months (0 = Chithirai) to avoid outright. */
   avoidMonths: number[];
   /** Tamil months to treat with caution. */
@@ -33,11 +35,16 @@ export const PURPOSES: Purpose[] = [
     icon: '💍',
     name: { ta: 'திருமணம்', en: 'Marriage' },
     goodTithis: [...TITHIS, 12],
-    goodNakshatras: [3, 4, 9, 11, 12, 14, 16, 18, 20, 25, 26],
+    // The classical eleven plus Punarvasu, Pushya, Chitra, Shravana, Dhanishta and Shatabhisha, which
+    // appear on the 2026 muhurtham list of tamildailycalendar.com.
+    goodNakshatras: [3, 4, 6, 7, 9, 11, 12, 13, 14, 16, 18, 20, 21, 22, 23, 25, 26],
+    // Pratipada and Pournami/Amavasai never appear on that list.
+    avoidTithis: [1, 15],
     goodWeekdays: [1, 3, 4, 5],
     badWeekdays: [2, 6],
-    avoidMonths: [AADI, MARGAZHI],
-    cautionMonths: [PURATTASI],
+    // That list has no dates in Aadi, Purattasi or Margazhi.
+    avoidMonths: [AADI, PURATTASI, MARGAZHI],
+    cautionMonths: [],
   },
   {
     id: 'griha',

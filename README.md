@@ -43,6 +43,15 @@ Everything is computed on the device, with no network or API key.
 - Rahu Kalam, Yamagandam and Kuligai use the standard eighths of daylight per weekday; horas run from the weekday lord.
 - Tests check the engine against the Meeus worked examples, the 21 Oct 2025 new moon (12:25 UTC), the 7 Oct 2025 full moon (03:47 UTC) and the Pongal / Tamil New Year dates.
 
+## Validation against a printed calendar
+`__tests__/validation.test.ts` compares the app with the 2026 lists on tamildailycalendar.com (read on 23 Oct 2026): Amavasai 12/12, Pournami 12/13, Pradosham 24/25 (one day shifted each), Karinal 33/34, and 49 of 55 listed wedding dates rated "fair or better" while only 110 of 365 days are. Differences are mostly Vakya vs Thirukanitha: on 23 Oct 2026 that calendar ends Dwadashi at 12:40 PM and Pooratathi at 8:08 PM, this app at 2:36 PM and 9:02 PM (it matched published new/full moon times to the minute). Tamil month starts also differ by a day in some months.
+Rules changed because of that data: Pournami is judged in the afternoon like Amavasai, Shashti is waxing only, Pradosham picks one day when two overlap, Chaturthi/Chaturdashi are a caution (not an avoid), judging uses the morning panchangam, and marriage avoids Aadi, Purattasi and Margazhi and accepts more nakshatras. The Karinaal table (`src/core/astro/karinaal.ts`) comes from that site's 2024-2026 lists.
+
+## Checked against an independent Swiss Ephemeris implementation
+[tamil-panchang-api](https://github.com/karthiknitt/tamil-panchang-api) (MIT, © 2024 Karthikeyan N) computes the same Drik panchangam with the Swiss Ephemeris. Run locally over 117 city-dates in 2026 (Chennai, Madurai, Singapore) it agrees with this app's engine on every thithi, nakshatra and yoga at sunrise, with sunrise and sunset within 15 s, Rahu / Yama / Gulikai within 0.2 min, and end times within about 3 min (apart from the API clipping an end time at the next sunrise). A 25-day sample of its values is kept in `__tests__/fixtures/swisseph-chennai-2026.json` as a regression test (`__tests__/swisseph.test.ts`). No code from that project is used in the app.
+
+Findings from reading its rules, which differ from this app on purpose: its Chandrashtamam adds 7 to the Moon's rashi instead of 5 (on 23 Oct 2026 it gives Kanya / Mrigasiridam where the printed calendar has Magam, Pooram, which matches this app); its Amrita / Siddha / Marana table gives Marana for Thursday + Poosam and Wednesday + Anusham, which the classical Amrita Siddhi list contradicts; and its muhurta rules pass only 22 of the 55 wedding dates on the printed calendar and 20 days in all of 2026 for house-warming, so they are much stricter than printed practice.
+
 ## Adding a feature
 1. Create `src/features/<name>/` with `i18n/{ta,en}.ts`, `screens/`, and `store/` if it needs state. A single-screen feature needs no navigator of its own.
 2. Register its strings as a new namespace in `src/core/i18n/index.ts` and use `useTranslation('<namespace>')` in its screens.

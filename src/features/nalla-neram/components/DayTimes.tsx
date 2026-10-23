@@ -1,5 +1,6 @@
-import { BAD_NAKSHATRAS, isAvoidedTithi, isBadYoga } from '@core/astro/inauspicious';
-import { karanaName, NAKSHATRAS, PLANETS, SPECIAL_DAYS, tithiName, YOGAS } from '@core/astro/names';
+import { chandrashtamaRashi, DIRECTION_NAMES, nakshatrasOfRashi, NOKKU_NAMES, nokkuNaal, PARIHARAM } from '@core/astro/dayExtras';
+import { BAD_NAKSHATRAS, isBadYoga, tithiSeverity, type Severity } from '@core/astro/inauspicious';
+import { karanaName, NAKSHATRAS, PLANETS, RASHIS, SPECIAL_DAYS, tithiName, YOGAS } from '@core/astro/names';
 import { isVishti, pakshaOf, type Span } from '@core/astro/panchang';
 import type { Place } from '@core/astro/sunrise';
 import { formatClock, sameDate, toLocal, type CivilDate } from '@core/astro/time';
@@ -33,13 +34,13 @@ export default function DayTimes({ day, date, place }: Props) {
       : t('panchang.untilNext', { time, nextDay: t('datetime.nextDay', { ns: 'translation' }) });
   };
 
-  const spanRow = (label: string, name: string, span: Span, avoid: boolean, extra?: string) => (
+  const spanRow = (label: string, name: string, span: Span, flag: Severity | null, extra?: string) => (
     <View key={`${label}-${span.index}-${span.end.getTime()}`} style={styles.spanRow}>
       <AppText size={13} color={colors.muted} style={styles.spanLabel}>
         {label}
       </AppText>
       <View style={styles.flex}>
-        <AppText bold color={avoid ? colors.bad : colors.text}>
+        <AppText bold color={flag === 'avoid' ? colors.bad : flag === 'caution' ? colors.ok : colors.text}>
           {name}
           {extra ? ` · ${extra}` : ''}
         </AppText>
@@ -47,11 +48,28 @@ export default function DayTimes({ day, date, place }: Props) {
           {untilText(span)}
         </AppText>
       </View>
-      {avoid ? <Chip label={t('panchang.avoidFlag')} color={colors.bad} style={styles.noMargin} /> : null}
+      {flag ? (
+        <Chip
+          label={t(flag === 'avoid' ? 'panchang.avoidFlag' : 'panchang.cautionFlag')}
+          color={flag === 'avoid' ? colors.bad : colors.ok}
+          style={styles.noMargin}
+        />
+      ) : null}
     </View>
   );
 
   const { tithi, nakshatra, yoga, karana } = day.panchang;
+
+  const starsOf = (rashi: number) =>
+    nakshatrasOfRashi(rashi)
+      .map((s) => tr(NAKSHATRAS[s.nakshatra]) + (s.padas.length < 4 ? ` (${s.padas.join(',')})` : ''))
+      .join(', ');
+
+  const balance = day.lagna.length
+    ? (day.lagna[0].end.getTime() - day.panchang.sunrise.getTime()) / 60_000 / 24
+    : 0;
+  const balanceNazhigai = Math.floor(balance);
+  const balanceVinadi = Math.floor((balance - balanceNazhigai) * 60);
 
   return (
     <View style={styles.stack}>
@@ -63,7 +81,7 @@ export default function DayTimes({ day, date, place }: Props) {
           <Card style={styles.gap}>
             {day.specials.map((s) => (
               <View key={s.id} style={styles.row}>
-                <AppText bold color={colors.primaryDark} style={styles.flex}>
+                <AppText bold color={s.id === 'karinaal' ? colors.bad : colors.primaryDark} style={styles.flex}>
                   {tr(SPECIAL_DAYS[s.id])}
                 </AppText>
                 {s.window ? <AppText size={12}>{range(s.window)}</AppText> : null}
@@ -137,8 +155,74 @@ export default function DayTimes({ day, date, place }: Props) {
             </AppText>
           </View>
         ))}
+        {day.thiyajyam.map((w) => (
+          <View key={w.start} style={styles.row}>
+            <AppText bold style={styles.flex}>
+              {t('avoid.thiyajyam')}
+            </AppText>
+            <AppText bold color={colors.bad}>
+              {range(w)}
+            </AppText>
+          </View>
+        ))}
+        <View style={styles.row}>
+          <AppText bold style={styles.flex}>
+            {t('sulam.title')}
+          </AppText>
+          <AppText bold color={colors.bad}>
+            {tr(DIRECTION_NAMES[day.sulam.direction])}
+          </AppText>
+        </View>
+        <AppText size={12} color={colors.muted}>
+          {t('sulam.remedy', { item: tr(PARIHARAM[day.sulam.remedy]) })}
+        </AppText>
         <AppText size={12} color={colors.muted}>
           {t('avoid.kuligaiNote')}
+        </AppText>
+      </Card>
+
+      <AppText bold size={17}>
+        🌙 {t('chandrashtama.title')}
+      </AppText>
+      <Card style={styles.gap}>
+        {day.moonRashi.map((s) => {
+          const rashi = chandrashtamaRashi(s.index);
+          return (
+            <View key={`${s.index}-${s.end.getTime()}`} style={styles.gap}>
+              <AppText bold color={colors.bad}>
+                {t('chandrashtama.row', { rashi: tr(RASHIS[rashi]) })}
+              </AppText>
+              <AppText size={12} color={colors.muted}>
+                {starsOf(rashi)}
+              </AppText>
+              <AppText size={12} color={colors.muted}>
+                {t('chandrashtama.moonIn', { rashi: tr(RASHIS[s.index]) })} · {untilText(s)}
+              </AppText>
+            </View>
+          );
+        })}
+        <AppText size={12} color={colors.muted}>
+          {t('chandrashtama.hint')}
+        </AppText>
+      </Card>
+
+      <AppText bold size={17}>
+        ♈ {t('lagna.title')}
+      </AppText>
+      <Card style={styles.gap}>
+        <AppText size={13} color={colors.muted}>
+          {t('lagna.balance', { rashi: day.lagna.length ? tr(RASHIS[day.lagna[0].index]) : '', n: balanceNazhigai, v: balanceVinadi })}
+        </AppText>
+        {day.lagna.map((s) => (
+          <View key={`${s.index}-${s.end.getTime()}`} style={styles.row}>
+            <AppText bold style={styles.flex}>
+              {tr(RASHIS[s.index])}
+            </AppText>
+            <AppText size={13}>{untilText(s)}</AppText>
+          </View>
+        ))}
+        <AppText size={12} color={colors.muted}>
+          {t('lagna.hint')}
         </AppText>
       </Card>
 
@@ -147,11 +231,19 @@ export default function DayTimes({ day, date, place }: Props) {
       </AppText>
       <Card style={styles.gap}>
         {tithi.map((s) =>
-          spanRow(t('panchang.tithi'), tr(tithiName(s.index)), s, isAvoidedTithi(s.index), t(`panchang.${pakshaOf(s.index)}`)),
+          spanRow(t('panchang.tithi'), tr(tithiName(s.index)), s, tithiSeverity(s.index), t(`panchang.${pakshaOf(s.index)}`)),
         )}
-        {nakshatra.map((s) => spanRow(t('panchang.nakshatra'), tr(NAKSHATRAS[s.index]), s, BAD_NAKSHATRAS.includes(s.index)))}
-        {yoga.map((s) => spanRow(t('panchang.yoga'), tr(YOGAS[s.index]), s, isBadYoga(s.index)))}
-        {karana.map((s) => spanRow(t('panchang.karana'), tr(karanaName(s.index)), s, isVishti(s.index)))}
+        {nakshatra.map((s) => spanRow(t('panchang.nakshatra'), tr(NAKSHATRAS[s.index]), s, BAD_NAKSHATRAS.includes(s.index) ? 'avoid' : null))}
+        {yoga.map((s) => spanRow(t('panchang.yoga'), tr(YOGAS[s.index]), s, isBadYoga(s.index) ? 'avoid' : null))}
+        {karana.map((s) => spanRow(t('panchang.karana'), tr(karanaName(s.index)), s, isVishti(s.index) ? 'avoid' : null))}
+        <View style={styles.row}>
+          <AppText size={13} color={colors.muted} style={styles.spanLabel}>
+            {t('panchang.nokku')}
+          </AppText>
+          <AppText bold style={styles.flex}>
+            {tr(NOKKU_NAMES[nokkuNaal(nakshatra[0].index)])}
+          </AppText>
+        </View>
         <AppText size={12} color={colors.muted}>
           {t('panchang.flagNote')}
         </AppText>

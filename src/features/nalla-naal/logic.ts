@@ -1,5 +1,5 @@
-import { dayPanchang, dominantSpan, isVishti, moonRashiAt, tithiPosition, type DayPanchang, type TamilDate } from '@core/astro/panchang';
-import { AVOIDED_TITHI_POSITIONS, BAD_NAKSHATRAS, BAD_YOGAS } from '@core/astro/inauspicious';
+import { BAD_NAKSHATRAS, BAD_YOGAS, MILD_BAD_TITHI_POSITIONS, STRONG_BAD_TITHI_POSITIONS } from '@core/astro/inauspicious';
+import { dayPanchang, isVishti, karanaIndexAt, moonRashiAt, nakshatraIndexAt, tithiIndexAt, tithiPosition, yogaIndexAt, type DayPanchang, type TamilDate } from '@core/astro/panchang';
 import { specialDays, type SpecialDay } from '@core/astro/specialDays';
 import type { Place } from '@core/astro/sunrise';
 import { julianDay, weekdayOf, type CivilDate } from '@core/astro/time';
@@ -13,7 +13,7 @@ export type ReasonCode =
   | 'goodTithi' | 'badTithi' | 'amavasai'
   | 'goodNakshatra' | 'badNakshatra' | 'badYoga' | 'vishti'
   | 'goodWeekday' | 'badWeekday' | 'avoidMonth' | 'cautionMonth'
-  | 'taraGood' | 'taraBad' | 'chandraGood' | 'chandraBad' | 'chandrashtama';
+  | 'karinaal' | 'taraGood' | 'taraBad' | 'chandraGood' | 'chandraBad' | 'chandrashtama';
 
 export type Reason = { code: ReasonCode; good: boolean; name?: Bilingual };
 
@@ -42,13 +42,23 @@ export const gradeOf = (score: number): Grade =>
 /** Tarabalam: 1-based count from the birth star, folded into groups of nine. */
 const TARA_BAD = [1, 3, 5, 7];
 
-export function judgeDay(panchang: DayPanchang, purpose: Purpose, profile: Profile): DayVerdict {
+export function judgeDay(
+  panchang: DayPanchang,
+  purpose: Purpose,
+  profile: Profile,
+  observances: SpecialDay[] = specialDays(panchang),
+): DayVerdict {
   const { date, sunrise, sunset } = panchang;
   const weekday = weekdayOf(date);
-  const tithi = dominantSpan(panchang.tithi, sunrise, sunset).index;
-  const nakshatra = dominantSpan(panchang.nakshatra, sunrise, sunset).index;
-  const yoga = dominantSpan(panchang.yoga, sunrise, sunset).index;
-  const karana = dominantSpan(panchang.karana, sunrise, sunset).index;
+  // Functions are judged by the panchangam of the morning (about 9 AM, a quarter of the way
+  // through the daytime), when most auspicious events begin. On the 2026 muhurtham list of
+  // tamildailycalendar.com this sampling shows no Ashtami, Navami, Pournami, Amavasai or
+  // fierce-nakshatra dates, which sampling the whole daytime does not.
+  const morning = new Date(sunrise.getTime() + 0.25 * (sunset.getTime() - sunrise.getTime()));
+  const tithi = tithiIndexAt(morning);
+  const nakshatra = nakshatraIndexAt(morning);
+  const yoga = yogaIndexAt(morning);
+  const karana = karanaIndexAt(morning);
   const month = panchang.tamil.month;
 
   let score = 50;
@@ -64,8 +74,10 @@ export function judgeDay(panchang: DayPanchang, purpose: Purpose, profile: Profi
   if (tithi === 29) {
     hardAvoid = true;
     add('amavasai', false, -40, tithiLabel);
-  } else if (AVOIDED_TITHI_POSITIONS.includes(position)) {
+  } else if (STRONG_BAD_TITHI_POSITIONS.includes(position) || purpose.avoidTithis?.includes(position)) {
     add('badTithi', false, -20, tithiLabel);
+  } else if (MILD_BAD_TITHI_POSITIONS.includes(position)) {
+    add('badTithi', false, -10, tithiLabel);
   } else if (purpose.goodTithis.includes(position)) {
     add('goodTithi', true, 15, tithiLabel);
   }
@@ -74,18 +86,32 @@ export function judgeDay(panchang: DayPanchang, purpose: Purpose, profile: Profi
   if (purpose.goodNakshatras.includes(nakshatra)) add('goodNakshatra', true, 20, star);
   else if (BAD_NAKSHATRAS.includes(nakshatra)) add('badNakshatra', false, -20, star);
 
-  if (BAD_YOGAS.includes(yoga)) add('badYoga', false, -20, YOGAS[yoga]);
-  if (isVishti(karana)) add('vishti', false, -15, karanaName(karana));
+  // Unfavourable yogas and Bhadra karanam still appear on about one in ten of the listed 2026
+  // wedding dates, so they count against a day without ruling it out.
+  if (BAD_YOGAS.includes(yoga)) add('badYoga', false, -15, YOGAS[yoga]);
+  if (isVishti(karana)) add('vishti', false, -10, karanaName(karana));
 
   if (purpose.goodWeekdays.includes(weekday)) add('goodWeekday', true, 10, WEEKDAYS[weekday]);
   else if (purpose.badWeekdays.includes(weekday)) add('badWeekday', false, -15, WEEKDAYS[weekday]);
 
   const monthName = TAMIL_MONTHS[month];
   if (purpose.avoidMonths.includes(month)) {
-    hardAvoid = true;
-    add('avoidMonth', false, -40, monthName);
+    // Printed Tamil calendars (Vakya) can start a month a day later than this app, so the first
+    // day of an avoided month is a caution rather than a hard avoid.
+    if (panchang.tamil.day === 1) {
+      add('cautionMonth', false, -15, monthName);
+    } else {
+      hardAvoid = true;
+      add('avoidMonth', false, -40, monthName);
+    }
   } else if (purpose.cautionMonths.includes(month)) {
     add('cautionMonth', false, -15, monthName);
+  }
+
+  const specials = observances;
+  if (specials.some((x) => x.id === 'karinaal')) {
+    hardAvoid = true;
+    add('karinaal', false, -30);
   }
 
   if (profile.birthNakshatra !== null) {
@@ -96,7 +122,7 @@ export function judgeDay(panchang: DayPanchang, purpose: Purpose, profile: Profi
   }
 
   if (profile.birthRashi !== null) {
-    const midday = julianDay(new Date((sunrise.getTime() + sunset.getTime()) / 2));
+    const midday = julianDay(morning);
     const position12 = ((moonRashiAt(midday) - profile.birthRashi + 12) % 12) + 1;
     if (position12 === 8) {
       hardAvoid = true;
@@ -118,13 +144,24 @@ export function judgeDay(panchang: DayPanchang, purpose: Purpose, profile: Profi
     score,
     grade: gradeOf(score),
     reasons,
-    specials: specialDays(panchang),
+    specials,
   };
 }
 
-export function judgeMonth(year: number, month: number, place: Place, purpose: Purpose, profile: Profile): DayVerdict[] {
+export type MonthDay = { panchang: DayPanchang; specials: SpecialDay[] };
+
+/** The panchangam and observance days of every day of a month. Independent of purpose, so it can be reused. */
+export function monthDays(year: number, month: number, place: Place): MonthDay[] {
   const days = new Date(Date.UTC(year, month, 0)).getUTCDate();
-  return Array.from({ length: days }, (_, i) =>
-    judgeDay(dayPanchang({ y: year, m: month, d: i + 1 }, place), purpose, profile),
-  );
+  return Array.from({ length: days }, (_, i) => {
+    const panchang = dayPanchang({ y: year, m: month, d: i + 1 }, place);
+    return { panchang, specials: specialDays(panchang) };
+  });
+}
+
+export const judgeMonthDays = (days: MonthDay[], purpose: Purpose, profile: Profile): DayVerdict[] =>
+  days.map((d) => judgeDay(d.panchang, purpose, profile, d.specials));
+
+export function judgeMonth(year: number, month: number, place: Place, purpose: Purpose, profile: Profile): DayVerdict[] {
+  return judgeMonthDays(monthDays(year, month, place), purpose, profile);
 }

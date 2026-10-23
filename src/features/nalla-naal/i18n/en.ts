@@ -34,6 +34,7 @@ const en: typeof ta = {
     badWeekday: 'Unfavourable weekday: {{name}}',
     avoidMonth: '{{name}} is not suited to this',
     cautionMonth: '{{name}} — be cautious',
+    karinaal: 'Karinaal — avoid',
     taraGood: 'Tarabalam favourable',
     taraBad: 'Tarabalam unfavourable',
     chandraGood: 'Chandrabalam favourable ({{name}})',

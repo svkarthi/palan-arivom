@@ -113,6 +113,7 @@ export const SPECIAL_DAYS: Record<string, Bilingual> = {
   shashti: pair('சஷ்டி', 'Shashti'),
   karthigai: pair('கார்த்திகை (முருகன்)', 'Karthigai (Murugan)'),
   karthigaiDeepam: pair('கார்த்திகை தீபம்', 'Karthigai Deepam'),
+  karinaal: pair('கரிநாள்', 'Karinaal (avoid)'),
 };
 
 export const GREGORIAN_MONTHS: Bilingual[] = [

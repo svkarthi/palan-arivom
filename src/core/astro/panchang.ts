@@ -25,7 +25,7 @@ function nextCrossing(angle: AngleFn, target: number, jd0: number): number {
   const wanted = normalize360(target - base);
   let lo = jd0;
   let hi = jd0 + 3;
-  for (let i = 0; i < 50; i++) {
+  for (let i = 0; i < 28; i++) {
     const mid = (lo + hi) / 2;
     if (normalize360(angle(mid) - base) < wanted) lo = mid;
     else hi = mid;
@@ -43,7 +43,7 @@ function spansBetween(angle: AngleFn, width: number, count: number, from: Date, 
   let index = Math.floor(angle(jdFrom) / width) % count;
   let cursor = jdFrom;
   const result: Span[] = [];
-  for (let guard = 0; guard < 8; guard++) {
+  for (let guard = 0; guard < 16; guard++) {
     const endJd = nextCrossing(angle, ((index + 1) * width) % 360, cursor);
     result.push({ index, end: fromJulianDay(endJd) });
     if (endJd >= jdUntil) break;
@@ -56,6 +56,43 @@ function spansBetween(angle: AngleFn, width: number, count: number, from: Date, 
 /** Tithi (0-29) and nakshatra (0-26) at an instant. */
 export const tithiIndexAt = (at: Date): number => Math.floor(elongation(julianDay(at)) / 12) % 30;
 export const nakshatraIndexAt = (at: Date): number => Math.floor(moonAngle(julianDay(at)) / NAKSHATRA_WIDTH) % 27;
+
+export const yogaIndexAt = (at: Date): number => Math.floor(yogaAngle(julianDay(at)) / NAKSHATRA_WIDTH) % 27;
+export const karanaIndexAt = (at: Date): number => Math.floor(elongation(julianDay(at)) / 6) % 60;
+
+export const moonRashiSpans = (from: Date, until: Date) => spansBetween(moonAngle, 30, 12, from, until);
+
+/** When the element active at `at` (found from `angle` in segments of `width` degrees) began. */
+export function elementStart(angle: AngleFn, width: number, at: Date): Date {
+  const jd = julianDay(at);
+  const target = Math.floor(angle(jd) / width) * width;
+  let lo = jd - 3;
+  let hi = jd;
+  for (let i = 0; i < 28; i++) {
+    const mid = (lo + hi) / 2;
+    if (normalize360(angle(mid) - target) < 180) hi = mid;
+    else lo = mid;
+  }
+  return fromJulianDay((lo + hi) / 2);
+}
+
+export const nakshatraStart = (at: Date): Date => elementStart(moonAngle, NAKSHATRA_WIDTH, at);
+
+/** Sidereal ascendant (lagna) of a place at an instant, degrees. */
+export function siderealAscendant(at: Date, place: Place): number {
+  const jd = julianDay(at);
+  const T = (jd - 2451545) / 36525;
+  const gmst = 280.46061837 + 360.98564736629 * (jd - 2451545) + 0.000387933 * T * T;
+  const theta = ((gmst + place.lon) * Math.PI) / 180;
+  const eps = ((23.4392911 - 0.0130042 * T) * Math.PI) / 180;
+  const phi = (place.lat * Math.PI) / 180;
+  const asc = Math.atan2(-Math.cos(theta), Math.sin(eps) * Math.tan(phi) + Math.cos(eps) * Math.sin(theta));
+  return normalize360((asc * 180) / Math.PI + 180 - lahiriAyanamsa(jd));
+}
+
+/** Lagna (rising sign) spans between two instants; index 0 = Mesha. */
+export const lagnaSpans = (place: Place, from: Date, until: Date) =>
+  spansBetween((jd) => siderealAscendant(fromJulianDay(jd), place), 30, 12, from, until);
 
 export const tithiSpans = (from: Date, until: Date) => spansBetween(elongation, 12, 30, from, until);
 export const karanaSpans = (from: Date, until: Date) => spansBetween(elongation, 6, 60, from, until);
@@ -109,7 +146,7 @@ export function tamilDate(date: CivilDate, place: Place): TamilDate {
   const wrap = (jd: number) => ((siderealSun(jd) - target + 540) % 360) - 180;
   let lo = jdSunset - 40;
   let hi = jdSunset;
-  for (let i = 0; i < 50; i++) {
+  for (let i = 0; i < 28; i++) {
     const mid = (lo + hi) / 2;
     if (wrap(mid) < 0) lo = mid;
     else hi = mid;

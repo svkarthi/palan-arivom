@@ -1,5 +1,5 @@
 import { GREGORIAN_MONTHS, NAKSHATRAS, RASHIS, SPECIAL_DAYS, TAMIL_MONTHS, WEEKDAYS, YOGAS, karanaName, tithiName } from '@core/astro/names';
-import { isAvoidedTithi } from '@core/astro/inauspicious';
+import { tithiSeverity } from '@core/astro/inauspicious';
 import type { Place } from '@core/astro/sunrise';
 import { addDays } from '@core/astro/time';
 import PlacePicker from '@core/components/PlacePicker';
@@ -10,14 +10,14 @@ import { usePlace } from '@core/hooks/usePlace';
 import { useAppDispatch, useAppSelector } from '@core/store/hooks';
 import { setBirthNakshatra, setBirthRashi } from '@core/store/profileSlice';
 import { colors, spacing } from '@core/theme';
-import { useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Switch, View } from 'react-native';
+import { useEffect, useMemo, useState } from 'react';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Switch, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import DayTimes from '../../nalla-neram/components/DayTimes';
 import { nallaNeramDay } from '../../nalla-neram/logic';
 import { PURPOSES, PURPOSE_BY_ID, type PurposeId } from '../data/purposes';
-import { judgeMonth, type DayVerdict, type Grade } from '../logic';
+import { judgeMonthDays, monthDays, type DayVerdict, type Grade, type MonthDay } from '../logic';
 
 const GRADE_COLOR: Record<Grade, string> = {
   excellent: colors.good,
@@ -29,7 +29,8 @@ const GRADE_COLOR: Record<Grade, string> = {
 /** The Nalla Neram of one day, computed only when the day is opened. */
 function DayDetail({ verdict, place }: { verdict: DayVerdict; place: Place }) {
   const { t } = useTranslation('nallaNaal');
-  const day = useMemo(() => nallaNeramDay(verdict.date, place), [verdict.date, place]);
+  const basis = useAppSelector((s) => s.profile.dayPartBasis) ?? 'sun';
+  const day = useMemo(() => nallaNeramDay(verdict.date, place, basis), [verdict.date, place, basis]);
   return (
     <View style={styles.gap}>
       <AppText bold size={16} color={colors.primaryDark}>
@@ -66,11 +67,32 @@ export default function NallaNaalScreen() {
     setExpanded(null);
   };
 
+  // The month's panchangam does not depend on the purpose, so it is computed once per
+  // month and city (after the screen has drawn) and only the scoring is redone on a change.
+  const monthKey = `${month.y}-${month.m}-${place.id}`;
+  const [data, setData] = useState<{ key: string; days: MonthDay[] } | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    // Let the spinner draw before the (blocking) calculation starts.
+    const timer = setTimeout(() => {
+      const days = monthDays(month.y, month.m, place);
+      if (!cancelled) setData({ key: monthKey, days });
+    }, 30);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [monthKey]);
+
   const verdicts = useMemo(
-    () => judgeMonth(month.y, month.m, place, PURPOSE_BY_ID[purposeId], { birthNakshatra, birthRashi }),
-    [month.y, month.m, place, purposeId, birthNakshatra, birthRashi],
+    () =>
+      data && data.key === monthKey
+        ? judgeMonthDays(data.days, PURPOSE_BY_ID[purposeId], { birthNakshatra, birthRashi })
+        : null,
+    [data, monthKey, purposeId, birthNakshatra, birthRashi],
   );
-  const visible = onlyGood ? verdicts.filter((v) => v.score >= 60) : verdicts;
+  const visible = verdicts === null ? [] : onlyGood ? verdicts.filter((v) => v.score >= 60) : verdicts;
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -160,7 +182,9 @@ export default function NallaNaalScreen() {
         ) : null}
       </Card>
 
-      {visible.length === 0 ? (
+      {verdicts === null ? (
+        <ActivityIndicator color={colors.primary} size="large" />
+      ) : visible.length === 0 ? (
         <AppText color={colors.muted} center>
           {t('noGoodDays')}
         </AppText>
@@ -190,7 +214,7 @@ export default function NallaNaalScreen() {
                       {t('tamilShort', { month: tr(TAMIL_MONTHS[v.tamil.month]), day: v.tamil.day })}
                     </AppText>
                     <AppText size={12} color={colors.muted}>
-                      <AppText size={12} color={isAvoidedTithi(v.tithi) ? colors.bad : colors.muted} bold={isAvoidedTithi(v.tithi)}>
+                      <AppText size={12} color={tithiSeverity(v.tithi) === 'avoid' ? colors.bad : tithiSeverity(v.tithi) === 'caution' ? colors.ok : colors.muted} bold={tithiSeverity(v.tithi) !== null}>
                         {tr(tithiName(v.tithi))}
                       </AppText>
                       {' · '}
@@ -207,7 +231,7 @@ export default function NallaNaalScreen() {
                 {v.specials.length > 0 ? (
                   <View style={styles.wrap}>
                     {v.specials.map((s) => (
-                      <Chip key={s.id} label={`🪔 ${tr(SPECIAL_DAYS[s.id])}`} color={colors.primary} />
+                      <Chip key={s.id} label={`${s.id === 'karinaal' ? '⚠️' : '🪔'} ${tr(SPECIAL_DAYS[s.id])}`} color={s.id === 'karinaal' ? colors.bad : colors.primary} />
                     ))}
                   </View>
                 ) : null}

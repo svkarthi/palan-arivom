@@ -9,9 +9,11 @@ export type ProfileState = {
   birthNakshatra: number | null;
   /** Birth rashi 0-11, used for Chandrabalam; `null` when not set. */
   birthRashi: number | null;
+  /** How Rahu Kalam, Yamagandam and Kuligai are measured. */
+  dayPartBasis: 'sun' | 'fixed';
 };
 
-const initialState: ProfileState = { placeId: DEFAULT_PLACE_ID, birthNakshatra: null, birthRashi: null };
+const initialState: ProfileState = { placeId: DEFAULT_PLACE_ID, birthNakshatra: null, birthRashi: null, dayPartBasis: 'sun' };
 
 const profileSlice = createSlice({
   name: 'profile',
@@ -26,11 +28,14 @@ const profileSlice = createSlice({
     setBirthRashi(state, action: PayloadAction<number | null>) {
       state.birthRashi = action.payload;
     },
+    setDayPartBasis(state, action: PayloadAction<'sun' | 'fixed'>) {
+      state.dayPartBasis = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(resetAll, () => initialState);
   },
 });
 
-export const { setPlace, setBirthNakshatra, setBirthRashi } = profileSlice.actions;
+export const { setPlace, setBirthNakshatra, setBirthRashi, setDayPartBasis } = profileSlice.actions;
 export default profileSlice.reducer;

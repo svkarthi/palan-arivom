@@ -29,13 +29,14 @@ const en: typeof ta = {
     rahu: 'Rahu Kalam',
     yama: 'Yamagandam',
     kuligai: 'Kuligai',
+    thiyajyam: 'Thiyajyam (Varjyam)',
     kuligaiNote: 'Kuligai suits things meant to repeat; avoid it for fresh starts.',
   },
   special: {
     title: 'Special day',
     note: 'These are worship / fasting days and do not change the Nalla Naal score. Pradosham is the 2 h 24 min after sunset; moonrise for Sankashta Chaturthi is approximated. Some almanacs may differ by a day.',
   },
-  panchang: {
+   panchang: {
     title: 'Panchangam',
     tithi: 'Tithi',
     nakshatra: 'Nakshatra',
@@ -43,6 +44,8 @@ const en: typeof ta = {
     karana: 'Karanam',
     until: 'until {{time}}',
     untilNext: 'until {{time}} ({{nextDay}})',
+    cautionFlag: 'Caution',
+    nokku: 'Nokku Naal',
     avoidFlag: 'Avoid',
     flagNote: 'Chaturthi, Ashtami, Navami, Chaturdashi and Amavasai tithis, unfavourable yogas and nakshatras, and the Bhadra karanam are marked Avoid. They are shown even when they last only part of the day.',
     shukla: 'Waxing',

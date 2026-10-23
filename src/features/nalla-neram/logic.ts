@@ -1,11 +1,15 @@
 import { abhijit, dayPart, goodHoraWindows, horas, type Hora } from '@core/astro/dayparts';
+import { sulamFor, thiyajyamWindows, type Direction, type Thiyajyam } from '@core/astro/dayExtras';
 import { subtractIntervals, type Interval } from '@core/astro/intervals';
-import { dayPanchang, type DayPanchang } from '@core/astro/panchang';
+import { dayPanchang, lagnaSpans, moonRashiSpans, type DayPanchang, type Span } from '@core/astro/panchang';
 import type { Place } from '@core/astro/sunrise';
 import { specialDays, type SpecialDay } from '@core/astro/specialDays';
-import { weekdayOf, type CivilDate } from '@core/astro/time';
+import { civilToUtcMidnight, weekdayOf, type CivilDate } from '@core/astro/time';
 
 const MIN_WINDOW_MS = 15 * 60_000;
+
+/** `sun`: eighths of the real sunrise-sunset day. `fixed`: eighths of 6:00-18:00, as printed calendars list them. */
+export type DayPartBasis = 'sun' | 'fixed';
 
 export type NallaNeramDay = {
   weekday: number;
@@ -17,22 +21,33 @@ export type NallaNeramDay = {
   horas: Hora[];
   /** Observance days such as Pournami, Pradosham, Karthigai. */
   specials: SpecialDay[];
+  /** Direction to avoid and the remedy offering (both are the same direction's). */
+  sulam: { direction: Direction; remedy: Direction };
+  /** Rising sign through the day, from sunrise; index 0 = Mesha. */
+  lagna: Span[];
+  /** Moon's rashi through the day. Janma rashi `(r + 5) % 12` has Chandrashtamam while the Moon is in `r`. */
+  moonRashi: Span[];
+  thiyajyam: Thiyajyam[];
+  basis: DayPartBasis;
   /** Good-hora windows with Rahu Kalam, Yamagandam and Kuligai removed. */
   goodWindows: Interval[];
 };
 
-export function nallaNeramDay(date: CivilDate, place: Place): NallaNeramDay {
+export function nallaNeramDay(date: CivilDate, place: Place, basis: DayPartBasis = 'sun'): NallaNeramDay {
   const panchang = dayPanchang(date, place);
   const { sunrise, sunset, nextSunrise } = panchang;
   const weekday = weekdayOf(date);
-  const rahu = dayPart('rahu', weekday, sunrise, sunset);
-  const yama = dayPart('yama', weekday, sunrise, sunset);
-  const kuligai = dayPart('kuligai', weekday, sunrise, sunset);
+  const midnight = civilToUtcMidnight(date);
+  const partStart = basis === 'fixed' ? new Date(midnight + (360 - place.utcOffsetMin) * 60_000) : sunrise;
+  const partEnd = basis === 'fixed' ? new Date(midnight + (1080 - place.utcOffsetMin) * 60_000) : sunset;
+  const rahu = dayPart('rahu', weekday, partStart, partEnd);
+  const yama = dayPart('yama', weekday, partStart, partEnd);
+  const kuligai = dayPart('kuligai', weekday, partStart, partEnd);
   const list = horas(weekday, sunrise, sunset, nextSunrise);
   const goodWindows = subtractIntervals(goodHoraWindows(list), [rahu, yama, kuligai]).filter(
     (w) => w.end - w.start >= MIN_WINDOW_MS,
   );
-  return { weekday, panchang, rahu, yama, kuligai, abhijit: abhijit(weekday, sunrise, sunset), horas: list, specials: specialDays(panchang), goodWindows };
+  return { weekday, panchang, rahu, yama, kuligai, abhijit: abhijit(weekday, sunrise, sunset), horas: list, specials: specialDays(panchang), sulam: sulamFor(weekday), lagna: lagnaSpans(place, sunrise, nextSunrise), moonRashi: moonRashiSpans(sunrise, nextSunrise), thiyajyam: thiyajyamWindows(panchang.nakshatra, sunrise, nextSunrise), basis, goodWindows };
 }
 
 export type NowStatus =

@@ -44,14 +44,14 @@ describe('feature screens render', () => {
     expect(screen.getAllByText(/Rahu Kalam/).length).toBeGreaterThan(0);
   });
 
-  it('lists days for the month in Nalla Naal and expands one', async () => {
+  it("lists days for the month in Nalla Naal and expands one", async () => {
     await render(
       <Provider store={makeStore()}>
         <NallaNaalScreen />
       </Provider>,
     );
     expect(screen.getByText(/எதற்காக நாள் பார்க்கிறீர்கள்/)).toBeTruthy();
-    expect(screen.getAllByText(/விவரம் பார்க்க தொடவும்/).length).toBeGreaterThan(20);
+    expect((await screen.findAllByText(/விவரம் பார்க்க தொடவும்/, {}, { timeout: 5000 })).length).toBeGreaterThan(20);
     await fireEvent.press(screen.getAllByText(/விவரம் பார்க்க தொடவும்/)[0]);
     expect(screen.getAllByText(/விவரம் பார்க்க தொடவும்/).length).toBeGreaterThan(20);
     expect(screen.getByText(/இந்த நாளின் நல்ல நேரம்/)).toBeTruthy();
