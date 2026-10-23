@@ -13,6 +13,8 @@ const en: typeof ta = {
     title: 'Compass',
     facing: 'You are facing',
     holdFlat: 'Hold the phone flat with its top edge pointing ahead.',
+    fallback: 'Using the basic sensor because location permission was not given. Hold the phone flat for accuracy, or allow location access.',
+    lowAccuracy: 'Compass accuracy is low. Move the phone in a figure-8 to calibrate.',
     calibrate: 'Move the phone in a figure-8 to calibrate. Stay away from metal objects and magnets.',
     unavailable: 'No compass sensor is available on this device.',
     lock: 'Lock this direction',

@@ -28,7 +28,13 @@
     },
     "plugins": [
       "expo-font",
-      "expo-sharing"
+      "expo-sharing",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "திசைகாட்டி துல்லியமாக வடக்கைக் காட்ட இடம் அனுமதி தேவை. / Used to give an accurate compass heading (true north)."
+        }
+      ]
     ],
     "extra": {
       "eas": {

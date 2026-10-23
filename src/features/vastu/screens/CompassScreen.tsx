@@ -23,7 +23,7 @@ export default function CompassScreen() {
   const { width } = useWindowDimensions();
   const voice = useAppSelector((s) => s.settings.voice);
   const { declination, history } = useAppSelector((s) => s.compass);
-  const { heading, available } = useHeading(focused, declination);
+  const { heading, available, source, accuracy } = useHeading(focused, declination);
   const [message, setMessage] = useState<string | null>(null);
 
   const dial = Math.min(width - spacing.md * 2, 320);
@@ -88,21 +88,29 @@ export default function CompassScreen() {
               {message}
             </AppText>
           ) : null}
-          {declination !== 0 ? (
+          {source === 'magnetometer' && declination !== 0 ? (
             <AppText size={12} color={colors.muted}>
               {t('compass.declinationApplied', { deg: declination })}
             </AppText>
           ) : null}
 
-          <AppText size={13} color={colors.muted}>
-            {t('compass.holdFlat')}
-          </AppText>
+          {source === 'magnetometer' ? (
+            <AppText size={13} color={colors.ok}>
+              {t('compass.fallback')}
+            </AppText>
+          ) : null}
+          {accuracy !== null && accuracy <= 1 ? (
+            <AppText size={13} color={colors.bad}>
+              {t('compass.lowAccuracy')}
+            </AppText>
+          ) : null}
           <AppText size={13} color={colors.muted}>
             {t('compass.calibrate')}
           </AppText>
         </>
       )}
 
+      {source === 'magnetometer' ? (
       <Card style={styles.declination}>
         <AppText bold>{t('compass.declination')}</AppText>
         <View style={styles.row}>
@@ -116,6 +124,7 @@ export default function CompassScreen() {
           {t('compass.declinationHint')}
         </AppText>
       </Card>
+      ) : null}
 
       <View style={styles.historyHeader}>
         <AppText bold size={17}>
