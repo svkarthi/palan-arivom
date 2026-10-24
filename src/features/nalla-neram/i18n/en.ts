@@ -36,7 +36,31 @@ const en: typeof ta = {
     title: 'Special day',
     note: 'These are worship / fasting days and do not change the Nalla Naal score. Pradosham is the 2 h 24 min after sunset; moonrise for Sankashta Chaturthi is approximated. Some almanacs may differ by a day.',
   },
-   panchang: {
+  sulam: {
+    title: 'Sulam',
+    remedy: 'Remedy: {{item}}. Avoid travelling in this direction.',
+  },
+  chandrashtama: {
+    title: 'Chandrashtamam',
+    row: 'For {{rashi}} rashi',
+    moonIn: 'Moon in {{rashi}}',
+    hint: 'Chandrashtamam applies to people whose rashi is the 8th from the Moon. Nakshatra padas are in brackets. The list changes when the Moon changes rashi.',
+  },
+  lagna: {
+    title: 'Lagna',
+    balance: '{{rashi}} lagna at sunrise, balance {{n}} nazhigai {{v}} vinadi',
+    hint: 'Each lagna lasts until the time shown.',
+  },
+  basis: {
+    label: 'Rahu / Yamagandam / Kuligai basis',
+    sun: 'Actual sunrise',
+    fixed: 'Calendar (6–6)',
+    hint: 'Printed calendars usually divide 6 AM to 6 PM into eight parts. Because sunrise moves through the year, they differ by a few minutes.',
+  },
+  calendar: {
+    ritu: '{{ayana}} · {{ritu}} ({{season}}) · Saka {{saka}}',
+  },
+  panchang: {
     title: 'Panchangam',
     tithi: 'Tithi',
     nakshatra: 'Nakshatra',

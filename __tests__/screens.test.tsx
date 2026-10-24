@@ -29,6 +29,11 @@ describe('feature screens render', () => {
     expect(screen.getAllByText(/ராகு காலம்/).length).toBeGreaterThan(0);
     expect(screen.getByText(/பஞ்சாங்கம்/)).toBeTruthy();
     expect(screen.getByText(/சென்னை/)).toBeTruthy();
+    // New sections must show text, not raw translation keys such as "basis.label".
+    expect(screen.getAllByText(/சந்திராஷ்டமம்/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/லக்னம்/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/சூலம்/).length).toBeGreaterThan(0);
+    expect(screen.queryByText(/^[a-zA-Z]+\.[a-zA-Z.]+$/)).toBeNull();
   });
 
   it('shows Nalla Neram in English after switching language', async () => {
