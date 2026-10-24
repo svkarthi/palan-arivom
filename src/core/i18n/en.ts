@@ -3,7 +3,7 @@ import type ta from './ta';
 type Translation = typeof ta;
 
 const en: Translation = {
-  appName: 'Utility App',
+  appName: 'Palan Arivom',
   common: {
     cancel: 'Cancel',
     ok: 'OK',
@@ -11,7 +11,7 @@ const en: Translation = {
     degrees: '{{value}}°',
   },
   home: {
-    title: 'Utility App',
+    title: 'Palan Arivom',
     subtitle: 'Everyday Tamil tools in one place',
     comingSoon: 'Coming soon',
     openSettings: 'Settings',

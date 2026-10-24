@@ -1,4 +1,4 @@
-# Utility App (பயன்பாட்டு கருவிகள்)
+# பலன் அறிவோம் (Palan Arivom)
 
 One Expo / React Native app (SDK 58, TypeScript, Redux Toolkit) that hosts several Tamil, tradition-based tools as feature modules. Tamil is the default language, English is available.
 

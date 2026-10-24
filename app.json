@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Utility App",
+    "name": "பலன் அறிவோம்",
     "slug": "utility-app",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -16,10 +16,8 @@
     "android": {
       "package": "com.utilityapp",
       "adaptiveIcon": {
-        "backgroundColor": "#FFF3E0",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
+        "backgroundColor": "#212244",
+        "foregroundImage": "./assets/android-icon-foreground.png"
       },
       "predictiveBackGestureEnabled": false
     },

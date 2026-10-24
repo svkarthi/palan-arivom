@@ -1,5 +1,5 @@
 const ta = {
-  appName: 'பயன்பாட்டு கருவிகள்',
+  appName: 'பலன் அறிவோம்',
   common: {
     cancel: 'ரத்து',
     ok: 'சரி',
@@ -7,7 +7,7 @@ const ta = {
     degrees: '{{value}}°',
   },
   home: {
-    title: 'பயன்பாட்டு கருவிகள்',
+    title: 'பலன் அறிவோம்',
     subtitle: 'தினசரி தமிழ் பயன்பாடுகள் ஒரே இடத்தில்',
     comingSoon: 'விரைவில்',
     openSettings: 'அமைப்புகள்',
