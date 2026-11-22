@@ -14,14 +14,23 @@ import { hapticSuccess, hapticTap } from '../utils/haptics';
 import BottomSheet from './BottomSheet';
 import { AppText, Button } from './ui';
 
+type Props = {
+  /** Use `'hero'` on dark temple-maroon hero cards (e.g. HomeScreen). */
+  variant?: 'default' | 'hero';
+  /** Optional prefix text shown before the city name (e.g. Tamil year). */
+  prefixText?: string;
+};
+
 /** Compact button showing the chosen city that opens a swipeable sheet to change it. */
-export default function PlacePicker() {
+export default function PlacePicker({ variant = 'default', prefixText }: Props = {}) {
   const { t } = useTranslation();
   const { tr } = useLang();
   const dispatch = useAppDispatch();
   const place = usePlace();
   const [open, setOpen] = useState(false);
   const [detecting, setDetecting] = useState(false);
+
+  const isHero = variant === 'hero';
 
   const detectCity = async () => {
     setDetecting(true);
@@ -47,17 +56,26 @@ export default function PlacePicker() {
     <>
       <Pressable
         accessibilityRole="button"
-        onPress={() => {
+        accessibilityLabel={t('place.choose')}
+        onPress={(e) => {
+          e.stopPropagation?.();
           hapticTap();
           setOpen(true);
         }}
-        style={({ pressed }) => [styles.button, pressed && { opacity: 0.75 }]}
+        style={({ pressed }) => [
+          isHero ? styles.heroButton : styles.button,
+          pressed && { opacity: 0.75 },
+        ]}
       >
-        <Ionicons name="location-sharp" size={15} color={colors.primary} />
-        <AppText size={13} color={colors.primaryDark} bold>
-          {tr(place.name)}
+        <Ionicons name="location-sharp" size={isHero ? 13 : 15} color={isHero ? colors.heroAccent : colors.primary} />
+        <AppText
+          size={isHero ? 12 : 13}
+          color={isHero ? colors.heroMuted : colors.primaryDark}
+          bold={!isHero}
+        >
+          {prefixText ? `${prefixText}${tr(place.name)}` : tr(place.name)}
         </AppText>
-        <Ionicons name="chevron-down" size={14} color={colors.primary} />
+        <Ionicons name="chevron-down" size={isHero ? 12 : 14} color={isHero ? colors.heroAccent : colors.primary} />
       </Pressable>
 
       <BottomSheet visible={open} title={t('place.choose')} onClose={() => setOpen(false)} maxHeight="72%">
@@ -115,6 +133,18 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
     backgroundColor: colors.card,
+  },
+  heroButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    alignSelf: 'flex-start',
+    marginTop: 2,
+    paddingVertical: 2,
+    paddingHorizontal: 8,
+    marginLeft: -8,
+    borderRadius: 999,
+    backgroundColor: 'rgba(255, 248, 236, 0.08)',
   },
   list: { flexGrow: 0 },
   flex: { flex: 1 },

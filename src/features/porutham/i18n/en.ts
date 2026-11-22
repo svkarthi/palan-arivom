@@ -7,6 +7,7 @@ const en: typeof ta = {
   groom: 'Groom',
   nakshatra: 'Nakshatra',
   rashi: 'Rashi',
+  chooseStar: 'Choose Nakshatra',
   score: '{{score}} / 10 matched',
   breakdown: '10 Porutham breakdown',
   critical: 'Key',

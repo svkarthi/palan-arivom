@@ -1,4 +1,4 @@
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useMemo } from 'react';
@@ -11,6 +11,7 @@ import { formatClock, sameDate, toLocal } from '../astro/time';
 import { FEATURES, type FeatureTile } from '../../features/registry';
 import { nallaNeramDay, statusAt } from '../../features/nalla-neram/logic';
 import ObservanceIcon from '../components/ObservanceIcon';
+import PlacePicker from '../components/PlacePicker';
 import { AppText, Card, Chip, IconBadge, useBottomInset } from '../components/ui';
 import { useLang } from '../hooks/useLang';
 import { useNow } from '../hooks/useNow';
@@ -77,12 +78,7 @@ export default function HomeScreen() {
               <AppText bold size={19} color={colors.heroText}>
                 {tr(TAMIL_MONTHS[tamil.month])} {tamil.day} · {tr(WEEKDAYS[day.weekday])}
               </AppText>
-              <View style={styles.metaRow}>
-                <Ionicons name="location-sharp" size={13} color={colors.heroAccent} />
-                <AppText size={12} color={colors.heroMuted}>
-                  {tr(TAMIL_YEARS[tamil.yearIndex])} · {tr(place.name)}
-                </AppText>
-              </View>
+              <PlacePicker variant="hero" prefixText={`${tr(TAMIL_YEARS[tamil.yearIndex])} · `} />
             </View>
             <View style={styles.ctaPill}>
               <AppText size={11} bold color={colors.heroAccent}>
@@ -217,7 +213,6 @@ const styles = StyleSheet.create({
   pressed: { opacity: 0.85, transform: [{ scale: 0.985 }] },
   heroCard: { gap: spacing.sm + 2 },
   heroTop: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm },
-  metaRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 },
   ctaPill: {
     backgroundColor: colors.heroSurface,
     paddingHorizontal: 10,

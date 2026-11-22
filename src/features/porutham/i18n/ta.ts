@@ -5,6 +5,7 @@ const ta = {
   groom: 'மாப்பிள்ளை (மணமகன்)',
   nakshatra: 'நட்சத்திரம்',
   rashi: 'ராசி',
+  chooseStar: 'நட்சத்திரத்தைத் தேர்வு செய்க',
   score: '{{score}} / 10 பொருத்தம்',
   breakdown: '10 பொருத்த விவரம்',
   critical: 'முக்கியம்',

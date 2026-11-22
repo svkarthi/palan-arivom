@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 
 import ZoneMap from '../components/ZoneMap';
 import BottomSheet from '@core/components/BottomSheet';
-import { AppText, Button, Segmented, useBottomInset } from '@core/components/ui';
+import { AppText, Button, IconBadge, Segmented, useBottomInset } from '@core/components/ui';
 import { hapticImpact, hapticSuccess } from '@core/utils/haptics';
 import { ROOMS, ROOM_BY_ID } from '../data/rooms';
 import { ZONE_BY_ID, type ZoneId } from '../data/zones';
@@ -58,13 +58,14 @@ export default function PlanScreen() {
       const zone = placements[room.id];
       if (!zone) continue;
       const verdict = verdictFor(room, zone);
-      labels[zone] = (labels[zone] ?? '') + room.icon;
+      const short = room.short[lang];
+      labels[zone] = labels[zone] ? `${labels[zone]}·${short}` : short;
       const current = worst[zone];
       if (!current || SEVERITY.indexOf(verdict) > SEVERITY.indexOf(current)) worst[zone] = verdict;
     }
     for (const [zone, verdict] of Object.entries(worst)) fills[zone as ZoneId] = VERDICT_FILL[verdict];
     return { fills, labels };
-  }, [placements]);
+  }, [placements, lang]);
 
   const pickImage = async () => {
     try {
@@ -186,7 +187,7 @@ export default function PlanScreen() {
                     }}
                     style={({ pressed }) => [styles.option, here && styles.optionActive, pressed && { opacity: 0.75 }]}
                   >
-                    <AppText size={24}>{item.icon}</AppText>
+                    <IconBadge icon={item.icon} size={38} color={colors.primary} bg={colors.primaryBg} />
                     <View style={styles.flex}>
                       <AppText bold>{tr(item.name)}</AppText>
                       <AppText size={12} color={VERDICT_COLOR[verdict]}>
@@ -225,15 +226,6 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', gap: spacing.sm },
   flex: { flex: 1 },
   rotation: { gap: spacing.sm },
-  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)' },
-  sheet: {
-    backgroundColor: colors.bg,
-    padding: spacing.md,
-    gap: spacing.sm,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    maxHeight: '70%',
-  },
   list: { flexGrow: 0 },
   option: {
     flexDirection: 'row',

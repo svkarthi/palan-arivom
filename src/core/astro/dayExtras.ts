@@ -91,26 +91,26 @@ export const NOKKU_NAMES: Record<Nokku, Bilingual> = {
 
 export type DayYoga = 'amirtha' | 'siddha' | 'marana';
 
-// Classical Tamil weekday + nakshatra table (Amirtha, Siddha, Marana Yogam).
+// Classical Thirukanitha Tamil weekday + nakshatra table (Amirtha, Siddha, Marana Yogam).
 // Index 0 = Sunday … 6 = Saturday; values are 0-based nakshatra indices.
 const AMIRTHA_YOGA: number[][] = [
-  [0, 11, 12, 18, 20, 25], // Sun: Ashwini, Uthiram, Hastham, Moolam, Uthiradam, Uthirattathi
+  [11, 12, 18, 20, 25], // Sun: Uthiram, Hastham, Moolam, Uthiradam, Uthirattathi
   [3, 4, 6, 7, 12, 16, 21, 23, 25], // Mon
-  [0, 2, 11, 17, 18, 25, 26], // Tue
-  [2, 3, 4, 7, 12, 16, 21, 25], // Wed
+  [3, 11, 17, 18, 25, 26], // Tue
+  [2, 7, 12, 16, 21, 25], // Wed
   [0, 3, 6, 7, 11, 14, 15, 16, 26], // Thu
-  [0, 6, 12, 16, 21, 26], // Fri
-  [3, 4, 7, 12, 14, 15, 16, 21, 23], // Sat
+  [0, 12, 16, 21, 26], // Fri
+  [3, 4, 12, 14, 15, 16, 21, 23], // Sat
 ];
 
 const MARANA_YOGA: number[][] = [
   [1, 2, 7, 9, 13, 15, 17, 22, 24], // Sun
-  [1, 2, 5, 8, 9, 10, 13, 15, 17, 18, 19, 24], // Mon
-  [3, 5, 7, 8, 10, 12, 13, 14, 15, 16, 21, 23], // Tue
+  [2, 5, 8, 9, 10, 13, 15, 17, 18, 19, 24], // Mon
+  [5, 7, 8, 10, 12, 13, 14, 15, 16, 21, 23], // Tue
   [0, 1, 5, 6, 8, 9, 10, 15, 17, 18, 19, 22, 24, 26], // Wed
   [1, 2, 4, 5, 8, 9, 10, 12, 13, 17, 18, 19, 22, 23, 24], // Thu
-  [1, 2, 3, 5, 7, 8, 9, 10, 13, 15, 17, 18, 19, 22, 24], // Fri
-  [0, 1, 2, 5, 6, 8, 9, 10, 11, 13, 17, 18, 19, 20, 24, 25, 26], // Sat
+  [1, 2, 3, 7, 8, 9, 10, 13, 15, 17, 18, 19, 22, 24], // Fri
+  [0, 1, 2, 5, 8, 9, 10, 11, 13, 17, 18, 19, 20, 24, 25, 26], // Sat
 ];
 
 /** Tamil daily yoga (Amirtha, Siddha, or Marana Yogam) from weekday and sunrise nakshatra. */

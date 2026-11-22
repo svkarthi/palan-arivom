@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 
 import CompassDial from '../components/CompassDial';
 import BottomSheet from '@core/components/BottomSheet';
-import { AppText, Button, Card, SectionHeader, useBottomInset } from '@core/components/ui';
+import { AppText, Button, Card, IconBadge, SectionHeader, useBottomInset } from '@core/components/ui';
 import { ROOMS } from '../data/rooms';
 import { ZONE_BY_ID } from '../data/zones';
 import { useHeading } from '../hooks/useHeading';
@@ -206,7 +206,7 @@ export default function CompassScreen() {
                   }}
                   style={({ pressed }) => [styles.option, pressed && { opacity: 0.7 }]}
                 >
-                  <AppText size={22}>{item.icon}</AppText>
+                  <IconBadge icon={item.icon} size={36} color={colors.primary} bg={colors.primaryBg} />
                   <AppText bold style={styles.flex}>
                     {tr(item.name)}
                   </AppText>
@@ -230,15 +230,6 @@ const styles = StyleSheet.create({
   declinationValue: { minWidth: 70 },
   historyHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   historyItem: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingVertical: spacing.sm },
-  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)' },
-  sheet: {
-    backgroundColor: colors.bg,
-    padding: spacing.md,
-    gap: spacing.sm,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    maxHeight: '70%',
-  },
   list: { flexGrow: 0 },
   option: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingVertical: spacing.sm, paddingHorizontal: spacing.sm },
 });

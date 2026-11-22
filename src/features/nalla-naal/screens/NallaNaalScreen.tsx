@@ -70,7 +70,7 @@ function DayDetail({ verdict, place, purposeName }: { verdict: DayVerdict; place
       <AppText bold size={16} color={colors.primaryDark}>
         {t('details.timesTitle')}
       </AppText>
-      <DayTimes day={day} date={verdict.date} place={place} />
+      <DayTimes day={day} date={verdict.date} place={place} compact />
     </View>
   );
 }
@@ -295,13 +295,15 @@ export default function NallaNaalScreen() {
                 accessibilityRole="button"
                 accessibilityState={{ selected: active }}
                 onPress={() => {
+                  hapticTap();
                   setPurposeId(p.id);
                   setExpanded(null);
                 }}
                 style={({ pressed }) => [styles.purpose, active && styles.purposeActive, pressed && { opacity: 0.8 }]}
               >
+                <MaterialCommunityIcons name={p.icon} size={15} color={active ? '#fff' : colors.primary} />
                 <AppText size={13} bold={active} color={active ? '#fff' : colors.primaryDark}>
-                  {p.icon} {tr(p.name)}
+                  {tr(p.name)}
                 </AppText>
               </Pressable>
             );
@@ -540,6 +542,9 @@ const styles = StyleSheet.create({
   viewBtnActive: { backgroundColor: colors.primary },
   chips: { gap: spacing.sm, paddingVertical: 2 },
   purpose: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
     paddingVertical: 6,
     paddingHorizontal: 13,
     borderRadius: 999,

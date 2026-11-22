@@ -1,8 +1,11 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { NAKSHATRAS, RASHIS } from '@core/astro/names';
-import { AppText, Button, Card, Chip, SectionHeader, useBottomInset } from '@core/components/ui';
+import BottomSheet from '@core/components/BottomSheet';
+import ScoreRing from '@core/components/ScoreRing';
+import { AppText, Button, Card, Chip, IconBadge, SectionHeader, useBottomInset, type IconName } from '@core/components/ui';
 import { useLang } from '@core/hooks/useLang';
 import { colors, spacing } from '@core/theme';
+import { hapticTap } from '@core/utils/haptics';
 import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, Share, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
@@ -23,12 +26,18 @@ const STATUS_COLOR: Record<MatchStatus, string> = {
 
 function PersonPicker({
   title,
+  icon,
+  tint,
+  tintBg,
   nakshatra,
   rashi,
   onSelectNakshatra,
   onSelectRashi,
 }: {
   title: string;
+  icon: IconName;
+  tint: string;
+  tintBg: string;
   nakshatra: number;
   rashi: number;
   onSelectNakshatra: (n: number) => void;
@@ -40,70 +49,93 @@ function PersonPicker({
   const possibleRashis = rashisForNakshatra(nakshatra);
 
   return (
-    <Card style={styles.gap}>
-      <View style={styles.row}>
-        <View style={styles.flex}>
-          <AppText bold color={colors.primaryDark}>
-            {title}
-          </AppText>
-          <AppText size={13} color={colors.muted}>
-            {tr(NAKSHATRAS[nakshatra])} · {tr(RASHIS[rashi])}
-          </AppText>
-        </View>
-        <Button
-          title={open ? '▴' : '▾'}
-          variant="outline"
-          onPress={() => setOpen((v) => !v)}
-        />
-      </View>
-      {possibleRashis.length > 1 ? (
-        <View style={styles.wrap}>
-          {possibleRashis.map((r) => (
-            <Pressable
-              key={r}
-              accessibilityRole="button"
-              accessibilityState={{ selected: rashi === r }}
-              onPress={() => onSelectRashi(r)}
-            >
-              <Chip
-                label={tr(RASHIS[r])}
-                color={rashi === r ? colors.primary : colors.neutral}
-                style={rashi === r ? styles.chipOn : undefined}
-                textStyle={rashi === r ? styles.chipOnText : undefined}
-              />
-            </Pressable>
-          ))}
-        </View>
-      ) : null}
-      {open ? (
-        <>
-          <AppText bold size={13}>
-            {t('nakshatra')}
-          </AppText>
-          <View style={styles.wrap}>
-            {NAKSHATRAS.map((n, i) => (
+    <>
+      <Card style={styles.gap}>
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => {
+            hapticTap();
+            setOpen(true);
+          }}
+          style={({ pressed }) => [styles.row, pressed && { opacity: 0.78 }]}
+        >
+          <IconBadge icon={icon} color={tint} bg={tintBg} size={42} />
+          <View style={styles.flex}>
+            <AppText bold color={colors.primaryDark}>
+              {title}
+            </AppText>
+            <AppText size={13} color={colors.muted}>
+              {tr(NAKSHATRAS[nakshatra])} · {tr(RASHIS[rashi])}
+            </AppText>
+          </View>
+          <MaterialCommunityIcons name="chevron-right" size={22} color={tint} />
+        </Pressable>
+
+        {possibleRashis.length > 1 ? (
+          <View style={styles.rashiRow}>
+            <AppText size={11} bold color={colors.muted}>
+              {t('rashi')}:
+            </AppText>
+            <View style={styles.wrap}>
+              {possibleRashis.map((r) => (
+                <Pressable
+                  key={r}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: rashi === r }}
+                  onPress={() => {
+                    hapticTap();
+                    onSelectRashi(r);
+                  }}
+                >
+                  <Chip
+                    label={tr(RASHIS[r])}
+                    color={rashi === r ? tint : colors.neutral}
+                    style={rashi === r ? { backgroundColor: tint, borderColor: tint } : undefined}
+                    textStyle={rashi === r ? styles.chipOnText : undefined}
+                  />
+                </Pressable>
+              ))}
+            </View>
+          </View>
+        ) : null}
+      </Card>
+
+      <BottomSheet
+        visible={open}
+        title={`${title} — ${t('chooseStar')}`}
+        onClose={() => setOpen(false)}
+        maxHeight="78%"
+      >
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.sheetGrid}>
+          {NAKSHATRAS.map((n, i) => {
+            const active = nakshatra === i;
+            return (
               <Pressable
                 key={i}
                 accessibilityRole="button"
-                accessibilityState={{ selected: nakshatra === i }}
+                accessibilityState={{ selected: active }}
                 onPress={() => {
+                  hapticTap();
                   onSelectNakshatra(i);
                   onSelectRashi(defaultRashiForNakshatra(i));
                   setOpen(false);
                 }}
+                style={({ pressed }) => [
+                  styles.starCell,
+                  active && { backgroundColor: tint, borderColor: tint },
+                  pressed && !active && { opacity: 0.72 },
+                ]}
               >
-                <Chip
-                  label={tr(n)}
-                  color={nakshatra === i ? colors.primary : colors.neutral}
-                  style={nakshatra === i ? styles.chipOn : undefined}
-                  textStyle={nakshatra === i ? styles.chipOnText : undefined}
-                />
+                <AppText size={13} bold={active} color={active ? '#fff' : colors.text} center numberOfLines={1}>
+                  {tr(n)}
+                </AppText>
               </Pressable>
-            ))}
-          </View>
-        </>
-      ) : null}
-    </Card>
+            );
+          })}
+        </ScrollView>
+        <Button title={t('common.cancel', { ns: 'translation' })} variant="outline" onPress={() => setOpen(false)} />
+      </BottomSheet>
+    </>
   );
 }
 
@@ -150,6 +182,9 @@ export default function PoruthamScreen() {
 
       <PersonPicker
         title={t('bride')}
+        icon="face-woman"
+        tint="#AD1457"
+        tintBg="#FCE4EC"
         nakshatra={brideNak}
         rashi={brideRashi}
         onSelectNakshatra={setBrideNak}
@@ -157,18 +192,29 @@ export default function PoruthamScreen() {
       />
       <PersonPicker
         title={t('groom')}
+        icon="face-man"
+        tint="#1565C0"
+        tintBg="#E3F2FD"
         nakshatra={groomNak}
         rashi={groomRashi}
         onSelectNakshatra={setGroomNak}
         onSelectRashi={setGroomRashi}
       />
 
-      <Card style={[styles.center, { borderColor: verdictColor, borderWidth: 2, backgroundColor: verdictColor + '0F' }]}>
-        <MaterialCommunityIcons name="heart-multiple" size={28} color={verdictColor} />
-        <AppText bold size={26} color={verdictColor} center>
+      <Card style={[styles.center, { borderColor: verdictColor, borderWidth: 1.5, backgroundColor: verdictColor + '0D' }]}>
+        <ScoreRing score={result.score} max={10} size={126} color={verdictColor} label={`${result.score}/10`} />
+        <AppText bold size={16} color={verdictColor} center>
           {t('score', { score: result.score })}
         </AppText>
-        <AppText bold size={14} color={verdictColor} center>
+        <View style={styles.segmentBar}>
+          {result.items.map((item) => (
+            <View
+              key={item.id}
+              style={[styles.segmentTick, { backgroundColor: STATUS_COLOR[item.status] }]}
+            />
+          ))}
+        </View>
+        <AppText bold size={13} color={verdictColor} center>
           {t(`verdict.${result.verdict}`)}
         </AppText>
         <Button
@@ -207,9 +253,26 @@ const styles = StyleSheet.create({
   center: { alignItems: 'center', gap: spacing.sm },
   gap: { gap: spacing.sm },
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  rashiRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingTop: 2 },
   flex: { flex: 1 },
-  wrap: { flexDirection: 'row', flexWrap: 'wrap' },
-  chipOn: { backgroundColor: colors.primary },
+  wrap: { flexDirection: 'row', flexWrap: 'wrap', flex: 1 },
   chipOnText: { color: '#fff' },
   noMargin: { marginRight: 0, marginBottom: 0 },
+  sheetGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, paddingBottom: spacing.xs },
+  starCell: {
+    width: '31%',
+    paddingVertical: 8,
+    paddingHorizontal: 6,
+    borderRadius: 10,
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  segmentBar: {
+    flexDirection: 'row',
+    gap: 4,
+    width: '100%',
+    paddingHorizontal: spacing.sm,
+  },
+  segmentTick: { flex: 1, height: 7, borderRadius: 4 },
 });

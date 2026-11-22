@@ -23,7 +23,7 @@ export function buildReportHtml(analysis: Analysis, lang: Lang, date: string): s
           ? `<div class="tip">${escapeHtml(room.remedy[lang])}</div>`
           : '';
       return `<tr>
-        <td>${room.icon} ${escapeHtml(room.name[lang])}</td>
+        <td>${escapeHtml(room.name[lang])}</td>
         <td>${escapeHtml(zone.name[lang])}</td>
         <td style="color:${color};font-weight:bold">${escapeHtml(t(`report.verdict.${f.verdict}`))}</td>
         <td>${f.score}${tip}</td>

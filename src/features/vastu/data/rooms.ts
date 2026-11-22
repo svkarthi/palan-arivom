@@ -1,3 +1,5 @@
+import type { IconName } from '@core/components/ui';
+
 import type { Bilingual, ZoneId } from './zones';
 
 export type RoomId =
@@ -7,7 +9,9 @@ export type RoomId =
 
 export type Room = {
   id: RoomId;
-  icon: string;
+  icon: IconName;
+  /** Compact 1-3 char badge rendered inside SVG ZoneMap wedges. */
+  short: Bilingual;
   /** Rooms with weight 2 count double in the overall score. */
   weight: 1 | 2;
   name: Bilingual;
@@ -21,7 +25,8 @@ export type Room = {
 export const ROOMS: Room[] = [
   {
     id: 'entrance',
-    icon: '🚪',
+    icon: 'door-open',
+    short: { ta: 'வா', en: 'EN' },
     weight: 2,
     name: { ta: 'முன்வாசல்', en: 'Main entrance' },
     ideal: ['N', 'NNE', 'NE', 'ENE', 'E'],
@@ -38,7 +43,8 @@ export const ROOMS: Room[] = [
   },
   {
     id: 'living',
-    icon: '🛋️',
+    icon: 'sofa-outline',
+    short: { ta: 'வர', en: 'LV' },
     weight: 1,
     name: { ta: 'வரவேற்பறை', en: 'Living room' },
     ideal: ['N', 'NNE', 'NE', 'ENE', 'E', 'NNW'],
@@ -55,7 +61,8 @@ export const ROOMS: Room[] = [
   },
   {
     id: 'pooja',
-    icon: '🪔',
+    icon: 'candle',
+    short: { ta: 'பூ', en: 'PJ' },
     weight: 2,
     name: { ta: 'பூஜை அறை', en: 'Pooja room' },
     ideal: ['NE', 'ENE', 'NNE'],
@@ -72,7 +79,8 @@ export const ROOMS: Room[] = [
   },
   {
     id: 'kitchen',
-    icon: '🍳',
+    icon: 'stove',
+    short: { ta: 'ச', en: 'KT' },
     weight: 2,
     name: { ta: 'சமையலறை', en: 'Kitchen' },
     ideal: ['SE', 'SSE', 'ESE'],
@@ -89,7 +97,8 @@ export const ROOMS: Room[] = [
   },
   {
     id: 'master',
-    icon: '🛏️',
+    icon: 'bed-king-outline',
+    short: { ta: 'ப', en: 'MB' },
     weight: 2,
     name: { ta: 'முதன்மை படுக்கையறை', en: 'Master bedroom' },
     ideal: ['SW', 'SSW', 'WSW'],
@@ -106,7 +115,8 @@ export const ROOMS: Room[] = [
   },
   {
     id: 'kids',
-    icon: '🧸',
+    icon: 'teddy-bear',
+    short: { ta: 'கு', en: 'KD' },
     weight: 1,
     name: { ta: 'குழந்தைகள் அறை', en: 'Children’s room' },
     ideal: ['W', 'WNW', 'NW'],
@@ -123,7 +133,8 @@ export const ROOMS: Room[] = [
   },
   {
     id: 'guest',
-    icon: '🧳',
+    icon: 'bag-suitcase-outline',
+    short: { ta: 'வி', en: 'GS' },
     weight: 1,
     name: { ta: 'விருந்தினர் அறை', en: 'Guest room' },
     ideal: ['NW', 'NNW', 'WNW'],
@@ -140,7 +151,8 @@ export const ROOMS: Room[] = [
   },
   {
     id: 'dining',
-    icon: '🍽️',
+    icon: 'silverware-fork-knife',
+    short: { ta: 'உ', en: 'DN' },
     weight: 1,
     name: { ta: 'சாப்பாட்டு அறை', en: 'Dining room' },
     ideal: ['W', 'WNW', 'E'],
@@ -157,7 +169,8 @@ export const ROOMS: Room[] = [
   },
   {
     id: 'toilet',
-    icon: '🚽',
+    icon: 'toilet',
+    short: { ta: 'க', en: 'WC' },
     weight: 2,
     name: { ta: 'கழிவறை', en: 'Toilet' },
     ideal: ['NW', 'NNW', 'WNW'],
@@ -174,7 +187,8 @@ export const ROOMS: Room[] = [
   },
   {
     id: 'bath',
-    icon: '🚿',
+    icon: 'shower-head',
+    short: { ta: 'குளி', en: 'BT' },
     weight: 1,
     name: { ta: 'குளியலறை', en: 'Bathroom' },
     ideal: ['E', 'ENE', 'ESE'],
@@ -191,7 +205,8 @@ export const ROOMS: Room[] = [
   },
   {
     id: 'stairs',
-    icon: '🪜',
+    icon: 'stairs',
+    short: { ta: 'படி', en: 'ST' },
     weight: 1,
     name: { ta: 'படிக்கட்டு', en: 'Staircase' },
     ideal: ['S', 'SSW', 'WSW', 'W'],
@@ -208,7 +223,8 @@ export const ROOMS: Room[] = [
   },
   {
     id: 'study',
-    icon: '📚',
+    icon: 'book-open-variant',
+    short: { ta: 'ப', en: 'SD' },
     weight: 1,
     name: { ta: 'படிக்கும் அறை', en: 'Study room' },
     ideal: ['W', 'WNW', 'N', 'E'],
@@ -225,7 +241,8 @@ export const ROOMS: Room[] = [
   },
   {
     id: 'store',
-    icon: '📦',
+    icon: 'archive-outline',
+    short: { ta: 'சே', en: 'SR' },
     weight: 1,
     name: { ta: 'சேமிப்பு அறை', en: 'Store room' },
     ideal: ['NW', 'NNW', 'WSW'],
@@ -242,7 +259,8 @@ export const ROOMS: Room[] = [
   },
   {
     id: 'underTank',
-    icon: '💧',
+    icon: 'water-well-outline',
+    short: { ta: 'நீ', en: 'UT' },
     weight: 1,
     name: { ta: 'நிலத்தடி நீர்த்தொட்டி / கிணறு', en: 'Underground tank / well' },
     ideal: ['NE', 'NNE', 'ENE'],
@@ -259,7 +277,8 @@ export const ROOMS: Room[] = [
   },
   {
     id: 'overTank',
-    icon: '🛢️',
+    icon: 'water-boiler',
+    short: { ta: 'தொ', en: 'OT' },
     weight: 1,
     name: { ta: 'மேல்நிலை நீர்த்தொட்டி', en: 'Overhead tank' },
     ideal: ['W', 'WSW', 'SW', 'WNW'],
@@ -276,7 +295,8 @@ export const ROOMS: Room[] = [
   },
   {
     id: 'parking',
-    icon: '🚗',
+    icon: 'car-outline',
+    short: { ta: 'வாக', en: 'PK' },
     weight: 1,
     name: { ta: 'வாகன நிறுத்தம்', en: 'Parking / garage' },
     ideal: ['NW', 'NNW', 'SE', 'SSE'],

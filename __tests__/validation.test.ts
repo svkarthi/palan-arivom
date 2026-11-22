@@ -4,12 +4,14 @@
  * They are Vakya-style printed-calendar data, so small differences are expected;
  * the thresholds below record how closely this app agrees today.
  */
+import { dayYoga, type DayYoga } from '../src/core/astro/dayExtras';
 import { dayPanchang } from '../src/core/astro/panchang';
 import { placeById } from '../src/core/astro/places';
 import { specialDays, type SpecialId } from '../src/core/astro/specialDays';
 import { addDays, type CivilDate } from '../src/core/astro/time';
 import { PURPOSE_BY_ID } from '../src/features/nalla-naal/data/purposes';
 import { judgeDay } from '../src/features/nalla-naal/logic';
+import { nallaNeramDay } from '../src/features/nalla-neram/logic';
 
 const chennai = placeById('chennai');
 
@@ -112,5 +114,58 @@ describe('2026 muhurtham dates vs Nalla Naal marriage rules', () => {
   it('is more selective than the site list is permissive: under a third of the year is rated good', () => {
     const good = year.filter((d) => judgeDay(d.panchang, marriage, none, specialDays(d.panchang)).score >= 60);
     expect(good.length / year.length).toBeLessThan(0.45);
+  });
+});
+
+describe('Thirukanitha Panchangam sunrise-scaled timings (22–28 Nov 2026, Chennai)', () => {
+  const toMin = (ms: number) => {
+    const m = Math.floor((ms + chennai.utcOffsetMin * 60_000) / 60_000) % 1440;
+    return (m + 1440) % 1440;
+  };
+  const parseMin = (hhmm: string) => {
+    const [, hStr, mStr, ap] = hhmm.match(/^(\d+):(\d+)\s+(AM|PM)$/)!;
+    let h = Number(hStr) % 12;
+    if (ap === 'PM') h += 12;
+    return h * 60 + Number(mStr);
+  };
+  const expectRangeClose = (actual: { start: number; end: number } | null, expected: [string, string] | null) => {
+    if (expected === null) {
+      expect(actual).toBeNull();
+      return;
+    }
+    expect(actual).not.toBeNull();
+    expect(Math.abs(toMin(actual!.start) - parseMin(expected[0]))).toBeLessThanOrEqual(1);
+    expect(Math.abs(toMin(actual!.end) - parseMin(expected[1]))).toBeLessThanOrEqual(1);
+  };
+
+  // Expected Thirukanitha values for Chennai (22–28 Nov 2026).
+  const CASES: {
+    d: number;
+    bm: [string, string];
+    nnM: [string, string];
+    nnE: [string, string] | null;
+    g1: [string, string];
+    g2: [string, string];
+    yoga: DayYoga;
+  }[] = [
+    { d: 22, bm: ['4:34 AM', '5:22 AM'], nnM: ['7:37 AM', '8:34 AM'], nnE: null, g1: ['7:36 AM', '9:02 AM'], g2: ['10:28 AM', '11:54 AM'], yoga: 'siddha' },
+    { d: 23, bm: ['4:35 AM', '5:23 AM'], nnM: ['6:40 AM', '7:37 AM'], nnE: ['4:13 PM', '5:10 PM'], g1: ['6:11 AM', '7:37 AM'], g2: ['11:55 AM', '1:21 PM'], yoga: 'siddha' },
+    { d: 24, bm: ['4:35 AM', '5:23 AM'], nnM: ['7:38 AM', '8:35 AM'], nnE: ['4:13 PM', '5:11 PM'], g1: ['7:37 AM', '9:03 AM'], g2: ['4:13 PM', '5:39 PM'], yoga: 'siddha' },
+    { d: 25, bm: ['4:36 AM', '5:24 AM'], nnM: ['9:33 AM', '10:30 AM'], nnE: ['4:13 PM', '5:11 PM'], g1: ['6:12 AM', '7:38 AM'], g2: ['2:47 PM', '4:13 PM'], yoga: 'siddha' },
+    { d: 26, bm: ['4:36 AM', '5:24 AM'], nnM: ['10:30 AM', '11:27 AM'], nnE: ['4:14 PM', '5:11 PM'], g1: ['11:56 AM', '1:21 PM'], g2: ['4:13 PM', '5:39 PM'], yoga: 'marana' },
+    { d: 27, bm: ['4:37 AM', '5:25 AM'], nnM: ['9:33 AM', '10:31 AM'], nnE: ['4:14 PM', '5:11 PM'], g1: ['11:56 AM', '1:22 PM'], g2: ['4:13 PM', '5:39 PM'], yoga: 'siddha' },
+    { d: 28, bm: ['4:37 AM', '5:25 AM'], nnM: ['7:40 AM', '8:37 AM'], nnE: ['4:14 PM', '5:11 PM'], g1: ['10:30 AM', '11:56 AM'], g2: ['2:48 PM', '4:13 PM'], yoga: 'siddha' },
+  ];
+
+  it('matches Brahma Muhurtham, sunrise-scaled Nalla Neram, Gowri Nalla Neram, and Amirthadi Yogam within 1 min across all 7 weekdays', () => {
+    for (const c of CASES) {
+      const day = nallaNeramDay({ y: 2026, m: 11, d: c.d }, chennai, 'sun');
+      expectRangeClose(day.brahmaMuhurtham, c.bm);
+      expectRangeClose(day.calendarNallaNeram.morning, c.nnM);
+      expectRangeClose(day.calendarNallaNeram.evening, c.nnE);
+      expectRangeClose(day.gowriNallaNeram.morning, c.g1);
+      expectRangeClose(day.gowriNallaNeram.evening, c.g2);
+      expect(dayYoga(day.weekday, day.panchang.nakshatra[0].index)).toBe(c.yoga);
+    }
   });
 });

@@ -5,7 +5,7 @@ import { ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native'
 import { useTranslation } from 'react-i18next';
 
 import ZoneMap from '../components/ZoneMap';
-import { AppText, Button, Card, Chip, useBottomInset } from '@core/components/ui';
+import { AppText, Button, Card, Chip, IconBadge, useBottomInset } from '@core/components/ui';
 import { ROOM_BY_ID } from '../data/rooms';
 import { ZONE_BY_ID, type ZoneId } from '../data/zones';
 import { useLang } from '@core/hooks/useLang';
@@ -68,7 +68,7 @@ export default function RoomDetailScreen({ route }: Props) {
   return (
     <ScrollView contentContainerStyle={[styles.container, { paddingBottom: bottomInset }]}>
       <View style={styles.center}>
-        <AppText size={48}>{room.icon}</AppText>
+        <IconBadge icon={room.icon} size={62} color={colors.primaryDark} bg={colors.primaryBg} />
         <AppText bold size={22} color={colors.primaryDark} center>
           {tr(room.name)}
         </AppText>
@@ -120,6 +120,6 @@ export default function RoomDetailScreen({ route }: Props) {
 
 const styles = StyleSheet.create({
   container: { padding: spacing.md, gap: spacing.md, backgroundColor: colors.bg },
-  center: { alignItems: 'center' },
+  center: { alignItems: 'center', gap: spacing.xs },
   chips: { flexDirection: 'row', flexWrap: 'wrap', marginVertical: spacing.xs },
 });

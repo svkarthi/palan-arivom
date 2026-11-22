@@ -37,6 +37,7 @@ import padhigam, {
   stepFontSize,
   toggleCompletedOnDate,
   toggleFavorite,
+  toggleNightMode,
   toggleShowMeaning,
 } from '../src/features/padhigam/store/padhigamSlice';
 import compass from '../src/features/vastu/store/compassSlice';
@@ -264,6 +265,10 @@ describe('padhigamSlice', () => {
     store.dispatch(toggleShowMeaning());
     expect(store.getState().padhigam.showMeaning).toBe(true);
 
+    expect(store.getState().padhigam.nightMode).toBe(false);
+    store.dispatch(toggleNightMode());
+    expect(store.getState().padhigam.nightMode).toBe(true);
+
     for (let i = 1; i <= 32; i++) {
       const dd = String(i).padStart(2, '0');
       const key = i <= 31 ? `2026-01-${dd}` : '2026-02-01';
@@ -279,6 +284,7 @@ describe('padhigamSlice', () => {
       favorites: [],
       fontSize: DEFAULT_PADHIGAM_FONT,
       showMeaning: false,
+      nightMode: false,
       completedByDate: {},
     });
   });
@@ -350,6 +356,10 @@ describe('Padhigam screens render & interact', () => {
     const beforeSize = store.getState().padhigam.fontSize;
     await fireEvent.press(screen.getByText('A+'));
     expect(store.getState().padhigam.fontSize).toBe(beforeSize + 1);
+
+    expect(store.getState().padhigam.nightMode).toBe(false);
+    await fireEvent.press(screen.getByLabelText('இரவு வாசிப்பு'));
+    expect(store.getState().padhigam.nightMode).toBe(true);
 
     await fireEvent.press(screen.getByText(/இன்று பாராயணம் முடிந்தது எனக் குறி/));
     expect(screen.getByText(/இன்று பாராயணம் முடிந்தது ✓/)).toBeTruthy();

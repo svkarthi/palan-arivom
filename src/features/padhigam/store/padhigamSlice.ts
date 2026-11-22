@@ -13,6 +13,8 @@ export type PadhigamState = {
   fontSize: number;
   /** Whether verse-by-verse meaning (பொழிப்புரை) is expanded by default. */
   showMeaning: boolean;
+  /** Whether the low-light warm night reading theme is active in the reader. */
+  nightMode: boolean;
   /** Padhigam IDs marked as recited per civil date (`YYYY-MM-DD`). */
   completedByDate: Record<string, string[]>;
 };
@@ -21,6 +23,7 @@ const initialState: PadhigamState = {
   favorites: [],
   fontSize: DEFAULT_PADHIGAM_FONT,
   showMeaning: false,
+  nightMode: false,
   completedByDate: {},
 };
 
@@ -44,6 +47,9 @@ const padhigamSlice = createSlice({
     },
     toggleShowMeaning(state) {
       state.showMeaning = !state.showMeaning;
+    },
+    toggleNightMode(state) {
+      state.nightMode = !state.nightMode;
     },
     toggleCompletedOnDate(state, action: PayloadAction<{ dateKey: string; padhigamId: string }>) {
       const { dateKey, padhigamId } = action.payload;
@@ -74,6 +80,7 @@ export const {
   setFontSize,
   stepFontSize,
   toggleShowMeaning,
+  toggleNightMode,
   toggleCompletedOnDate,
 } = padhigamSlice.actions;
 

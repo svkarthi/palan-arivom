@@ -20,6 +20,7 @@ import { Pressable, ScrollView, Share, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { todayPadhigamRecommendation } from '../../padhigam/data';
+import DaylightTimeline from '../components/DaylightTimeline';
 import DayTimes from '../components/DayTimes';
 import { nallaNeramDay, statusAt } from '../logic';
 
@@ -98,6 +99,7 @@ export default function NallaNeramScreen() {
       `🗓 ${tamilLine} · ${tr(DAY_YOGA_NAMES[dy])}`,
       ...(day.specials.length > 0 ? [`🪔 ${day.specials.map((s) => tr(SPECIAL_DAYS[s.id])).join(', ')}`] : []),
       '',
+      `🌅 ${t('good.brahmaMuhurtham')}: ${range(day.brahmaMuhurtham)}`,
       `✅ ${t('good.nallaNeram')}: ${t('good.morning')} ${nnM} | ${t('good.evening')} ${nnE}`,
       `✅ ${t('good.gowriNallaNeram')}: ${t('good.morning')} ${gM} | ${t('good.evening')} ${gE}`,
       ...(day.muhurthaWindows.length > 0
@@ -205,6 +207,8 @@ export default function NallaNeramScreen() {
           </View>
         </Card>
       ) : null}
+
+      <DaylightTimeline day={day} place={place} nowMs={isToday ? now.getTime() : null} />
 
       <DayTimes day={day} date={date} place={place} />
 
@@ -391,23 +395,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primaryBg,
   },
   noMargin: { marginRight: 0, marginBottom: 0 },
-  backdrop: { flex: 1, backgroundColor: 'rgba(20,10,5,0.45)' },
-  handle: {
-    width: 38,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: colors.border,
-    alignSelf: 'center',
-    marginBottom: 4,
-  },
-  sheet: {
-    backgroundColor: colors.bg,
-    padding: spacing.md,
-    gap: spacing.sm,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    maxHeight: '85%',
-  },
   monthGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   monthCell: {
     width: '23%',

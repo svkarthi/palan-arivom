@@ -34,6 +34,8 @@ const en: typeof ta = {
     abhijit: 'Abhijit Muhurta',
     abhijitNote: 'The strong midday muhurta',
     wednesdayNote: 'There is no Abhijit Muhurta on Wednesdays.',
+    brahmaMuhurtham: 'Brahma Muhurtham',
+    brahmaMuhurthamNote: 'Sacred pre-dawn window for prayer, meditation and Padhigam recitation.',
   },
   avoid: {
     title: 'Times to avoid',
@@ -65,13 +67,23 @@ const en: typeof ta = {
     hint: 'Each lagna lasts until the time shown.',
   },
   basis: {
-    label: 'Rahu / Yamagandam / Kuligai basis',
-    sun: 'Actual sunrise',
+    label: 'Nalla Neram / Rahu / Yama basis',
+    sun: 'Thirukanitha (Sunrise)',
     fixed: 'Calendar (6–6)',
-    hint: 'Printed calendars usually divide 6 AM to 6 PM into eight parts. Because sunrise moves through the year, they differ by a few minutes.',
+    hint: 'Thirukanitha scales timings to your local sunrise and sunset. Printed calendars use fixed 6 AM–6 PM slots.',
   },
   calendar: {
     ritu: '{{ayana}} · {{ritu}} ({{season}}) · Saka {{saka}}',
+  },
+  timeline: {
+    title: 'Daylight timeline (Sunrise – Sunset)',
+    good: 'Good',
+    avoid: 'Avoid',
+    now: 'Now',
+  },
+  section: {
+    show: 'Show',
+    hide: 'Hide',
   },
   panchang: {
     title: 'Panchangam',

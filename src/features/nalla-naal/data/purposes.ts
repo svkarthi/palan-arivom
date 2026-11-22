@@ -1,10 +1,11 @@
+import type { IconName } from '@core/components/ui';
 import type { Bilingual } from '@core/i18n';
 
 export type PurposeId = 'marriage' | 'griha' | 'business' | 'vehicle' | 'travel' | 'baby' | 'education';
 
 export type Purpose = {
   id: PurposeId;
-  icon: string;
+  icon: IconName;
   name: Bilingual;
   /** Tithi positions within a paksha (1-15) that suit the purpose. */
   goodTithis: number[];
@@ -32,7 +33,7 @@ const MARGAZHI = 8;
 export const PURPOSES: Purpose[] = [
   {
     id: 'marriage',
-    icon: '💍',
+    icon: 'ring',
     name: { ta: 'திருமணம்', en: 'Marriage' },
     goodTithis: [...TITHIS, 12],
     // The classical eleven plus Punarvasu, Pushya, Chitra, Shravana, Dhanishta and Shatabhisha, which
@@ -48,7 +49,7 @@ export const PURPOSES: Purpose[] = [
   },
   {
     id: 'griha',
-    icon: '🏡',
+    icon: 'home-heart',
     name: { ta: 'கிரகப்பிரவேசம்', en: 'House-warming' },
     goodTithis: TITHIS,
     goodNakshatras: [3, 4, 6, 7, 11, 13, 16, 20, 22, 23, 25, 26],
@@ -59,7 +60,7 @@ export const PURPOSES: Purpose[] = [
   },
   {
     id: 'business',
-    icon: '🏪',
+    icon: 'storefront-outline',
     name: { ta: 'புதிய தொழில் / கடை', en: 'New business' },
     goodTithis: [...TITHIS, 12, 15],
     goodNakshatras: [0, 3, 4, 6, 7, 11, 12, 13, 14, 16, 20, 21, 22, 26],
@@ -70,7 +71,7 @@ export const PURPOSES: Purpose[] = [
   },
   {
     id: 'vehicle',
-    icon: '🚗',
+    icon: 'car-outline',
     name: { ta: 'வாகனம் / நகை வாங்க', en: 'Buying vehicle / gold' },
     goodTithis: [...TITHIS, 6, 12],
     goodNakshatras: [0, 3, 4, 6, 7, 12, 13, 14, 16, 21, 22, 26],
@@ -81,7 +82,7 @@ export const PURPOSES: Purpose[] = [
   },
   {
     id: 'travel',
-    icon: '✈️',
+    icon: 'airplane',
     name: { ta: 'பயணம்', en: 'Travel' },
     goodTithis: [...TITHIS, 1],
     goodNakshatras: [0, 4, 6, 7, 12, 14, 16, 21, 22, 26],
@@ -92,7 +93,7 @@ export const PURPOSES: Purpose[] = [
   },
   {
     id: 'baby',
-    icon: '👶',
+    icon: 'baby-carriage',
     name: { ta: 'குழந்தை சடங்குகள் (பெயர்சூட்டு, காது குத்து)', en: 'Baby ceremonies (naming, ear-piercing)' },
     goodTithis: [...TITHIS, 6, 12],
     goodNakshatras: [0, 3, 4, 6, 7, 12, 13, 14, 16, 21, 22, 26],
@@ -103,7 +104,7 @@ export const PURPOSES: Purpose[] = [
   },
   {
     id: 'education',
-    icon: '📚',
+    icon: 'school-outline',
     name: { ta: 'கல்வி தொடக்கம் (வித்யாரம்பம்)', en: 'Starting education' },
     goodTithis: [...TITHIS, 12],
     goodNakshatras: [0, 4, 6, 7, 12, 13, 14, 21, 22, 26],

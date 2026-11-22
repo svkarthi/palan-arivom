@@ -1,9 +1,10 @@
-import { render, screen } from '@testing-library/react-native';
+import { fireEvent, render, screen } from '@testing-library/react-native';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 
 import '../src/core/i18n';
 import i18n from '../src/core/i18n';
+import { brahmaMuhurtham } from '../src/core/astro/dayparts';
 import { dayYoga } from '../src/core/astro/dayExtras';
 import { daySummary } from '../src/core/astro/panchang';
 import { nearestPlace, placeById } from '../src/core/astro/places';
@@ -15,6 +16,7 @@ import compass from '../src/features/vastu/store/compassSlice';
 import plan from '../src/features/vastu/store/planSlice';
 import { computeBirthStar } from '../src/features/birth-star/logic';
 import BirthStarScreen from '../src/features/birth-star/screens/BirthStarScreen';
+import NallaNeramScreen from '../src/features/nalla-neram/screens/NallaNeramScreen';
 import { evaluatePorutham } from '../src/features/porutham/logic';
 import PoruthamScreen from '../src/features/porutham/screens/PoruthamScreen';
 
@@ -51,8 +53,17 @@ describe('new features logic', () => {
     expect(nearestPlace(-33.86, 151.2).id).toBe('sydney');
   });
 
+  it('computes Brahma Muhurtham as 96 to 48 minutes before local sunrise', () => {
+    const sunrise = new Date('2026-01-14T00:30:00Z'); // 6:00 AM IST
+    const bm = brahmaMuhurtham(sunrise);
+    expect((sunrise.getTime() - bm.start) / 60_000).toBe(96);
+    expect((sunrise.getTime() - bm.end) / 60_000).toBe(48);
+    expect((bm.end - bm.start) / 60_000).toBe(48);
+  });
+
   it('computes Amirtha / Siddha / Marana Yogam and detects Ekadashi', () => {
-    expect(dayYoga(0, 0)).toBe('amirtha'); // Sunday + Ashwini
+    expect(dayYoga(0, 0)).toBe('siddha'); // Sunday + Ashwini (Thirukanitha)
+    expect(dayYoga(0, 12)).toBe('amirtha'); // Sunday + Hastham
     expect(dayYoga(0, 1)).toBe('marana'); // Sunday + Bharani
     // Verify Ekadashi occurs at least twice in a 31-day month
     const chennai = placeById('chennai');
@@ -71,7 +82,7 @@ describe('new feature screens', () => {
     await i18n.changeLanguage('ta');
   });
 
-  it('renders PoruthamScreen in Tamil', async () => {
+  it('renders PoruthamScreen in Tamil with ScoreRing and BottomSheet star picker', async () => {
     await render(
       <Provider store={makeStore()}>
         <PoruthamScreen />
@@ -79,9 +90,13 @@ describe('new feature screens', () => {
     );
     expect(screen.getByText(/10 பொருத்த விவரம்/)).toBeTruthy();
     expect(screen.getByText(/ரஜ்ஜுப் பொருத்தம்/)).toBeTruthy();
+    expect(screen.getByText(/\/10/)).toBeTruthy();
+
+    await fireEvent.press(screen.getByText('பெண் (மணமகள்)'));
+    expect(screen.getByText(/நட்சத்திரத்தைத் தேர்வு செய்க/)).toBeTruthy();
   });
 
-  it('renders BirthStarScreen in Tamil', async () => {
+  it('renders BirthStarScreen in Tamil and opens date-picker BottomSheet', async () => {
     await render(
       <Provider store={makeStore()}>
         <BirthStarScreen />
@@ -89,6 +104,20 @@ describe('new feature screens', () => {
     );
     expect(screen.getByText(/உங்கள் பிறப்பு விவரம்/)).toBeTruthy();
     expect(screen.getByText(/என் சுயவிவரத்தில் சேமி/)).toBeTruthy();
+
+    await fireEvent.press(screen.getByText('மாற்றத் தொடவும்'));
+    expect(screen.getByText('பிறந்த தேதியைத் தேர்வு செய்க')).toBeTruthy();
+    expect(screen.getByText('1990s')).toBeTruthy();
+  });
+
+  it('renders DaylightTimeline and Brahma Muhurtham inside NallaNeramScreen', async () => {
+    await render(
+      <Provider store={makeStore()}>
+        <NallaNeramScreen />
+      </Provider>,
+    );
+    expect(screen.getByText('பகல் நேரக் காட்சி (உதயம் – அஸ்தமனம்)')).toBeTruthy();
+    expect(screen.getByText('பிரம்ம முகூர்த்தம்')).toBeTruthy();
   });
 
   it('renders custom devotional ObservanceIcon for every special day and prioritises correctly', async () => {

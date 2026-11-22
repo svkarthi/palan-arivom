@@ -5,8 +5,8 @@ import { useMemo, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
-import ScoreRing from '../components/ScoreRing';
-import { AppText, Button, Card, Chip, useBottomInset } from '@core/components/ui';
+import ScoreRing from '@core/components/ScoreRing';
+import { AppText, Button, Card, Chip, IconBadge, useBottomInset } from '@core/components/ui';
 import { ROOM_BY_ID } from '../data/rooms';
 import { ZONE_BY_ID } from '../data/zones';
 import { useLang } from '@core/hooks/useLang';
@@ -51,10 +51,21 @@ export default function ReportScreen() {
   if (analysis.score === null) {
     return (
       <View style={[styles.container, styles.empty]}>
-        <AppText center color={colors.muted}>
-          {t('report.noData')}
-        </AppText>
-        <Button title={t('report.goToPlan')} onPress={() => navigation.navigate('Plan' as never)} />
+        <Card style={styles.emptyCard}>
+          <IconBadge icon="floor-plan" color={colors.primary} bg={colors.primaryBg} size={64} />
+          <AppText bold size={17} color={colors.primaryDark} center>
+            {t('tabs.report')}
+          </AppText>
+          <AppText size={14} center color={colors.muted}>
+            {t('report.noData')}
+          </AppText>
+          <Button
+            title={t('report.goToPlan')}
+            icon="floor-plan"
+            onPress={() => navigation.navigate('Plan' as never)}
+            style={styles.fullBtn}
+          />
+        </Card>
       </View>
     );
   }
@@ -77,14 +88,14 @@ export default function ReportScreen() {
         return (
           <Card key={f.roomId} style={styles.finding}>
             <View style={styles.findingHead}>
-              <AppText size={26}>{room.icon}</AppText>
+              <IconBadge icon={room.icon} size={40} color={color} bg={color + '1A'} />
               <View style={styles.flex}>
                 <AppText bold>{tr(room.name)}</AppText>
                 <AppText size={13} color={colors.muted}>
                   {t('report.placedIn', { zone: tr(ZONE_BY_ID[f.zone].name) })}
                 </AppText>
               </View>
-              <Chip label={t(`report.verdict.${f.verdict}`)} color={color} />
+              <Chip label={t(`report.verdict.${f.verdict}`)} color={color} style={styles.noMargin} />
             </View>
             {f.verdict === 'avoid' || f.verdict === 'neutral' ? (
               <AppText size={14} color={colors.muted}>
@@ -102,7 +113,7 @@ export default function ReportScreen() {
           </AppText>
           <View style={styles.wrap}>
             {analysis.unplaced.map((id) => (
-              <Chip key={id} label={`${ROOM_BY_ID[id].icon} ${tr(ROOM_BY_ID[id].name)}`} color={colors.neutral} />
+              <Chip key={id} label={tr(ROOM_BY_ID[id].name)} color={colors.neutral} />
             ))}
           </View>
         </>
@@ -119,9 +130,12 @@ export default function ReportScreen() {
 const styles = StyleSheet.create({
   container: { padding: spacing.md, gap: spacing.md, backgroundColor: colors.bg, flexGrow: 1 },
   empty: { justifyContent: 'center', alignItems: 'stretch' },
+  emptyCard: { alignItems: 'center', gap: spacing.sm + 2, paddingVertical: spacing.lg },
+  fullBtn: { alignSelf: 'stretch', marginTop: spacing.xs },
   scoreCard: { alignItems: 'center', gap: spacing.sm },
   finding: { gap: spacing.sm },
   findingHead: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   flex: { flex: 1 },
   wrap: { flexDirection: 'row', flexWrap: 'wrap' },
+  noMargin: { marginRight: 0, marginBottom: 0 },
 });

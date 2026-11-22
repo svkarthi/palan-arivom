@@ -1,4 +1,16 @@
-import { abhijit, dayPart, goodHoraWindows, gowriNallaNeram, horas, traditionalNallaNeram, type CalendarWindow, type Hora } from '@core/astro/dayparts';
+import {
+  abhijit,
+  brahmaMuhurtham,
+  dayPart,
+  goodHoraWindows,
+  gowriNallaNeram,
+  horas,
+  thirukanithaGowriNallaNeram,
+  thirukanithaNallaNeram,
+  traditionalNallaNeram,
+  type CalendarWindow,
+  type Hora,
+} from '@core/astro/dayparts';
 import { sulamFor, thiyajyamWindows, type Direction, type Thiyajyam } from '@core/astro/dayExtras';
 import { mergeIntervals, subtractIntervals, type Interval } from '@core/astro/intervals';
 import { dayPanchang, lagnaSpans, moonRashiSpans, type DayPanchang, type Span } from '@core/astro/panchang';
@@ -18,6 +30,8 @@ export type NallaNeramDay = {
   yama: Interval;
   kuligai: Interval;
   abhijit: Interval | null;
+  /** Sacred pre-dawn Brahma Muhurtham (96 to 48 minutes before sunrise). */
+  brahmaMuhurtham: Interval;
   horas: Hora[];
   /** Observance days such as Pournami, Pradosham, Karthigai. */
   specials: SpecialDay[];
@@ -54,8 +68,14 @@ export function nallaNeramDay(date: CivilDate, place: Place, basis: DayPartBasis
   const goodWindows = subtractIntervals(goodHoraWindows(list), [rahu, yama, kuligai]).filter(
     (w) => w.end - w.start >= MIN_WINDOW_MS,
   );
-  const calendarNallaNeram = traditionalNallaNeram(date, weekday, place.utcOffsetMin);
-  const gowri = gowriNallaNeram(date, weekday, place.utcOffsetMin);
+  const calendarNallaNeram =
+    basis === 'fixed'
+      ? traditionalNallaNeram(date, weekday, place.utcOffsetMin)
+      : thirukanithaNallaNeram(weekday, sunrise, sunset);
+  const gowri =
+    basis === 'fixed'
+      ? gowriNallaNeram(date, weekday, place.utcOffsetMin)
+      : thirukanithaGowriNallaNeram(weekday, sunrise, sunset);
   // Morning muhurtham candidates: traditional morning Nalla Neram + morning Gowri Nalla Neram
   // clipped to [sunrise, local noon], minus Rahu/Yama/Kuligai/Thiyajyam.
   const localNoon = midnight + (720 - place.utcOffsetMin) * 60_000;
@@ -73,6 +93,7 @@ export function nallaNeramDay(date: CivilDate, place: Place, basis: DayPartBasis
     yama,
     kuligai,
     abhijit: abhijit(weekday, sunrise, sunset),
+    brahmaMuhurtham: brahmaMuhurtham(sunrise),
     horas: list,
     specials: specialDays(panchang),
     sulam: sulamFor(weekday),

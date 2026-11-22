@@ -25,6 +25,15 @@ export function abhijit(weekday: number, sunrise: Date, sunset: Date): Interval 
   return { start, end: start + muhurta };
 }
 
+/**
+ * Brahma Muhurtham: the sacred pre-dawn muhurta — 2 muhurtas (96 min) to 1 muhurta (48 min)
+ * before local sunrise, lasting 48 minutes every day.
+ */
+export function brahmaMuhurtham(sunrise: Date): Interval {
+  const sr = sunrise.getTime();
+  return { start: sr - 96 * 60_000, end: sr - 48 * 60_000 };
+}
+
 /** Planet indices (into PLANETS) in hora order, starting with the Sun. */
 const HORA_ORDER = [0, 5, 3, 1, 6, 4, 2]; // Sun, Venus, Mercury, Moon, Saturn, Jupiter, Mars
 /** Lord of each weekday, as an index into PLANETS (Sunday … Saturday). */
@@ -101,12 +110,54 @@ function toCalendarWindow(date: CivilDate, utcOffsetMin: number, [morning, eveni
   return { morning: toInterval(morning), evening: toInterval(evening) };
 }
 
-/** Standard printed Tamil calendar Nalla Neram (Morning & Evening) for a weekday. */
+/** Standard printed Tamil calendar Nalla Neram (Morning & Evening) for a weekday (fixed 6–6). */
 export function traditionalNallaNeram(date: CivilDate, weekday: number, utcOffsetMin: number): CalendarWindow {
   return toCalendarWindow(date, utcOffsetMin, TRADITIONAL_NALLA_NERAM[weekday]);
 }
 
-/** Standard printed Tamil calendar Gowri Nalla Neram (Morning & Evening) for a weekday. */
+/** Standard printed Tamil calendar Gowri Nalla Neram (Morning & Evening) for a weekday (fixed 6–6). */
 export function gowriNallaNeram(date: CivilDate, weekday: number, utcOffsetMin: number): CalendarWindow {
   return toCalendarWindow(date, utcOffsetMin, GOWRI_NALLA_NERAM[weekday]);
+}
+
+// Sunrise-scaled Thirukanitha Nalla Neram: 1 daytime hora (daylight / 12) starting at half-hora offsets (daylight / 24).
+const THIRUKANITHA_NALLA_HALF_HORA: [number | null, number | null][] = [
+  [3, null], // Sun
+  [1, 21], // Mon
+  [3, 21], // Tue
+  [7, 21], // Wed
+  [9, 21], // Thu
+  [7, 21], // Fri
+  [3, 21], // Sat
+];
+
+/** Sunrise-scaled Thirukanitha Nalla Neram (Morning & Evening) for a weekday. */
+export function thirukanithaNallaNeram(weekday: number, sunrise: Date, sunset: Date): CalendarWindow {
+  const halfHora = (sunset.getTime() - sunrise.getTime()) / 24;
+  const slot = (h: number | null): Interval | null =>
+    h === null ? null : { start: sunrise.getTime() + h * halfHora, end: sunrise.getTime() + (h + 2) * halfHora };
+  const [m, e] = THIRUKANITHA_NALLA_HALF_HORA[weekday];
+  return { morning: slot(m), evening: slot(e) };
+}
+
+// Sunrise-scaled Thirukanitha Gowri Panchangam auspicious daytime eighths (1-based).
+const THIRUKANITHA_GOWRI_PARTS: [number, number][] = [
+  [2, 4], // Sun
+  [1, 5], // Mon
+  [2, 8], // Tue
+  [1, 7], // Wed
+  [5, 8], // Thu
+  [5, 8], // Fri
+  [4, 7], // Sat
+];
+
+/** Sunrise-scaled Thirukanitha Gowri Nalla Neram (two auspicious daytime eighths). */
+export function thirukanithaGowriNallaNeram(weekday: number, sunrise: Date, sunset: Date): CalendarWindow {
+  const eighth = (sunset.getTime() - sunrise.getTime()) / 8;
+  const part = (p: number): Interval => ({
+    start: sunrise.getTime() + (p - 1) * eighth,
+    end: sunrise.getTime() + p * eighth,
+  });
+  const [a, b] = THIRUKANITHA_GOWRI_PARTS[weekday];
+  return { morning: part(a), evening: part(b) };
 }

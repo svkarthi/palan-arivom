@@ -10,23 +10,33 @@ import { AppText, Card, Chip, SectionHeader } from '@core/components/ui';
 import { useLang } from '@core/hooks/useLang';
 import { useAppSelector } from '@core/store/hooks';
 import { colors, spacing } from '@core/theme';
+import { hapticTap } from '@core/utils/haptics';
 import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import type { NallaNeramDay } from '../logic';
 
-type Props = { day: NallaNeramDay; date: CivilDate; place: Place };
+type Props = {
+  day: NallaNeramDay;
+  date: CivilDate;
+  place: Place;
+  /** When true (e.g. inside Nalla Naal expanded cards), secondary sections start collapsed. */
+  compact?: boolean;
+};
 
 /**
  * Compact Tamil daily calendar sheet + detailed panchangam of one day.
  * Used by Nalla Neram and inside each expanded day of Nalla Naal.
  */
-export default function DayTimes({ day, date, place }: Props) {
+export default function DayTimes({ day, date, place, compact = false }: Props) {
   const { t } = useTranslation('nallaNeram');
   const { tr } = useLang();
   const birthRashi = useAppSelector((s) => s.profile.birthRashi);
   const [showAllLagna, setShowAllLagna] = useState(false);
+  const [openChandra, setOpenChandra] = useState(!compact);
+  const [openLagna, setOpenLagna] = useState(!compact);
+  const [openPanchang, setOpenPanchang] = useState(!compact);
 
   const clock = (ms: number | Date) => formatClock(new Date(ms), place.utcOffsetMin);
   const range = (i: { start: number; end: number }) => `${clock(i.start)} – ${clock(i.end)}`;
@@ -214,6 +224,19 @@ export default function DayTimes({ day, date, place }: Props) {
         </AppText>
         <View style={styles.divider} />
         <View style={styles.row}>
+          <MaterialCommunityIcons name="weather-sunset-up" size={18} color={colors.primary} />
+          <AppText bold size={14} style={styles.flex}>
+            {t('good.brahmaMuhurtham')}
+          </AppText>
+          <AppText bold size={13} color={colors.good}>
+            {range(day.brahmaMuhurtham)}
+          </AppText>
+        </View>
+        <AppText size={12} color={colors.muted}>
+          {t('good.brahmaMuhurthamNote')}
+        </AppText>
+        <View style={styles.divider} />
+        <View style={styles.row}>
           <MaterialCommunityIcons name="star-outline" size={18} color={colors.ok} />
           <AppText bold size={14} style={styles.flex}>
             {t('good.abhijit')}
@@ -261,32 +284,68 @@ export default function DayTimes({ day, date, place }: Props) {
         </AppText>
       </Card>
 
-      <SectionHeader icon="moon-waning-crescent" title={t('chandrashtama.title')} color={colors.bad} bg={colors.badBg} />
-      <Card style={styles.gap}>
-        {day.moonRashi.map((s) => {
-          const rashi = chandrashtamaRashi(s.index);
-          const isMine = birthRashi === rashi;
-          return (
-            <View key={`${s.index}-${s.end.getTime()}`} style={[styles.gapXs, isMine && styles.mineBox]}>
-              <View style={styles.row}>
-                <AppText bold size={14} color={colors.bad} style={styles.flex}>
-                  {t('chandrashtama.row', { rashi: tr(RASHIS[rashi]) })}
+      <SectionHeader
+        icon="moon-waning-crescent"
+        title={t('chandrashtama.title')}
+        color={colors.bad}
+        bg={colors.badBg}
+        right={
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => {
+              hapticTap();
+              setOpenChandra((v) => !v);
+            }}
+            style={({ pressed }) => [styles.togglePill, pressed && { opacity: 0.7 }]}
+          >
+            <AppText size={12} bold color={colors.primary}>
+              {openChandra ? t('section.hide') : t('section.show')}
+            </AppText>
+          </Pressable>
+        }
+      />
+      {openChandra ? (
+        <Card style={styles.gap}>
+          {day.moonRashi.map((s) => {
+            const rashi = chandrashtamaRashi(s.index);
+            const isMine = birthRashi === rashi;
+            return (
+              <View key={`${s.index}-${s.end.getTime()}`} style={[styles.gapXs, isMine && styles.mineBox]}>
+                <View style={styles.row}>
+                  <AppText bold size={14} color={colors.bad} style={styles.flex}>
+                    {t('chandrashtama.row', { rashi: tr(RASHIS[rashi]) })}
+                  </AppText>
+                  {isMine ? <Chip label={t('chandrashtama.yours')} color={colors.bad} style={styles.noMargin} /> : null}
+                </View>
+                <AppText size={12} color={colors.muted}>
+                  {starsOf(rashi)}
                 </AppText>
-                {isMine ? <Chip label={t('chandrashtama.yours')} color={colors.bad} style={styles.noMargin} /> : null}
+                <AppText size={12} color={colors.muted}>
+                  {t('chandrashtama.moonIn', { rashi: tr(RASHIS[s.index]) })} · {untilText(s)}
+                </AppText>
               </View>
-              <AppText size={12} color={colors.muted}>
-                {starsOf(rashi)}
-              </AppText>
-              <AppText size={12} color={colors.muted}>
-                {t('chandrashtama.moonIn', { rashi: tr(RASHIS[s.index]) })} · {untilText(s)}
-              </AppText>
-            </View>
-          );
-        })}
-        <AppText size={12} color={colors.muted}>
-          {t('chandrashtama.hint')}
-        </AppText>
-      </Card>
+            );
+          })}
+          <AppText size={12} color={colors.muted}>
+            {t('chandrashtama.hint')}
+          </AppText>
+        </Card>
+      ) : (
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => {
+            hapticTap();
+            setOpenChandra(true);
+          }}
+        >
+          <Card style={styles.compactSummary}>
+            <AppText size={13} bold color={colors.bad} style={styles.flex} numberOfLines={1}>
+              {day.moonRashi.map((s) => tr(RASHIS[chandrashtamaRashi(s.index)])).join(' · ')}
+            </AppText>
+            <MaterialCommunityIcons name="chevron-down" size={18} color={colors.muted} />
+          </Card>
+        </Pressable>
+      )}
 
       <SectionHeader
         icon="zodiac-aries"
@@ -296,67 +355,127 @@ export default function DayTimes({ day, date, place }: Props) {
         right={
           <Pressable
             accessibilityRole="button"
-            onPress={() => setShowAllLagna((v) => !v)}
+            onPress={() => {
+              hapticTap();
+              if (!openLagna) {
+                setOpenLagna(true);
+              } else {
+                setShowAllLagna((v) => !v);
+              }
+            }}
             style={({ pressed }) => [styles.togglePill, pressed && { opacity: 0.7 }]}
           >
             <AppText size={12} bold color={colors.primary}>
-              {showAllLagna ? t('hora.hide') : t('hora.show')}
+              {!openLagna ? t('section.show') : showAllLagna ? t('hora.hide') : t('hora.show')}
             </AppText>
           </Pressable>
         }
       />
-      <Card style={styles.gap}>
-        <AppText size={13} bold color={colors.primaryDark}>
-          {t('lagna.balance', { rashi: day.lagna.length ? tr(RASHIS[day.lagna[0].index]) : '', n: balanceNazhigai, v: balanceVinadi })}
-        </AppText>
-        {(showAllLagna ? day.lagna : day.lagna.slice(0, 3)).map((s) => (
-          <View key={`${s.index}-${s.end.getTime()}`} style={styles.row}>
-            <AppText bold size={14} style={styles.flex}>
-              {tr(RASHIS[s.index])}
+      {openLagna ? (
+        <Card style={styles.gap}>
+          <AppText size={13} bold color={colors.primaryDark}>
+            {t('lagna.balance', { rashi: day.lagna.length ? tr(RASHIS[day.lagna[0].index]) : '', n: balanceNazhigai, v: balanceVinadi })}
+          </AppText>
+          {(showAllLagna ? day.lagna : day.lagna.slice(0, 3)).map((s) => (
+            <View key={`${s.index}-${s.end.getTime()}`} style={styles.row}>
+              <AppText bold size={14} style={styles.flex}>
+                {tr(RASHIS[s.index])}
+              </AppText>
+              <AppText size={13} color={colors.muted}>{untilText(s)}</AppText>
+            </View>
+          ))}
+          <AppText size={12} color={colors.muted}>
+            {t('lagna.hint')}
+          </AppText>
+        </Card>
+      ) : (
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => {
+            hapticTap();
+            setOpenLagna(true);
+          }}
+        >
+          <Card style={styles.compactSummary}>
+            <AppText size={13} bold color={colors.primaryDark} style={styles.flex} numberOfLines={1}>
+              {day.lagna.length ? `${tr(RASHIS[day.lagna[0].index])} · ${untilText(day.lagna[0])}` : '—'}
             </AppText>
-            <AppText size={13} color={colors.muted}>{untilText(s)}</AppText>
-          </View>
-        ))}
-        <AppText size={12} color={colors.muted}>
-          {t('lagna.hint')}
-        </AppText>
-      </Card>
+            <MaterialCommunityIcons name="chevron-down" size={18} color={colors.muted} />
+          </Card>
+        </Pressable>
+      )}
 
-      <SectionHeader icon="script-text-outline" title={t('panchang.title')} color={colors.primaryDark} bg={colors.surface} />
-      <Card style={styles.gap}>
-        {tithi.map((s) =>
-          spanRow(t('panchang.tithi'), tr(tithiName(s.index)), s, tithiSeverity(s.index), t(`panchang.${pakshaOf(s.index)}`)),
-        )}
-        <View style={styles.divider} />
-        {nakshatra.map((s) => spanRow(t('panchang.nakshatra'), tr(NAKSHATRAS[s.index]), s, BAD_NAKSHATRAS.includes(s.index) ? 'avoid' : null))}
-        <View style={styles.divider} />
-        {yoga.map((s) => spanRow(t('panchang.yoga'), tr(YOGAS[s.index]), s, isBadYoga(s.index) ? 'avoid' : null))}
-        <View style={styles.divider} />
-        {karana.map((s) => spanRow(t('panchang.karana'), tr(karanaName(s.index)), s, isVishti(s.index) ? 'avoid' : null))}
-        <View style={styles.divider} />
-        <View style={styles.row}>
-          <AppText size={12} color={colors.muted} style={styles.spanLabel}>
-            {t('panchang.nokku')}
+      <SectionHeader
+        icon="script-text-outline"
+        title={t('panchang.title')}
+        color={colors.primaryDark}
+        bg={colors.surface}
+        right={
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => {
+              hapticTap();
+              setOpenPanchang((v) => !v);
+            }}
+            style={({ pressed }) => [styles.togglePill, pressed && { opacity: 0.7 }]}
+          >
+            <AppText size={12} bold color={colors.primary}>
+              {openPanchang ? t('section.hide') : t('section.show')}
+            </AppText>
+          </Pressable>
+        }
+      />
+      {openPanchang ? (
+        <Card style={styles.gap}>
+          {tithi.map((s) =>
+            spanRow(t('panchang.tithi'), tr(tithiName(s.index)), s, tithiSeverity(s.index), t(`panchang.${pakshaOf(s.index)}`)),
+          )}
+          <View style={styles.divider} />
+          {nakshatra.map((s) => spanRow(t('panchang.nakshatra'), tr(NAKSHATRAS[s.index]), s, BAD_NAKSHATRAS.includes(s.index) ? 'avoid' : null))}
+          <View style={styles.divider} />
+          {yoga.map((s) => spanRow(t('panchang.yoga'), tr(YOGAS[s.index]), s, isBadYoga(s.index) ? 'avoid' : null))}
+          <View style={styles.divider} />
+          {karana.map((s) => spanRow(t('panchang.karana'), tr(karanaName(s.index)), s, isVishti(s.index) ? 'avoid' : null))}
+          <View style={styles.divider} />
+          <View style={styles.row}>
+            <AppText size={12} color={colors.muted} style={styles.spanLabel}>
+              {t('panchang.nokku')}
+            </AppText>
+            <AppText bold size={14} style={styles.flex}>
+              {tr(NOKKU_NAMES[nokkuNaal(nakshatra[0].index)])}
+            </AppText>
+          </View>
+          <View style={styles.row}>
+            <AppText size={12} color={colors.muted} style={styles.spanLabel}>
+              {t('panchang.dayYoga')}
+            </AppText>
+            <AppText bold size={14} color={dy === 'marana' ? colors.bad : colors.good} style={styles.flex}>
+              {tr(DAY_YOGA_NAMES[dy])}
+            </AppText>
+            {dy === 'marana' ? (
+              <Chip label={t('panchang.avoidFlag')} color={colors.bad} style={styles.noMargin} />
+            ) : null}
+          </View>
+          <AppText size={12} color={colors.muted}>
+            {t('panchang.flagNote')}
           </AppText>
-          <AppText bold size={14} style={styles.flex}>
-            {tr(NOKKU_NAMES[nokkuNaal(nakshatra[0].index)])}
-          </AppText>
-        </View>
-        <View style={styles.row}>
-          <AppText size={12} color={colors.muted} style={styles.spanLabel}>
-            {t('panchang.dayYoga')}
-          </AppText>
-          <AppText bold size={14} color={dy === 'marana' ? colors.bad : colors.good} style={styles.flex}>
-            {tr(DAY_YOGA_NAMES[dy])}
-          </AppText>
-          {dy === 'marana' ? (
-            <Chip label={t('panchang.avoidFlag')} color={colors.bad} style={styles.noMargin} />
-          ) : null}
-        </View>
-        <AppText size={12} color={colors.muted}>
-          {t('panchang.flagNote')}
-        </AppText>
-      </Card>
+        </Card>
+      ) : (
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => {
+            hapticTap();
+            setOpenPanchang(true);
+          }}
+        >
+          <Card style={styles.compactSummary}>
+            <AppText size={13} color={colors.text} style={styles.flex} numberOfLines={1}>
+              {tr(tithiName(tithi[0].index))} · {tr(NAKSHATRAS[nakshatra[0].index])} · {tr(DAY_YOGA_NAMES[dy])}
+            </AppText>
+            <MaterialCommunityIcons name="chevron-down" size={18} color={colors.muted} />
+          </Card>
+        </Pressable>
+      )}
     </View>
   );
 }
@@ -402,5 +521,11 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 999,
     backgroundColor: colors.primaryBg,
+  },
+  compactSummary: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    paddingVertical: 10,
   },
 });
