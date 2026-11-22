@@ -2,7 +2,7 @@ import { abhijit, dayPart, horas } from '../src/core/astro/dayparts';
 import { moonMeanTrueLongitude, sunLongitude } from '../src/core/astro/ephemeris';
 import { mergeIntervals, subtractIntervals } from '../src/core/astro/intervals';
 import { PLACES, placeById } from '../src/core/astro/places';
-import { dayPanchang, tamilDate, tithiSpans } from '../src/core/astro/panchang';
+import { dayPanchang, lagnaSpans, tamilDate, tithiSpans } from '../src/core/astro/panchang';
 import { sunTimes } from '../src/core/astro/sunrise';
 import { addDays, daysBetween, formatClock, weekdayOf } from '../src/core/astro/time';
 
@@ -138,6 +138,25 @@ describe('dayPanchang', () => {
       expect(list[list.length - 1].end.getTime()).toBeGreaterThanOrEqual(p.nextSunrise.getTime());
     }
     expect(p.tithi[0].index).toBe(29);
+  });
+
+  it('computes monotonic lagnaSpans across a full day', () => {
+    for (const id of ['chennai', 'delhi']) {
+      const place = placeById(id);
+      const { sunrise } = sunTimes({ y: 2026, m: 6, d: 21 }, place);
+      const nextSunrise = sunTimes({ y: 2026, m: 6, d: 22 }, place).sunrise;
+      const spans = lagnaSpans(place, sunrise, nextSunrise);
+      expect(spans.length).toBeGreaterThanOrEqual(12);
+      expect(spans.length).toBeLessThanOrEqual(14);
+      let prev = sunrise.getTime();
+      for (const s of spans) {
+        const durMin = (s.end.getTime() - prev) / MIN;
+        expect(durMin).toBeGreaterThan(0);
+        expect(durMin).toBeLessThan(210);
+        prev = s.end.getTime();
+      }
+      expect(spans[spans.length - 1].end.getTime()).toBeGreaterThanOrEqual(nextSunrise.getTime());
+    }
   });
 });
 

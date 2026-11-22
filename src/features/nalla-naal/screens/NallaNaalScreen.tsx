@@ -125,6 +125,8 @@ export default function NallaNaalScreen() {
         label={`${tr(GREGORIAN_MONTHS[month.m - 1])} ${month.y}`}
         onPrev={() => shiftMonth(-1)}
         onNext={() => shiftMonth(1)}
+        onReset={month.y === todayLocal.y && month.m === todayLocal.m ? undefined : () => { setCursor(null); setExpanded(null); }}
+        resetLabel={t('goCurrentMonth')}
       />
 
       <View style={styles.row}>
@@ -153,7 +155,12 @@ export default function NallaNaalScreen() {
             </AppText>
             <View style={styles.wrap}>
               {NAKSHATRAS.map((n, i) => (
-                <Pressable key={i} onPress={() => dispatch(setBirthNakshatra(birthNakshatra === i ? null : i))}>
+                <Pressable
+                  key={i}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: birthNakshatra === i }}
+                  onPress={() => dispatch(setBirthNakshatra(birthNakshatra === i ? null : i))}
+                >
                   <Chip label={tr(n)} color={birthNakshatra === i ? colors.primary : colors.neutral} style={birthNakshatra === i ? styles.chipOn : undefined} textStyle={birthNakshatra === i ? styles.chipOnText : undefined} />
                 </Pressable>
               ))}
@@ -163,7 +170,12 @@ export default function NallaNaalScreen() {
             </AppText>
             <View style={styles.wrap}>
               {RASHIS.map((r, i) => (
-                <Pressable key={i} onPress={() => dispatch(setBirthRashi(birthRashi === i ? null : i))}>
+                <Pressable
+                  key={i}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: birthRashi === i }}
+                  onPress={() => dispatch(setBirthRashi(birthRashi === i ? null : i))}
+                >
                   <Chip label={tr(r)} color={birthRashi === i ? colors.primary : colors.neutral} style={birthRashi === i ? styles.chipOn : undefined} textStyle={birthRashi === i ? styles.chipOnText : undefined} />
                 </Pressable>
               ))}

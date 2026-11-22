@@ -50,7 +50,9 @@ export default function RoomDetailScreen({ route }: Props) {
       return;
     }
     const ideal = room.ideal.map((z) => tr(ZONE_BY_ID[z].name)).join(', ');
-    speak(`${tr(room.name)}. ${t('guide.ideal')}: ${ideal}. ${tr(room.why)} ${tr(room.remedy)}`, lang);
+    speak(`${tr(room.name)}. ${t('guide.ideal')}: ${ideal}. ${tr(room.why)} ${tr(room.remedy)}`, lang, () =>
+      setSpeaking(false),
+    );
     setSpeaking(true);
   };
 

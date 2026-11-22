@@ -7,6 +7,7 @@ const en: typeof ta = {
   noGoodDays: 'No suitable day this month. Try another month.',
   dayHeader: '{{day}} {{month}}',
   tamilShort: '{{month}} {{day}}',
+  goCurrentMonth: 'This month',
   grade: {
     excellent: 'Excellent day',
     good: 'Good day',

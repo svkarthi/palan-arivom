@@ -1,6 +1,7 @@
 import * as ImagePicker from 'expo-image-picker';
-import { useMemo, useState } from 'react';
+import { useContext, useMemo, useState } from 'react';
 import { Alert, FlatList, Modal, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 
 import ZoneMap from '../components/ZoneMap';
@@ -43,6 +44,7 @@ export default function PlanScreen() {
   const { width } = useWindowDimensions();
   const { imageUri, mode, rotation, placements } = useAppSelector((s) => s.plan);
   const [activeZone, setActiveZone] = useState<ZoneId | null>(null);
+  const insets = useContext(SafeAreaInsetsContext);
 
   const size = Math.min(width - spacing.md * 2, 420);
 
@@ -149,7 +151,7 @@ export default function PlanScreen() {
       <Modal visible={activeZone !== null} transparent animationType="slide" onRequestClose={() => setActiveZone(null)}>
         <Pressable style={styles.backdrop} onPress={() => setActiveZone(null)} />
         {activeZone ? (
-          <View style={styles.sheet}>
+          <View style={[styles.sheet, { paddingBottom: Math.max(insets?.bottom ?? 0, spacing.md) }]}>
             <AppText bold size={17} color={colors.primaryDark}>
               {t('plan.chooseRoom', { zone: tr(ZONE_BY_ID[activeZone].name) })}
             </AppText>

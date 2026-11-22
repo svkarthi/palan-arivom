@@ -62,7 +62,10 @@ export function useHeading(enabled: boolean, declination: number): Result {
 
     const start = async () => {
       try {
-        const permission = await Location.requestForegroundPermissionsAsync();
+        let permission = await Location.getForegroundPermissionsAsync();
+        if (!permission.granted && permission.status === Location.PermissionStatus.UNDETERMINED) {
+          permission = await Location.requestForegroundPermissionsAsync();
+        }
         if (permission.granted) {
           const sub = await Location.watchHeadingAsync((h) => {
             // trueHeading is -1 when the OS cannot work it out; fall back to magnetic.

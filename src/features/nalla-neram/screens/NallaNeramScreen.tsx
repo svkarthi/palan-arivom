@@ -31,7 +31,8 @@ export default function NallaNeramScreen() {
 
   const date = picked ?? today;
   const isToday = sameDate(date, today);
-  const day = useMemo(() => nallaNeramDay(date, place, basis), [date, place, basis]);
+  const { y, m, d } = date;
+  const day = useMemo(() => nallaNeramDay({ y, m, d }, place, basis), [y, m, d, place, basis]);
   const status = isToday ? statusAt(day, now.getTime()) : null;
 
   const clock = (ms: number | Date) => formatClock(new Date(ms), place.utcOffsetMin);

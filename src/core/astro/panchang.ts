@@ -19,12 +19,12 @@ export type Span = {
   end: Date;
 };
 
-/** Time at which `angle` next reaches `target` after `jd0` (angle moves forward by < 40° in 3 days). */
-function nextCrossing(angle: AngleFn, target: number, jd0: number): number {
+/** Time at which `angle` next reaches `target` after `jd0`, assuming the crossing occurs within `maxWindowDays` without wrapping a full 360°. */
+function nextCrossing(angle: AngleFn, target: number, jd0: number, maxWindowDays = 3): number {
   const base = angle(jd0);
   const wanted = normalize360(target - base);
   let lo = jd0;
-  let hi = jd0 + 3;
+  let hi = jd0 + maxWindowDays;
   for (let i = 0; i < 28; i++) {
     const mid = (lo + hi) / 2;
     if (normalize360(angle(mid) - base) < wanted) lo = mid;
@@ -37,14 +37,14 @@ function nextCrossing(angle: AngleFn, target: number, jd0: number): number {
  * Consecutive elements covering [from, until]: the one active at `from` and the
  * following ones, each with its end time.
  */
-function spansBetween(angle: AngleFn, width: number, count: number, from: Date, until: Date): Span[] {
+function spansBetween(angle: AngleFn, width: number, count: number, from: Date, until: Date, maxWindowDays = 3): Span[] {
   const jdFrom = julianDay(from);
   const jdUntil = julianDay(until);
   let index = Math.floor(angle(jdFrom) / width) % count;
   let cursor = jdFrom;
   const result: Span[] = [];
   for (let guard = 0; guard < 16; guard++) {
-    const endJd = nextCrossing(angle, ((index + 1) * width) % 360, cursor);
+    const endJd = nextCrossing(angle, ((index + 1) * width) % 360, cursor, maxWindowDays);
     result.push({ index, end: fromJulianDay(endJd) });
     if (endJd >= jdUntil) break;
     cursor = endJd + 1e-6;
@@ -92,7 +92,7 @@ export function siderealAscendant(at: Date, place: Place): number {
 
 /** Lagna (rising sign) spans between two instants; index 0 = Mesha. */
 export const lagnaSpans = (place: Place, from: Date, until: Date) =>
-  spansBetween((jd) => siderealAscendant(fromJulianDay(jd), place), 30, 12, from, until);
+  spansBetween((jd) => siderealAscendant(fromJulianDay(jd), place), 30, 12, from, until, 0.25);
 
 export const tithiSpans = (from: Date, until: Date) => spansBetween(elongation, 12, 30, from, until);
 export const karanaSpans = (from: Date, until: Date) => spansBetween(elongation, 6, 60, from, until);
@@ -164,18 +164,27 @@ export function tamilDate(date: CivilDate, place: Place): TamilDate {
   return { yearStartGregorian: startYear, yearIndex, month, day };
 }
 
-export type DayPanchang = {
+export type DaySummary = {
   date: CivilDate;
   place: Place;
   sunrise: Date;
   sunset: Date;
+  tamil: TamilDate;
+};
+
+export type DayPanchang = DaySummary & {
   nextSunrise: Date;
   tithi: Span[];
   nakshatra: Span[];
   yoga: Span[];
   karana: Span[];
-  tamil: TamilDate;
 };
+
+/** Lightweight day info (sun times + Tamil date) without computing full element spans. */
+export function daySummary(date: CivilDate, place: Place): DaySummary {
+  const { sunrise, sunset } = sunTimes(date, place);
+  return { date, place, sunrise, sunset, tamil: tamilDate(date, place) };
+}
 
 /** Panchang elements for the civil day, from sunrise to the next sunrise. */
 export function dayPanchang(date: CivilDate, place: Place): DayPanchang {

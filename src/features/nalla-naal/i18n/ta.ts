@@ -5,6 +5,7 @@ const ta = {
   noGoodDays: 'இந்த மாதத்தில் பொருத்தமான நாள் இல்லை. வேறு மாதத்தைப் பாருங்கள்.',
   dayHeader: '{{day}} {{month}}',
   tamilShort: '{{month}} {{day}}',
+  goCurrentMonth: 'இந்த மாதம்',
   grade: {
     excellent: 'மிகச் சிறந்த நாள்',
     good: 'நல்ல நாள்',

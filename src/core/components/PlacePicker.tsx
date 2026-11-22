@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import { FlatList, Modal, Pressable, StyleSheet, View } from 'react-native';
+import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 
 import { PLACES } from '../astro/places';
@@ -17,6 +18,7 @@ export default function PlacePicker() {
   const dispatch = useAppDispatch();
   const place = usePlace();
   const [open, setOpen] = useState(false);
+  const insets = useContext(SafeAreaInsetsContext);
 
   return (
     <>
@@ -27,7 +29,7 @@ export default function PlacePicker() {
       </Pressable>
       <Modal visible={open} transparent animationType="slide" onRequestClose={() => setOpen(false)}>
         <Pressable style={styles.backdrop} onPress={() => setOpen(false)} />
-        <View style={styles.sheet}>
+        <View style={[styles.sheet, { paddingBottom: Math.max(insets?.bottom ?? 0, spacing.md) }]}>
           <AppText bold size={17} color={colors.primaryDark}>
             {t('place.choose')}
           </AppText>

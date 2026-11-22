@@ -144,7 +144,7 @@ export default function CompassScreen() {
             </AppText>
             <AppText color={colors.primary}>{t('common.degrees', { value: h.heading })}</AppText>
             <AppText size={12} color={colors.muted}>
-              {new Date(h.at).toLocaleTimeString()}
+              {new Date(h.at).toLocaleTimeString(lang === 'ta' ? 'ta-IN' : 'en-IN')}
             </AppText>
           </Card>
         ))

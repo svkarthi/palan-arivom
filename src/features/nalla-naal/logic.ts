@@ -1,5 +1,5 @@
 import { BAD_NAKSHATRAS, BAD_YOGAS, MILD_BAD_TITHI_POSITIONS, STRONG_BAD_TITHI_POSITIONS } from '@core/astro/inauspicious';
-import { dayPanchang, isVishti, karanaIndexAt, moonRashiAt, nakshatraIndexAt, tithiIndexAt, tithiPosition, yogaIndexAt, type DayPanchang, type TamilDate } from '@core/astro/panchang';
+import { daySummary, isVishti, karanaIndexAt, moonRashiAt, nakshatraIndexAt, tithiIndexAt, tithiPosition, yogaIndexAt, type DaySummary, type TamilDate } from '@core/astro/panchang';
 import { specialDays, type SpecialDay } from '@core/astro/specialDays';
 import type { Place } from '@core/astro/sunrise';
 import { julianDay, weekdayOf, type CivilDate } from '@core/astro/time';
@@ -43,7 +43,7 @@ export const gradeOf = (score: number): Grade =>
 const TARA_BAD = [1, 3, 5, 7];
 
 export function judgeDay(
-  panchang: DayPanchang,
+  panchang: DaySummary,
   purpose: Purpose,
   profile: Profile,
   observances: SpecialDay[] = specialDays(panchang),
@@ -148,13 +148,13 @@ export function judgeDay(
   };
 }
 
-export type MonthDay = { panchang: DayPanchang; specials: SpecialDay[] };
+export type MonthDay = { panchang: DaySummary; specials: SpecialDay[] };
 
-/** The panchangam and observance days of every day of a month. Independent of purpose, so it can be reused. */
+/** The sun times, Tamil date and observance days of every day of a month. Independent of purpose, so it can be reused. */
 export function monthDays(year: number, month: number, place: Place): MonthDay[] {
   const days = new Date(Date.UTC(year, month, 0)).getUTCDate();
   return Array.from({ length: days }, (_, i) => {
-    const panchang = dayPanchang({ y: year, m: month, d: i + 1 }, place);
+    const panchang = daySummary({ y: year, m: month, d: i + 1 }, place);
     return { panchang, specials: specialDays(panchang) };
   });
 }

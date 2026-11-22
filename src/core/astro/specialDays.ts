@@ -1,6 +1,6 @@
 import type { Interval } from './intervals';
 import { isKarinaal } from './karinaal';
-import { nakshatraIndexAt, tithiIndexAt, tithiSpans, type DayPanchang } from './panchang';
+import { nakshatraIndexAt, tithiIndexAt, tithiSpans, type DaySummary } from './panchang';
 
 export type SpecialId =
   | 'pournami'
@@ -60,7 +60,7 @@ function trayodashiOverlap(sunset: number): number {
  *   month of Karthigai it is Karthigai Deepam.
  * - Karinaal: by Tamil date, see `karinaal.ts`.
  */
-export function specialDays(p: DayPanchang): SpecialDay[] {
+export function specialDays(p: DaySummary): SpecialDay[] {
   const sunset = p.sunset.getTime();
   const sunrise = p.sunrise.getTime();
   const noon = at((sunrise + sunset) / 2);

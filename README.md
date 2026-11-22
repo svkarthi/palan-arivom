@@ -65,5 +65,5 @@ Findings from reading its rules, which differ from this app on purpose: its Chan
 - Nalla Neram's "good times" are the benefic horas (Jupiter, Venus, Mercury, Moon) minus Rahu Kalam, Yamagandam and Kuligai. It does not use Gowri panchangam.
 - Results use the Thirukanitha (Drik) method; traditional Vakya panchangams can differ by minutes, and occasionally by a tithi or nakshatra boundary.
 - Vastu rules differ between schools. Have a practitioner review `src/features/vastu/data/rooms.ts` and the Tamil text before release.
-- The compass needs the phone held flat; the heading is not tilt-compensated.
+- The compass prefers the OS-fused tilt-compensated heading (true north via `expo-location`) and falls back to the raw magnetometer (which needs the phone held flat) if location permission is unavailable.
 - App name and bundle identifiers (`com.utilityapp`) in `app.json` are placeholders.

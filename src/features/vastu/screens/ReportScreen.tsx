@@ -33,7 +33,7 @@ export default function ReportScreen() {
   const exportPdf = async () => {
     setBusy(true);
     try {
-      const html = buildReportHtml(analysis, lang, new Date().toLocaleDateString());
+      const html = buildReportHtml(analysis, lang, new Date().toLocaleDateString(lang === 'ta' ? 'ta-IN' : 'en-IN'));
       const { uri } = await Print.printToFileAsync({ html });
       if (await Sharing.isAvailableAsync()) await Sharing.shareAsync(uri, { mimeType: 'application/pdf' });
       else Alert.alert(t('report.exportFailed'));

@@ -30,9 +30,9 @@ const Loading = (
 );
 
 export default function App() {
-  const [fontsLoaded] = useFonts({ NotoSansTamil_400Regular, NotoSansTamil_700Bold });
+  const [fontsLoaded, fontError] = useFonts({ NotoSansTamil_400Regular, NotoSansTamil_700Bold });
 
-  if (!fontsLoaded) return Loading;
+  if (!fontsLoaded && !fontError) return Loading;
 
   return (
     <Provider store={store}>
