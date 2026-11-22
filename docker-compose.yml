@@ -17,7 +17,8 @@ services:
       sh -c '
         set -e
         npm ci
-        npx expo prebuild --platform android --clean --no-install
+        rm -rf /app/android/* /app/android/.[!.]*
+        npx expo prebuild --platform android --no-install
         cd android
         ./gradlew assembleRelease
         VERSION=$(node -p "require(\"/app/package.json\").version")
