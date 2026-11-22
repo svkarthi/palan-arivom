@@ -16,6 +16,33 @@ npm test
 npm run typecheck
 ```
 
+## Building & Releasing
+
+### Local Android APK via Docker (Rancher Desktop)
+Build a release APK locally without installing the Android SDK on macOS (`Dockerfile.android` + `docker-compose.yml`). Gradle and Android SDK caches are kept in named Docker volumes so repeat builds are fast.
+
+1. Start **Rancher Desktop** (recommended: 4–6 GB RAM in Preferences → Virtual Machine).
+2. Run:
+   ```bash
+   npm run build:android:docker
+   ```
+3. The signed APK is written to `dist/palan-arivom-v<version>.apk`, ready to install on Android or attach to a [GitHub Release](https://github.com/svkarthi/palan-arivom/releases).
+
+### GitHub Actions (automated APK release)
+`.github/workflows/android-apk.yml` runs typecheck + tests, builds the Android release APK, and publishes it to GitHub Releases whenever a `v*` tag is pushed (or when triggered manually from the Actions tab):
+```bash
+git tag v1.0.x
+git push origin v1.0.x
+```
+
+### EAS Cloud Builds
+```bash
+npx eas-cli@latest build --platform android --profile preview      # internal APK
+npx eas-cli@latest build --platform android --profile production   # Play Store AAB
+npx eas-cli@latest build --platform ios --profile simulator        # iOS Simulator
+npx eas-cli@latest build --platform ios --profile preview          # physical iPhone (Apple Developer account)
+```
+
 ## Structure
 ```
 src/core                 shared by every feature
