@@ -1,6 +1,7 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { toLocal } from '@core/astro/time';
-import { AppText, Button, Card, Chip, useBottomInset } from '@core/components/ui';
+import ObservanceIcon from '@core/components/ObservanceIcon';
+import { AppText, Button, Card, Chip, SectionHeader, useBottomInset } from '@core/components/ui';
 import { useLang } from '@core/hooks/useLang';
 import { useNow } from '@core/hooks/useNow';
 import { usePlace } from '@core/hooks/usePlace';
@@ -15,15 +16,16 @@ import { useTranslation } from 'react-i18next';
 
 import { nallaNeramDay } from '../../nalla-neram/logic';
 import { CATEGORY_BY_ID, RELIEF_CATEGORIES, SAINTS, TRADITION_BY_ID } from '../data/categories';
+import type { Padhigam } from '../data/types';
 import {
-  activeTraditions,
+  activeDeities,
   dateKeyOf,
   filterPadhigams,
   PADHIGAMS,
   todayPadhigamRecommendation,
   type FilterCategory,
+  type FilterDeity,
   type FilterSaint,
-  type FilterTradition,
 } from '../data';
 import type { PadhigamStackParamList } from '../navigation/types';
 import { toggleFavorite } from '../store/padhigamSlice';
@@ -44,7 +46,7 @@ export default function PadhigamLibraryScreen() {
 
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<FilterCategory>('all');
-  const [tradition, setTradition] = useState<FilterTradition>('all');
+  const [deity, setDeity] = useState<FilterDeity>('all');
   const [saint, setSaint] = useState<FilterSaint>('all');
 
   const localNow = useMemo(() => toLocal(now, place.utcOffsetMin), [now, place.utcOffsetMin]);
@@ -58,29 +60,107 @@ export default function PadhigamLibraryScreen() {
     [day, birthRashi, localHour],
   );
 
-  const traditions = useMemo(() => activeTraditions(), []);
-  const showSaintFilter = tradition === 'thevaram' || tradition === 'thiruvasagam';
-  const visibleSaints = useMemo(
-    () => (tradition === 'all' ? SAINTS : SAINTS.filter((s) => s.tradition === tradition)),
-    [tradition],
-  );
+  const deities = useMemo(() => activeDeities(), []);
+  const showSaintFilter = deity === 'shiva';
 
   const favoriteSet = useMemo(() => new Set(favorites), [favorites]);
   const completedTodaySet = useMemo(() => new Set(completedByDate[todayKey] ?? []), [completedByDate, todayKey]);
 
   const filtered = useMemo(
-    () => filterPadhigams(PADHIGAMS, { query, category, tradition, saint, favorites }),
-    [query, category, tradition, saint, favorites],
+    () => filterPadhigams(PADHIGAMS, { query, category, deity, saint, favorites }),
+    [query, category, deity, saint, favorites],
   );
+
+  const groupedSections = useMemo(() => {
+    if (deity !== 'all' || category !== 'all' || query.trim() !== '') return null;
+    return deities
+      .map((dItem) => ({
+        deity: dItem,
+        bg: TRADITION_BY_ID[dItem.traditions[0]].bg,
+        items: filtered.filter((p) => dItem.traditions.includes(p.tradition)),
+      }))
+      .filter((sec) => sec.items.length > 0);
+  }, [deity, category, query, deities, filtered]);
+
+  const renderPadhigamCard = (p: Padhigam) => {
+    const isFav = favoriteSet.has(p.id);
+    const recitedToday = completedTodaySet.has(p.id);
+    const hasSections = p.verses.some((v) => Boolean(v.label));
+    const countText = hasSections
+      ? t('list.stanzasCount', { count: p.verses.length })
+      : t('list.versesCount', { count: p.verses.length });
+    const trdMeta = TRADITION_BY_ID[p.tradition];
+
+    return (
+      <Pressable
+        key={p.id}
+        accessibilityRole="button"
+        onPress={() => openReader(p.id)}
+        style={({ pressed }) => pressed && styles.pressed}
+      >
+        <Card style={styles.itemCard}>
+          <View style={styles.itemHeader}>
+            <AppText bold size={15} color={colors.primaryDark} style={styles.flex}>
+              {tr(p.reliefTitle)}
+            </AppText>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={isFav ? t('reader.bookmarkRemove') : t('reader.bookmarkAdd')}
+              onPress={() => {
+                hapticTap();
+                dispatch(toggleFavorite(p.id));
+              }}
+              hitSlop={10}
+              style={styles.heartBtn}
+            >
+              <MaterialCommunityIcons
+                name={isFav ? 'heart' : 'heart-outline'}
+                size={20}
+                color={isFav ? '#AD1457' : colors.muted}
+              />
+            </Pressable>
+          </View>
+
+          <View style={styles.titleRow}>
+            <AppText bold size={13} color={colors.primary}>
+              {tr(p.title)}
+            </AppText>
+            <AppText size={12} color={colors.muted} numberOfLines={1}>
+              {p.openingLineTa}…
+            </AppText>
+          </View>
+
+          <View style={styles.chipWrap}>
+            <Chip label={tr(trdMeta.shortLabel)} color={trdMeta.color} />
+            {p.categories.map((catId) => {
+              const meta = CATEGORY_BY_ID[catId];
+              return <Chip key={catId} label={tr(meta.label)} color={meta.color} />;
+            })}
+            {recitedToday ? <Chip label={t('list.recitedToday')} color={colors.good} /> : null}
+          </View>
+
+          <View style={styles.itemFooter}>
+            <AppText size={11} color={colors.muted} style={styles.flex} numberOfLines={1}>
+              {tr(p.author)} · {tr(p.source)}
+            </AppText>
+            <AppText size={11} bold color={colors.primaryDark}>
+              {countText}
+            </AppText>
+            <MaterialCommunityIcons name="chevron-right" size={18} color={colors.primary} />
+          </View>
+        </Card>
+      </Pressable>
+    );
+  };
 
   const openReader = (padhigamId: string) => {
     hapticTap();
     navigation.navigate('PadhigamReader', { padhigamId });
   };
 
-  const selectTradition = (next: FilterTradition) => {
+  const selectDeity = (next: FilterDeity) => {
     hapticTap();
-    setTradition(next);
+    setDeity(next);
     setSaint('all');
   };
 
@@ -88,7 +168,7 @@ export default function PadhigamLibraryScreen() {
     hapticTap();
     setQuery('');
     setCategory('all');
-    setTradition('all');
+    setDeity('all');
     setSaint('all');
   };
 
@@ -159,7 +239,7 @@ export default function PadhigamLibraryScreen() {
         ) : null}
       </View>
 
-      {/* Deity / Tradition Filter */}
+      {/* Deity Filter */}
       <View style={styles.filterBlock}>
         <AppText size={12} bold color={colors.muted}>
           {t('filter.byTradition')}
@@ -168,23 +248,23 @@ export default function PadhigamLibraryScreen() {
           <FilterPill
             label={t('filter.allTraditions')}
             icon="view-grid-outline"
-            active={tradition === 'all'}
-            onPress={() => selectTradition('all')}
+            active={deity === 'all'}
+            onPress={() => selectDeity('all')}
           />
-          {traditions.map((trd) => (
+          {deities.map((dItem) => (
             <FilterPill
-              key={trd.id}
-              label={tr(trd.shortLabel)}
-              icon={trd.icon}
-              active={tradition === trd.id}
-              onPress={() => selectTradition(trd.id)}
+              key={dItem.id}
+              label={tr(dItem.shortLabel)}
+              iconNode={<ObservanceIcon id={dItem.observanceId} size={15} onDark={deity === dItem.id} />}
+              active={deity === dItem.id}
+              onPress={() => selectDeity(dItem.id)}
             />
           ))}
         </ScrollView>
       </View>
 
-      {/* Naalvar Saint Sub-Filter (shown when browsing Thevaram / Thiruvasagam) */}
-      {showSaintFilter && visibleSaints.length > 1 ? (
+      {/* Naalvar Saint Sub-Filter (shown when browsing Lord Shiva) */}
+      {showSaintFilter ? (
         <View style={styles.filterBlock}>
           <AppText size={12} bold color={colors.muted}>
             {t('filter.bySaint')}
@@ -199,7 +279,7 @@ export default function PadhigamLibraryScreen() {
                 setSaint('all');
               }}
             />
-            {visibleSaints.map((s) => (
+            {SAINTS.map((s) => (
               <FilterPill
                 key={s.id}
                 label={tr(s.shortLabel)}
@@ -257,7 +337,7 @@ export default function PadhigamLibraryScreen() {
         </ScrollView>
       </View>
 
-      {/* Filtered Padhigam List */}
+      {/* Filtered or Grouped Padhigam List */}
       {filtered.length === 0 ? (
         <Card style={styles.emptyCard}>
           <MaterialCommunityIcons name="book-open-page-variant-outline" size={34} color={colors.muted} />
@@ -266,79 +346,27 @@ export default function PadhigamLibraryScreen() {
           </AppText>
           <Button title={t('list.resetFilters')} variant="outline" onPress={resetFilters} />
         </Card>
-      ) : (
-        <View style={styles.listGap}>
-          {filtered.map((p) => {
-            const isFav = favoriteSet.has(p.id);
-            const recitedToday = completedTodaySet.has(p.id);
-            const hasSections = p.verses.some((v) => Boolean(v.label));
-            const countText = hasSections
-              ? t('list.stanzasCount', { count: p.verses.length })
-              : t('list.versesCount', { count: p.verses.length });
-            const trdMeta = TRADITION_BY_ID[p.tradition];
-
-            return (
-              <Pressable
-                key={p.id}
-                accessibilityRole="button"
-                onPress={() => openReader(p.id)}
-                style={({ pressed }) => pressed && styles.pressed}
-              >
-                <Card style={styles.itemCard}>
-                  <View style={styles.itemHeader}>
-                    <AppText bold size={15} color={colors.primaryDark} style={styles.flex}>
-                      {tr(p.reliefTitle)}
-                    </AppText>
-                    <Pressable
-                      accessibilityRole="button"
-                      accessibilityLabel={isFav ? t('reader.bookmarkRemove') : t('reader.bookmarkAdd')}
-                      onPress={() => {
-                        hapticTap();
-                        dispatch(toggleFavorite(p.id));
-                      }}
-                      hitSlop={10}
-                      style={styles.heartBtn}
-                    >
-                      <MaterialCommunityIcons
-                        name={isFav ? 'heart' : 'heart-outline'}
-                        size={20}
-                        color={isFav ? '#AD1457' : colors.muted}
-                      />
-                    </Pressable>
-                  </View>
-
-                  <View style={styles.titleRow}>
-                    <AppText bold size={13} color={colors.primary}>
-                      {tr(p.title)}
-                    </AppText>
-                    <AppText size={12} color={colors.muted} numberOfLines={1}>
-                      {p.openingLineTa}…
-                    </AppText>
-                  </View>
-
-                  <View style={styles.chipWrap}>
-                    <Chip label={tr(trdMeta.shortLabel)} color={trdMeta.color} />
-                    {p.categories.map((catId) => {
-                      const meta = CATEGORY_BY_ID[catId];
-                      return <Chip key={catId} label={tr(meta.label)} color={meta.color} />;
-                    })}
-                    {recitedToday ? <Chip label={t('list.recitedToday')} color={colors.good} /> : null}
-                  </View>
-
-                  <View style={styles.itemFooter}>
-                    <AppText size={11} color={colors.muted} style={styles.flex} numberOfLines={1}>
-                      {tr(p.author)} · {tr(p.source)}
-                    </AppText>
-                    <AppText size={11} bold color={colors.primaryDark}>
-                      {countText}
-                    </AppText>
-                    <MaterialCommunityIcons name="chevron-right" size={18} color={colors.primary} />
-                  </View>
-                </Card>
-              </Pressable>
-            );
-          })}
+      ) : groupedSections ? (
+        <View style={styles.sectionsGap}>
+          {groupedSections.map((sec) => (
+            <View key={sec.deity.id} style={styles.listGap}>
+              <SectionHeader
+                iconNode={<ObservanceIcon id={sec.deity.observanceId} size={18} />}
+                title={tr(sec.deity.label)}
+                color={sec.deity.color}
+                bg={sec.bg}
+                right={
+                  <AppText size={11} bold color={colors.muted}>
+                    {t('list.deityCount', { count: sec.items.length })}
+                  </AppText>
+                }
+              />
+              {sec.items.map(renderPadhigamCard)}
+            </View>
+          ))}
         </View>
+      ) : (
+        <View style={styles.listGap}>{filtered.map(renderPadhigamCard)}</View>
       )}
 
       <AppText size={12} color={colors.muted} center style={styles.footerNote}>
@@ -351,12 +379,13 @@ export default function PadhigamLibraryScreen() {
 type FilterPillProps = {
   label: string;
   icon?: React.ComponentProps<typeof MaterialCommunityIcons>['name'];
+  iconNode?: React.ReactNode;
   active: boolean;
   compact?: boolean;
   onPress: () => void;
 };
 
-function FilterPill({ label, icon, active, compact, onPress }: FilterPillProps) {
+function FilterPill({ label, icon, iconNode, active, compact, onPress }: FilterPillProps) {
   return (
     <Pressable
       accessibilityRole="button"
@@ -369,13 +398,14 @@ function FilterPill({ label, icon, active, compact, onPress }: FilterPillProps) 
         pressed && !active && { opacity: 0.72 },
       ]}
     >
-      {icon ? (
-        <MaterialCommunityIcons
-          name={icon}
-          size={15}
-          color={active ? colors.heroText : colors.primaryDark}
-        />
-      ) : null}
+      {iconNode ??
+        (icon ? (
+          <MaterialCommunityIcons
+            name={icon}
+            size={15}
+            color={active ? colors.heroText : colors.primaryDark}
+          />
+        ) : null)}
       <AppText size={12} bold={active} color={active ? colors.heroText : colors.primaryDark}>
         {label}
       </AppText>
@@ -446,6 +476,7 @@ const styles = StyleSheet.create({
   },
   pillCompact: { paddingVertical: 5, paddingHorizontal: 11 },
   pillActive: { backgroundColor: colors.primary, borderColor: colors.primary },
+  sectionsGap: { gap: spacing.lg },
   listGap: { gap: spacing.sm + 2 },
   itemCard: { gap: spacing.sm },
   itemHeader: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm },

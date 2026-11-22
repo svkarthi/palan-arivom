@@ -83,7 +83,8 @@ export function IconBadge({
 }
 
 type SectionHeaderProps = {
-  icon: IconName;
+  icon?: IconName;
+  iconNode?: ReactNode;
   title: string;
   color?: string;
   bg?: string;
@@ -93,6 +94,7 @@ type SectionHeaderProps = {
 /** Crisp section heading with a tinted vector icon badge and optional right action. */
 export function SectionHeader({
   icon,
+  iconNode,
   title,
   color = colors.primaryDark,
   bg = colors.primaryBg,
@@ -101,7 +103,7 @@ export function SectionHeader({
   return (
     <View style={styles.sectionHeader}>
       <View style={[styles.sectionIcon, { backgroundColor: bg }]}>
-        <MaterialCommunityIcons name={icon} size={17} color={color} />
+        {iconNode ?? (icon ? <MaterialCommunityIcons name={icon} size={17} color={color} /> : null)}
       </View>
       <AppText bold size={16} color={colors.primaryDark} style={styles.flex}>
         {title}

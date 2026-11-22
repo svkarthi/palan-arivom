@@ -481,11 +481,20 @@ export default function NallaNaalScreen() {
               })}
             </View>
             <View style={styles.obsLegend}>
-              {(['pradosham', 'ekadashi', 'vinayakaChaturthi', 'shashti', 'pournami', 'amavasai'] as const).map((id) => (
-                <View key={id} style={styles.legendItem}>
-                  <ObservanceIcon id={id} size={13} />
+              {(
+                [
+                  { id: 'pradosham', label: SPECIAL_DAYS.pradosham },
+                  { id: 'ekadashi', label: SPECIAL_DAYS.ekadashi },
+                  { id: 'vinayakaChaturthi', label: { ta: 'சதுர்த்தி', en: 'Chaturthi' } },
+                  { id: 'shashti', label: SPECIAL_DAYS.shashti },
+                  { id: 'pournami', label: SPECIAL_DAYS.pournami },
+                  { id: 'amavasai', label: SPECIAL_DAYS.amavasai },
+                ] as const
+              ).map((item) => (
+                <View key={item.id} style={styles.legendItem}>
+                  <ObservanceIcon id={item.id} size={13} />
                   <AppText size={10} color={colors.muted}>
-                    {tr(SPECIAL_DAYS[id]).split(' ')[0]}
+                    {tr(item.label)}
                   </AppText>
                 </View>
               ))}

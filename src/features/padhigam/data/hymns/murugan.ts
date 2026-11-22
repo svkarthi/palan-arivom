@@ -429,7 +429,8 @@ export const MURUGAN_HYMNS: Padhigam[] = [
           "en": "Declares that those who recite Devaraya’s Kanda Sashti Kavasam with wholehearted devotion win the favor of all nine planets, fulfillment of righteous wishes, and complete peace — closing with \"Saranam Saranam Shanmukha Saranam!\""
         }
       }
-    ]
+    ],
+    "meaningKind": "summary"
   },
   {
     "id": "kandar-alangaram-relief",
@@ -658,7 +659,8 @@ export const MURUGAN_HYMNS: Padhigam[] = [
           "en": "I will never fear even Yama advancing with trident and noose! For we have the radiant Vel and protective hand of six-faced Murugan — son of blue-throated Shiva — as our unfailing true Companion!"
         }
       }
-    ]
+    ],
+    "meaningKind": "summary"
   },
   {
     "id": "kandar-anubhuti",
@@ -1051,7 +1053,8 @@ export const MURUGAN_HYMNS: Padhigam[] = [
           "en": "The crowning benediction of Kandar Anubhuti: \"As form and formless, being and beyond, fragrance and blossom, gem and light, life, destiny and goal — come as my Guru and bless me, O Guha!\""
         }
       }
-    ]
+    ],
+    "meaningKind": "summary"
   },
   {
     "id": "murugan-thiruppugazh",
@@ -1216,6 +1219,7 @@ export const MURUGAN_HYMNS: Padhigam[] = [
           "en": "Humbly asks Lord Murugan of Thirupparankundram to overlook our daily forgetfulness, steady the wavering heart, and grant lasting peace beneath His feet."
         }
       }
-    ]
+    ],
+    "meaningKind": "summary"
   }
 ];

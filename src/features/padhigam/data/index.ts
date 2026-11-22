@@ -3,7 +3,7 @@ import type { Span } from '@core/astro/panchang';
 import type { SpecialDay } from '@core/astro/specialDays';
 import type { Bilingual } from '@core/i18n';
 
-import { TRADITIONS, type TraditionMeta } from './categories';
+import { DEITIES, DEITY_BY_ID, TRADITIONS, type DeityId, type DeityMeta, type TraditionMeta } from './categories';
 import { AMMAN_HYMNS } from './hymns/amman';
 import { MURUGAN_HYMNS } from './hymns/murugan';
 import { PERUMAL_HYMNS } from './hymns/perumal';
@@ -30,6 +30,12 @@ export const PADHIGAM_BY_ID: Record<string, Padhigam> = Object.fromEntries(
 export function activeTraditions(): TraditionMeta[] {
   const present = new Set<TraditionId>(PADHIGAMS.map((p) => p.tradition));
   return TRADITIONS.filter((t) => present.has(t.id));
+}
+
+/** Deities that currently have at least one hymn populated (groups Thevaram & Thiruvasagam under Lord Shiva). */
+export function activeDeities(): DeityMeta[] {
+  const present = new Set<TraditionId>(PADHIGAMS.map((p) => p.tradition));
+  return DEITIES.filter((d) => d.traditions.some((t) => present.has(t)));
 }
 
 export type PadhigamRecommendation = {
@@ -273,6 +279,7 @@ export function todayPadhigamRecommendation(
 }
 
 export type FilterCategory = ReliefCategory | 'all' | 'favorites';
+export type FilterDeity = DeityId | 'all';
 export type FilterTradition = TraditionId | 'all';
 export type FilterSaint = SaintId | 'all';
 
@@ -282,6 +289,7 @@ export function filterPadhigams(
   opts: {
     query: string;
     category: FilterCategory;
+    deity?: FilterDeity;
     tradition?: FilterTradition;
     saint: FilterSaint;
     favorites: readonly string[];
@@ -289,6 +297,7 @@ export function filterPadhigams(
 ): Padhigam[] {
   const q = opts.query.trim().toLowerCase();
   const favSet = opts.category === 'favorites' ? new Set(opts.favorites) : null;
+  const deity = opts.deity ?? 'all';
   const tradition = opts.tradition ?? 'all';
 
   return list.filter((p) => {
@@ -296,6 +305,7 @@ export function filterPadhigams(
     if (opts.category !== 'all' && opts.category !== 'favorites' && !p.categories.includes(opts.category)) {
       return false;
     }
+    if (deity !== 'all' && !DEITY_BY_ID[deity].traditions.includes(p.tradition)) return false;
     if (tradition !== 'all' && p.tradition !== tradition) return false;
     if (opts.saint !== 'all' && p.saint !== opts.saint) return false;
     if (!q) return true;

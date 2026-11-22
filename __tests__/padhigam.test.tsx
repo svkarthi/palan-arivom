@@ -11,6 +11,7 @@ import { resetAll } from '../src/core/store/actions';
 import profile from '../src/core/store/profileSlice';
 import settings, { setLanguage } from '../src/core/store/settingsSlice';
 import {
+  activeDeities,
   activeTraditions,
   filterPadhigams,
   PADHIGAM_BY_ID,
@@ -86,6 +87,7 @@ describe('Padhigam catalogue & data integrity across all 6 traditions', () => {
           expect(allowedLineChars.test(line)).toBe(true);
         }
         expect(v.meaning?.ta.trim().length).toBeGreaterThan(10);
+        expect(v.meaning?.ta).not.toContain('…');
         expect(v.meaning?.en.trim().length).toBeGreaterThan(10);
       }
     }
@@ -108,7 +110,7 @@ describe('Padhigam catalogue & data integrity across all 6 traditions', () => {
     expect(PADHIGAM_BY_ID['amalanadhipiran'].verses).toHaveLength(10);
   });
 
-  it('activates all 6 traditions in activeTraditions()', () => {
+  it('activates all 6 traditions and 5 deity groups (grouping Thevaram & Thiruvasagam under Lord Shiva)', () => {
     expect(activeTraditions().map((t) => t.id)).toEqual([
       'thevaram',
       'thiruvasagam',
@@ -117,6 +119,16 @@ describe('Padhigam catalogue & data integrity across all 6 traditions', () => {
       'amman',
       'perumal',
     ]);
+    expect(activeDeities().map((d) => d.id)).toEqual([
+      'shiva',
+      'vinayagar',
+      'murugan',
+      'amman',
+      'perumal',
+    ]);
+    expect(
+      filterPadhigams(PADHIGAMS, { query: '', category: 'all', deity: 'shiva', saint: 'all', favorites: [] }),
+    ).toHaveLength(12);
   });
 });
 
@@ -298,6 +310,12 @@ describe('Padhigam screens render & interact', () => {
     expect(screen.getAllByText(/திருப்பாவை/).length).toBeGreaterThan(0);
     expect(screen.queryByText(/^[a-zA-Z]+\.[a-zA-Z.]+$/)).toBeNull();
 
+    // Deity filter shows சிவபெருமான் (both as filter chip & grouped SectionHeader)
+    expect(screen.getAllByText('சிவபெருமான்').length).toBeGreaterThan(0);
+    await fireEvent.press(screen.getAllByText('சிவபெருமான்')[0]);
+    expect(screen.getByText('மாணிக்கவாசகர்')).toBeTruthy();
+    expect(screen.getAllByText(/சிவபுராணம்/).length).toBeGreaterThan(0);
+
     // Tap Amman deity chip -> shows Abirami Andhadhi & hides Kanda Sashti Kavasam
     await fireEvent.press(screen.getAllByText('அம்மன்')[0]);
     expect(screen.getAllByText(/அபிராமி அந்தாதி — பாதுகாப்பு/).length).toBeGreaterThan(0);
@@ -363,6 +381,7 @@ describe('Padhigam screens render & interact', () => {
     expect(screen.getByText(/Auspiciousness, Longevity/)).toBeTruthy();
     expect(screen.getByText(/Verse 1 \/ 12/)).toBeTruthy();
     expect(screen.getByText(/பல்லாண்டு பல்லாண்டு பல்லாயிரத்தாண்டு/)).toBeTruthy();
+    expect(screen.getAllByText('Summary Meaning').length).toBe(12);
     expect(screen.getByText(/Pallaandu, Pallaandu/)).toBeTruthy();
   });
 });

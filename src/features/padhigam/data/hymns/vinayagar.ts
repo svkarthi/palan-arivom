@@ -215,7 +215,8 @@ export const VINAYAGAR_HYMNS: Padhigam[] = [
           "en": "Uniting the seeker with true devotees and revealing the essence of the five-syllable mantra, Avvaiyar surrenders completely at the swift, gracious feet of wise Lord Vinayagar."
         }
       }
-    ]
+    ],
+    "meaningKind": "summary"
   },
   {
     "id": "mootha-nayanar-manimaalai",
@@ -548,7 +549,8 @@ export const VINAYAGAR_HYMNS: Padhigam[] = [
           "en": "Goddess Lakshmi (prosperity) delights in abiding nowhere else as steadfastly as in the hearts and homes of those who joyfully praise Lord Vinayagar, son of Shiva."
         }
       }
-    ]
+    ],
+    "meaningKind": "summary"
   },
   {
     "id": "vinayagar-thiruppugazh",
@@ -678,6 +680,7 @@ export const VINAYAGAR_HYMNS: Padhigam[] = [
           "en": "I shall never forget the grace of wise-tusked Ganapathi — master of removing every obstacle, who delights in simple offerings and inspires the heart to sing sacred Thiruppugazh."
         }
       }
-    ]
+    ],
+    "meaningKind": "summary"
   }
 ];

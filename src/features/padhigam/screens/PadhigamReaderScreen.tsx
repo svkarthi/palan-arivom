@@ -1,11 +1,12 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { toLocal } from '@core/astro/time';
 import { AppText, Button, Card, Chip, useBottomInset } from '@core/components/ui';
 import { useLang } from '@core/hooks/useLang';
 import { useNow } from '@core/hooks/useNow';
 import { usePlace } from '@core/hooks/usePlace';
 import { useAppDispatch, useAppSelector } from '@core/store/hooks';
-import { colors, fonts, spacing } from '@core/theme';
+import { colors, fonts, shadows, spacing } from '@core/theme';
 import { hapticSuccess, hapticTap } from '@core/utils/haptics';
 import { speak, stopSpeaking } from '@core/utils/speech';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -96,8 +97,11 @@ export default function PadhigamReaderScreen({ route, navigation }: Props) {
 
   const hasSections = padhigam.verses.some((v) => Boolean(v.label));
   const isSpeaking = speakingIndex >= 0;
-  const verseLineHeight = Math.round(fontSize * 1.78);
-  const invocationText = tr(TRADITION_BY_ID[padhigam.tradition].invocation);
+  const verseLineHeight = Math.round(fontSize * 1.82);
+  const trdMeta = TRADITION_BY_ID[padhigam.tradition];
+  const invocationText = tr(trdMeta.invocation);
+  const meaningHeading =
+    padhigam.meaningKind === 'summary' ? t('reader.meaningSummaryHeading') : t('reader.meaningHeading');
 
   const togglePlayAll = () => {
     hapticTap();
@@ -137,8 +141,13 @@ export default function PadhigamReaderScreen({ route, navigation }: Props) {
 
   return (
     <ScrollView contentContainerStyle={[styles.container, { paddingBottom: bottomInset }]}>
-      {/* Relief & Scriptural Origin Header */}
-      <Card variant="hero" style={styles.heroCard}>
+      {/* Relief & Scriptural Origin Header with Deity Accent */}
+      <LinearGradient
+        colors={trdMeta.heroGradient}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.heroCard}
+      >
         <AppText bold size={17} color={colors.heroText}>
           {tr(padhigam.reliefTitle)}
         </AppText>
@@ -154,7 +163,7 @@ export default function PadhigamReaderScreen({ route, navigation }: Props) {
             {tr(padhigam.blessingSummary)}
           </AppText>
         </View>
-      </Card>
+      </LinearGradient>
 
       {/* How to Recite Guidance */}
       <Card variant="tinted" style={styles.guideCard}>
@@ -297,15 +306,18 @@ export default function PadhigamReaderScreen({ route, navigation }: Props) {
           : t('reader.verseLabel', { number: verse.number, total: padhigam.verses.length });
 
         return (
-          <Card key={verse.number} style={[styles.verseCard, activeAudio && styles.verseCardSpeaking]}>
+          <Card
+            key={verse.number}
+            style={[styles.verseCard, activeAudio && [styles.verseCardSpeaking, { borderColor: trdMeta.color }]]}
+          >
             <View style={styles.verseHeader}>
-              <View style={styles.verseBadge}>
-                <AppText size={11} bold color={colors.primaryDark}>
+              <View style={[styles.verseBadge, { backgroundColor: trdMeta.bg }]}>
+                <AppText size={11} bold color={trdMeta.color}>
                   {badgeText}
                 </AppText>
               </View>
               {verse.label ? (
-                <AppText size={12} bold color={colors.primary} style={styles.flex} numberOfLines={2}>
+                <AppText size={12} bold color={trdMeta.color} style={styles.flex} numberOfLines={2}>
                   {tr(verse.label)}
                 </AppText>
               ) : (
@@ -321,7 +333,7 @@ export default function PadhigamReaderScreen({ route, navigation }: Props) {
                 <MaterialCommunityIcons
                   name={activeAudio ? 'stop-circle' : 'volume-high'}
                   size={18}
-                  color={activeAudio ? colors.primary : colors.muted}
+                  color={activeAudio ? trdMeta.color : colors.muted}
                 />
               </Pressable>
             </View>
@@ -342,8 +354,8 @@ export default function PadhigamReaderScreen({ route, navigation }: Props) {
 
             {showMeaning && verse.meaning ? (
               <View style={styles.meaningBox}>
-                <AppText size={11} bold color={colors.primaryDark}>
-                  {t('reader.meaningHeading')}
+                <AppText size={11} bold color={trdMeta.color}>
+                  {meaningHeading}
                 </AppText>
                 <AppText size={13} color={colors.text}>
                   {tr(verse.meaning)}
@@ -381,9 +393,16 @@ const styles = StyleSheet.create({
   container: { padding: spacing.md, gap: spacing.md, backgroundColor: colors.bg, flexGrow: 1 },
   emptyWrap: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.lg, backgroundColor: colors.bg },
   flex: { flex: 1 },
-  heroCard: { gap: 6 },
+  heroCard: {
+    gap: 6,
+    borderRadius: 16,
+    padding: spacing.md,
+    borderWidth: 1,
+    borderColor: 'rgba(245, 196, 105, 0.35)',
+    ...shadows.hero,
+  },
   heroSummary: {
-    backgroundColor: colors.heroSurface,
+    backgroundColor: 'rgba(0, 0, 0, 0.22)',
     borderRadius: 10,
     padding: 10,
     marginTop: 4,
@@ -434,7 +453,7 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
   },
   verseAudioBtn: { padding: 4 },
-  linesBlock: { gap: 4 },
+  linesBlock: { gap: 7 },
   verseLine: {
     fontFamily: fonts.regular,
     color: colors.text,

@@ -1,3 +1,4 @@
+import type { SpecialId } from '@core/astro/specialDays';
 import type { IconName } from '@core/components/ui';
 import type { Bilingual } from '@core/i18n';
 import { colors } from '@core/theme';
@@ -109,6 +110,8 @@ export type TraditionMeta = {
   invocation: Bilingual;
   icon: IconName;
   color: string;
+  bg: string;
+  heroGradient: readonly [string, string, string];
 };
 
 /** Full deity & scripture tradition registry; UI shows every populated tradition automatically. */
@@ -120,6 +123,8 @@ export const TRADITIONS: TraditionMeta[] = [
     invocation: { ta: 'திருச்சிற்றம்பலம்', en: 'Thiruchitrambalam' },
     icon: 'fire',
     color: colors.primaryDark,
+    bg: colors.primaryBg,
+    heroGradient: ['#982A1E', '#7A1F1F', '#551414'],
   },
   {
     id: 'thiruvasagam',
@@ -128,6 +133,8 @@ export const TRADITIONS: TraditionMeta[] = [
     invocation: { ta: 'திருச்சிற்றம்பலம்', en: 'Thiruchitrambalam' },
     icon: 'book-open-variant',
     color: '#8D4B0A',
+    bg: colors.surface,
+    heroGradient: ['#982A1E', '#7A1F1F', '#551414'],
   },
   {
     id: 'vinayagar',
@@ -136,6 +143,8 @@ export const TRADITIONS: TraditionMeta[] = [
     invocation: { ta: 'ஸ்ரீ விநாயகர் துணை', en: 'Sri Vinayagar Thunai' },
     icon: 'star-four-points',
     color: '#C65D07',
+    bg: '#FFF3E0',
+    heroGradient: ['#C65D07', '#9A3F06', '#6D2A04'],
   },
   {
     id: 'murugan',
@@ -144,6 +153,8 @@ export const TRADITIONS: TraditionMeta[] = [
     invocation: { ta: 'வெற்றிவேல் முருகனுக்கு அரோகரா', en: 'Vetrivel Muruganukku Arohara' },
     icon: 'shield-star-outline',
     color: colors.primary,
+    bg: colors.primaryBg,
+    heroGradient: ['#B4410B', '#8E2F06', '#611D04'],
   },
   {
     id: 'amman',
@@ -152,6 +163,8 @@ export const TRADITIONS: TraditionMeta[] = [
     invocation: { ta: 'ஸ்ரீ அபிராமி அன்னை துணை', en: 'Sri Abirami Annai Thunai' },
     icon: 'flower-tulip-outline',
     color: '#AD1457',
+    bg: '#FCE4EC',
+    heroGradient: ['#AD1457', '#880E4F', '#560027'],
   },
   {
     id: 'perumal',
@@ -160,9 +173,76 @@ export const TRADITIONS: TraditionMeta[] = [
     invocation: { ta: 'ஸ்ரீமன் நாராயணாய நமஹ', en: 'Sriman Narayanaya Namaha' },
     icon: 'white-balance-sunny',
     color: '#1565C0',
+    bg: '#E3F2FD',
+    heroGradient: ['#1E5AA8', '#154380', '#0D2B57'],
   },
 ];
 
 export const TRADITION_BY_ID: Record<TraditionId, TraditionMeta> = Object.fromEntries(
   TRADITIONS.map((t) => [t.id, t]),
 ) as Record<TraditionId, TraditionMeta>;
+
+export type DeityId = 'shiva' | 'vinayagar' | 'murugan' | 'amman' | 'perumal';
+
+export type DeityMeta = {
+  id: DeityId;
+  label: Bilingual;
+  shortLabel: Bilingual;
+  traditions: TraditionId[];
+  observanceId: SpecialId;
+  icon: IconName;
+  color: string;
+};
+
+/** Deity filter groups shown under "அனைத்து தெய்வங்கள்" (groups Thevaram & Thiruvasagam under Lord Shiva). */
+export const DEITIES: DeityMeta[] = [
+  {
+    id: 'shiva',
+    label: { ta: 'சிவபெருமான்', en: 'Lord Shiva' },
+    shortLabel: { ta: 'சிவபெருமான்', en: 'Shiva' },
+    traditions: ['thevaram', 'thiruvasagam'],
+    observanceId: 'pradosham',
+    icon: 'fire',
+    color: colors.primaryDark,
+  },
+  {
+    id: 'vinayagar',
+    label: { ta: 'விநாயகர்', en: 'Lord Vinayagar' },
+    shortLabel: { ta: 'விநாயகர்', en: 'Vinayagar' },
+    traditions: ['vinayagar'],
+    observanceId: 'vinayakaChaturthi',
+    icon: 'star-four-points',
+    color: '#C65D07',
+  },
+  {
+    id: 'murugan',
+    label: { ta: 'முருகன்', en: 'Lord Murugan' },
+    shortLabel: { ta: 'முருகன்', en: 'Murugan' },
+    traditions: ['murugan'],
+    observanceId: 'shashti',
+    icon: 'shield-star-outline',
+    color: colors.primary,
+  },
+  {
+    id: 'amman',
+    label: { ta: 'அம்மன்', en: 'Amman' },
+    shortLabel: { ta: 'அம்மன்', en: 'Amman' },
+    traditions: ['amman'],
+    observanceId: 'navarathri',
+    icon: 'flower-tulip-outline',
+    color: '#AD1457',
+  },
+  {
+    id: 'perumal',
+    label: { ta: 'பெருமாள்', en: 'Lord Perumal' },
+    shortLabel: { ta: 'பெருமாள்', en: 'Perumal' },
+    traditions: ['perumal'],
+    observanceId: 'ekadashi',
+    icon: 'white-balance-sunny',
+    color: '#1565C0',
+  },
+];
+
+export const DEITY_BY_ID: Record<DeityId, DeityMeta> = Object.fromEntries(
+  DEITIES.map((d) => [d.id, d]),
+) as Record<DeityId, DeityMeta>;

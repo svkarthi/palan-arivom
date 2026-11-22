@@ -168,8 +168,13 @@ export function specialDays(p: DaySummary): SpecialDay[] {
     found.push({ id: 'sankashti', window: { start: sunset + 120 * MIN, end: sunset + 240 * MIN } });
   }
 
-  if (noonTithi === 3) found.push({ id: 'vinayakaChaturthi' });
-  if (noonTithi === 5) found.push({ id: 'shashti' });
+  const prevNoonTithi = tithiIndexAt(at(noonMs - 24 * HOUR));
+  if (noonTithi === 3 || (sunriseTithi === 3 && prevNoonTithi !== 3)) {
+    found.push({ id: 'vinayakaChaturthi' });
+  }
+  if (noonTithi === 5 || (sunriseTithi === 5 && prevNoonTithi !== 5)) {
+    found.push({ id: 'shashti' });
+  }
 
   const pradoshaEnd = sunset + PRADOSHAM_LENGTH_MIN * MIN;
   if (nakshatraIndexAt(p.sunset) === KRITTIKA || nakshatraIndexAt(at(pradoshaEnd)) === KRITTIKA) {

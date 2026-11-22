@@ -51,6 +51,8 @@ export type Padhigam = {
   shrine?: Bilingual;
   /** Traditional guidance on when and how to recite. */
   howToRecite: Bilingual;
+  /** Whether verse meanings are classical commentary (பொழிப்புரை) or concise summary (சுருக்கப் பொருள்). */
+  meaningKind?: 'commentary' | 'summary';
   /** Additional bilingual search keywords (Tamil & English). */
   keywords: string[];
   /** Suggested weekdays (0 = Sunday .. 6 = Saturday). */

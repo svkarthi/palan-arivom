@@ -219,7 +219,8 @@ export const PERUMAL_HYMNS: Padhigam[] = [
           "en": "Those who recite these twelve verses of Thiruppallandu praising pure, bow-bearing Lord Narayana shall abide forever in auspicious joy and His nearness."
         }
       }
-    ]
+    ],
+    "meaningKind": "summary"
   },
   {
     "id": "thiruppavai",
@@ -792,7 +793,8 @@ export const PERUMAL_HYMNS: Padhigam[] = [
           "en": "Whoever recites this thirty-verse Tamil garland sung by Andal on Madhava who churned the Milky Ocean shall receive Lord Narayana’s grace everywhere and live in deep joy!"
         }
       }
-    ]
+    ],
+    "meaningKind": "summary"
   },
   {
     "id": "amalanadhipiran",
@@ -983,6 +985,7 @@ export const PERUMAL_HYMNS: Padhigam[] = [
           "en": "Having beheld my sweet Nectar — cloud-hued, butter-stealing Krishna reclining as radiant Ranganatha — these eyes of mine will never desire to look upon anything else!"
         }
       }
-    ]
+    ],
+    "meaningKind": "summary"
   }
 ];

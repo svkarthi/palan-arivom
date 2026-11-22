@@ -69,7 +69,7 @@ type Props = {
 
 /**
  * Traditional Tamil calendar devotional & festival SVG emblems:
- * - Pradosham / Maha Shivaratri (Shiva): Trishul
+ * - Pradosham / Maha Shivaratri (Shiva): Vibhuti (Tripundra — 3 sacred ash stripes + kumkum)
  * - Chaturthi / Sankashti (Ganesha): Pillaiyar emblem
  * - Shashti / Karthigai / Thai Poosam / Panguni Uthiram (Murugan): Vel
  * - Ekadashi (Perumal): Thirunamam
@@ -89,41 +89,46 @@ export default function ObservanceIcon({ id, size = 18, onDark = false }: Props)
   switch (id) {
     case 'pradosham':
     case 'mahaShivaratri':
-      // Lord Shiva — Trishul (திரிசூலம்)
+      // Lord Shiva — Vibhuti / Tripundra (திருநீறு + குங்குமப் பொட்டு)
       return (
         <Svg width={size} height={size} viewBox="0 0 24 24">
-          <Line x1="12" y1="3" x2="12" y2="22" stroke={accent} strokeWidth="2.2" strokeLinecap="round" />
-          <Polygon points="12,1.8 9.8,6 14.2,6" fill={accent} />
-          <Path
-            d="M5.5 6.5 C5.5 11.5 8 13.5 12 13.5 C16 13.5 18.5 11.5 18.5 6.5"
-            fill="none"
-            stroke={accent}
-            strokeWidth="2.1"
-            strokeLinecap="round"
+          <Line x1="3.5" y1="6.5" x2="20.5" y2="6.5" stroke={accent} strokeWidth="2.8" strokeLinecap="round" />
+          <Line x1="3.5" y1="12" x2="20.5" y2="12" stroke={accent} strokeWidth="2.8" strokeLinecap="round" />
+          <Line x1="3.5" y1="17.5" x2="20.5" y2="17.5" stroke={accent} strokeWidth="2.8" strokeLinecap="round" />
+          <Circle
+            cx="12"
+            cy="12"
+            r="2.7"
+            fill={onDark ? '#FF8A80' : '#D32F2F'}
+            stroke={contrast}
+            strokeWidth="0.9"
           />
-          <Polygon points="5.5,4.2 3.8,7.4 7.2,7.4" fill={accent} />
-          <Polygon points="18.5,4.2 16.8,7.4 20.2,7.4" fill={accent} />
-          <Line x1="9" y1="16.8" x2="15" y2="16.8" stroke={accent} strokeWidth="1.8" strokeLinecap="round" />
         </Svg>
       );
 
     case 'vinayakaChaturthi':
     case 'sankashti':
-      // Lord Ganesha — Pillaiyar emblem (கணபதி)
+      // Lord Vinayagar — Pillaiyar face with crown, ears, curved trunk & tilak (விநாயகர்)
       return (
         <Svg width={size} height={size} viewBox="0 0 24 24">
-          <Polygon points="12,2 8.5,6.2 15.5,6.2" fill={accent} />
-          <Path d="M6.5 8.5 C3 8.5 2.5 13.5 5.5 15 C6.5 15.5 7 14 7 12.5 Z" fill={accent} opacity={0.85} />
-          <Path d="M17.5 8.5 C21 8.5 21.5 13.5 18.5 15 C17.5 15.5 17 14 17 12.5 Z" fill={accent} opacity={0.85} />
-          <Circle cx="12" cy="11" r="5" fill={accent} />
+          {/* Crown / Mukutam */}
+          <Polygon points="12,1.6 8.4,6.4 15.6,6.4" fill={accent} />
+          {/* Large elephant ears */}
+          <Path d="M6.6 7.8 C2.4 7.8 2 14 5.6 15.2 C6.6 15.5 7.2 14 7.2 12.2 Z" fill={accent} opacity={0.9} />
+          <Path d="M17.4 7.8 C21.6 7.8 22 14 18.4 15.2 C17.4 15.5 16.8 14 16.8 12.2 Z" fill={accent} opacity={0.9} />
+          {/* Head */}
+          <Circle cx="12" cy="10.8" r="5.2" fill={accent} />
+          {/* Curved trunk */}
           <Path
-            d="M12 13.5 C12 17.5 12.5 20.2 15.6 20.2 C17 20.2 17.8 19.3 17.4 18.2"
+            d="M12 13.4 C12 17.8 12.6 20.8 16 20.8 C17.6 20.8 18.4 19.8 18 18.5"
             fill="none"
             stroke={accent}
-            strokeWidth="2.5"
+            strokeWidth="2.8"
             strokeLinecap="round"
           />
-          <Line x1="12" y1="7.8" x2="12" y2="10.2" stroke={contrast} strokeWidth="1.4" strokeLinecap="round" />
+          {/* Forehead tilak */}
+          <Line x1="10.4" y1="9.2" x2="13.6" y2="9.2" stroke={contrast} strokeWidth="1.2" strokeLinecap="round" />
+          <Circle cx="12" cy="11.1" r="1.0" fill={onDark ? '#FF8A80' : '#FFF8EC'} />
         </Svg>
       );
 
