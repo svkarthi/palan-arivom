@@ -4,20 +4,22 @@ type Translation = typeof ta;
 
 const en: Translation = {
   title: 'Tamil Vedhath Thirattu',
-  subtitle: 'Thevaram & Thiruvasagam — Padhigams for Relief & Blessings',
+  subtitle: 'Thevaram, Thiruvasagam, Vinayagar, Murugan, Abirami Andhadhi & Perumal Hymns',
   todayBanner: {
     heading: 'Today’s Suggested Padhigam',
     readNow: 'Recite now ›',
     nallaNeramTitle: 'Today’s Padhigam',
   },
   search: {
-    placeholder: 'Search relief, health, fear, debt, hymn…',
+    placeholder: 'Search relief, health, debt, Abirami, Murugan…',
     clear: 'Clear search',
   },
   filter: {
     all: 'All',
     favorites: 'Bookmarks',
     byRelief: 'By Relief / Blessing',
+    byTradition: 'By Deity / Tradition',
+    allTraditions: 'All Deities',
     bySaint: 'By Saint (Naalvar)',
     allSaints: 'All Saints',
   },
@@ -28,7 +30,7 @@ const en: Translation = {
     empty: 'No Padhigams match your search or filter.',
     emptyFavorites: 'You haven’t bookmarked any Padhigams yet.',
     resetFilters: 'Reset filters',
-    phase2Note: 'Thevaram & Thiruvasagam Padhigams are included now. Murugan, Vinayagar, Amman, and Perumal hymns will be added next.',
+    catalogueNote: 'Tamil Vedhath Thirattu — Thevaram, Thiruvasagam, Vinayagar, Murugan, Abirami Andhadhi & Divya Prabandham ({{count}} hymns).',
   },
   reader: {
     blessingHeading: 'Blessing & Relief',

@@ -105,17 +105,64 @@ export const SAINTS: SaintMeta[] = [
 export type TraditionMeta = {
   id: TraditionId;
   label: Bilingual;
+  shortLabel: Bilingual;
+  invocation: Bilingual;
+  icon: IconName;
+  color: string;
 };
 
-/**
- * Full tradition registry. Phase 1 populates Thevaram & Thiruvasagam;
- * Phase 2 traditions stay hidden in the UI until their hymn files contain entries.
- */
+/** Full deity & scripture tradition registry; UI shows every populated tradition automatically. */
 export const TRADITIONS: TraditionMeta[] = [
-  { id: 'thevaram', label: { ta: 'தேவாரம்', en: 'Thevaram' } },
-  { id: 'thiruvasagam', label: { ta: 'திருவாசகம்', en: 'Thiruvasagam' } },
-  { id: 'murugan', label: { ta: 'முருகன் பாடல்கள்', en: 'Murugan Hymns' } },
-  { id: 'vinayagar', label: { ta: 'விநாயகர் பாடல்கள்', en: 'Vinayagar Hymns' } },
-  { id: 'amman', label: { ta: 'அம்மன் பாடல்கள்', en: 'Amman Hymns' } },
-  { id: 'perumal', label: { ta: 'பெருமாள் பாடல்கள்', en: 'Perumal Hymns' } },
+  {
+    id: 'thevaram',
+    label: { ta: 'தேவாரம் (சிவன்)', en: 'Thevaram (Shiva)' },
+    shortLabel: { ta: 'தேவாரம்', en: 'Thevaram' },
+    invocation: { ta: 'திருச்சிற்றம்பலம்', en: 'Thiruchitrambalam' },
+    icon: 'fire',
+    color: colors.primaryDark,
+  },
+  {
+    id: 'thiruvasagam',
+    label: { ta: 'திருவாசகம் (சிவன்)', en: 'Thiruvasagam (Shiva)' },
+    shortLabel: { ta: 'திருவாசகம்', en: 'Thiruvasagam' },
+    invocation: { ta: 'திருச்சிற்றம்பலம்', en: 'Thiruchitrambalam' },
+    icon: 'book-open-variant',
+    color: '#8D4B0A',
+  },
+  {
+    id: 'vinayagar',
+    label: { ta: 'விநாயகர் பாடல்கள்', en: 'Lord Vinayagar' },
+    shortLabel: { ta: 'விநாயகர்', en: 'Vinayagar' },
+    invocation: { ta: 'ஸ்ரீ விநாயகர் துணை', en: 'Sri Vinayagar Thunai' },
+    icon: 'star-four-points',
+    color: '#C65D07',
+  },
+  {
+    id: 'murugan',
+    label: { ta: 'முருகன் பாடல்கள்', en: 'Lord Murugan' },
+    shortLabel: { ta: 'முருகன்', en: 'Murugan' },
+    invocation: { ta: 'வெற்றிவேல் முருகனுக்கு அரோகரா', en: 'Vetrivel Muruganukku Arohara' },
+    icon: 'shield-star-outline',
+    color: colors.primary,
+  },
+  {
+    id: 'amman',
+    label: { ta: 'அம்மன் (அபிராமி அந்தாதி)', en: 'Amman (Abirami Andhadhi)' },
+    shortLabel: { ta: 'அம்மன்', en: 'Amman' },
+    invocation: { ta: 'ஸ்ரீ அபிராமி அன்னை துணை', en: 'Sri Abirami Annai Thunai' },
+    icon: 'flower-tulip-outline',
+    color: '#AD1457',
+  },
+  {
+    id: 'perumal',
+    label: { ta: 'பெருமாள் (திவ்யப் பிரபந்தம்)', en: 'Perumal (Divya Prabandham)' },
+    shortLabel: { ta: 'பெருமாள்', en: 'Perumal' },
+    invocation: { ta: 'ஸ்ரீமன் நாராயணாய நமஹ', en: 'Sriman Narayanaya Namaha' },
+    icon: 'white-balance-sunny',
+    color: '#1565C0',
+  },
 ];
+
+export const TRADITION_BY_ID: Record<TraditionId, TraditionMeta> = Object.fromEntries(
+  TRADITIONS.map((t) => [t.id, t]),
+) as Record<TraditionId, TraditionMeta>;

@@ -13,7 +13,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react
 import { Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
-import { CATEGORY_BY_ID } from '../data/categories';
+import { CATEGORY_BY_ID, TRADITION_BY_ID } from '../data/categories';
 import { dateKeyOf, PADHIGAM_BY_ID } from '../data';
 import type { PadhigamStackParamList } from '../navigation/types';
 import {
@@ -97,6 +97,7 @@ export default function PadhigamReaderScreen({ route, navigation }: Props) {
   const hasSections = padhigam.verses.some((v) => Boolean(v.label));
   const isSpeaking = speakingIndex >= 0;
   const verseLineHeight = Math.round(fontSize * 1.78);
+  const invocationText = tr(TRADITION_BY_ID[padhigam.tradition].invocation);
 
   const togglePlayAll = () => {
     hapticTap();
@@ -116,14 +117,14 @@ export default function PadhigamReaderScreen({ route, navigation }: Props) {
       `🪔 ${tr(padhigam.reliefTitle)}`,
       `${tr(padhigam.title)} — ${tr(padhigam.author)} (${tr(padhigam.source)})`,
       '',
-      t('reader.closingInvocation'),
+      invocationText,
       '',
       ...padhigam.verses.flatMap((v) => [
         v.label ? `【${tr(v.label)}】` : `${v.number}.`,
         ...v.linesTa,
         '',
       ]),
-      t('reader.closingInvocation'),
+      invocationText,
     ];
     void Share.share({ message: lines.join('\n') });
   };
@@ -285,7 +286,7 @@ export default function PadhigamReaderScreen({ route, navigation }: Props) {
 
       {/* Sacred Opening Invocation */}
       <AppText bold size={14} color={colors.primaryDark} center>
-        {t('reader.closingInvocation')}
+        {invocationText}
       </AppText>
 
       {/* Classical Tamil Verses */}
@@ -355,7 +356,7 @@ export default function PadhigamReaderScreen({ route, navigation }: Props) {
 
       {/* Sacred Closing Invocation */}
       <AppText bold size={14} color={colors.primaryDark} center>
-        {t('reader.closingInvocation')}
+        {invocationText}
       </AppText>
 
       {/* Daily Parayanam Check-in */}

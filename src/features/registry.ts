@@ -71,8 +71,8 @@ export const FEATURES: FeatureTile[] = [
     tintBg: colors.primaryBg,
     title: { ta: 'பதிகங்கள்', en: 'Padhigams' },
     description: {
-      ta: 'தேவாரம், திருவாசகம் — பலன் தரும் தமிழ் வேதத் திரட்டுப் பதிகங்கள்',
-      en: 'Thevaram & Thiruvasagam Padhigams for relief and daily blessings',
+      ta: 'தேவாரம், திருவாசகம், விநாயகர், முருகன், அபிராமி அந்தாதி & பெருமாள் பதிகங்கள்',
+      en: 'Thevaram, Thiruvasagam, Vinayagar, Murugan, Abirami Andhadhi & Perumal hymns',
     },
     route: 'Padhigam',
   },

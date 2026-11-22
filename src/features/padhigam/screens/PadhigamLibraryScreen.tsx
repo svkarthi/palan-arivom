@@ -14,14 +14,16 @@ import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native
 import { useTranslation } from 'react-i18next';
 
 import { nallaNeramDay } from '../../nalla-neram/logic';
-import { CATEGORY_BY_ID, RELIEF_CATEGORIES, SAINTS } from '../data/categories';
+import { CATEGORY_BY_ID, RELIEF_CATEGORIES, SAINTS, TRADITION_BY_ID } from '../data/categories';
 import {
+  activeTraditions,
   dateKeyOf,
   filterPadhigams,
   PADHIGAMS,
   todayPadhigamRecommendation,
   type FilterCategory,
   type FilterSaint,
+  type FilterTradition,
 } from '../data';
 import type { PadhigamStackParamList } from '../navigation/types';
 import { toggleFavorite } from '../store/padhigamSlice';
@@ -42,6 +44,7 @@ export default function PadhigamLibraryScreen() {
 
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<FilterCategory>('all');
+  const [tradition, setTradition] = useState<FilterTradition>('all');
   const [saint, setSaint] = useState<FilterSaint>('all');
 
   const localNow = useMemo(() => toLocal(now, place.utcOffsetMin), [now, place.utcOffsetMin]);
@@ -55,12 +58,19 @@ export default function PadhigamLibraryScreen() {
     [day, birthRashi, localHour],
   );
 
+  const traditions = useMemo(() => activeTraditions(), []);
+  const showSaintFilter = tradition === 'thevaram' || tradition === 'thiruvasagam';
+  const visibleSaints = useMemo(
+    () => (tradition === 'all' ? SAINTS : SAINTS.filter((s) => s.tradition === tradition)),
+    [tradition],
+  );
+
   const favoriteSet = useMemo(() => new Set(favorites), [favorites]);
   const completedTodaySet = useMemo(() => new Set(completedByDate[todayKey] ?? []), [completedByDate, todayKey]);
 
   const filtered = useMemo(
-    () => filterPadhigams(PADHIGAMS, { query, category, saint, favorites }),
-    [query, category, saint, favorites],
+    () => filterPadhigams(PADHIGAMS, { query, category, tradition, saint, favorites }),
+    [query, category, tradition, saint, favorites],
   );
 
   const openReader = (padhigamId: string) => {
@@ -68,10 +78,17 @@ export default function PadhigamLibraryScreen() {
     navigation.navigate('PadhigamReader', { padhigamId });
   };
 
+  const selectTradition = (next: FilterTradition) => {
+    hapticTap();
+    setTradition(next);
+    setSaint('all');
+  };
+
   const resetFilters = () => {
     hapticTap();
     setQuery('');
     setCategory('all');
+    setTradition('all');
     setSaint('all');
   };
 
@@ -80,7 +97,7 @@ export default function PadhigamLibraryScreen() {
       contentContainerStyle={[styles.container, { paddingBottom: bottomInset }]}
       keyboardShouldPersistTaps="handled"
     >
-      {/* Contextual Today's Padhigam Hero Card (Phase 1: Thevaram & Thiruvasagam only) */}
+      {/* Contextual Today's Padhigam Hero Card */}
       <Pressable
         accessibilityRole="button"
         onPress={() => openReader(recommendation.padhigam.id)}
@@ -142,6 +159,62 @@ export default function PadhigamLibraryScreen() {
         ) : null}
       </View>
 
+      {/* Deity / Tradition Filter */}
+      <View style={styles.filterBlock}>
+        <AppText size={12} bold color={colors.muted}>
+          {t('filter.byTradition')}
+        </AppText>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
+          <FilterPill
+            label={t('filter.allTraditions')}
+            icon="view-grid-outline"
+            active={tradition === 'all'}
+            onPress={() => selectTradition('all')}
+          />
+          {traditions.map((trd) => (
+            <FilterPill
+              key={trd.id}
+              label={tr(trd.shortLabel)}
+              icon={trd.icon}
+              active={tradition === trd.id}
+              onPress={() => selectTradition(trd.id)}
+            />
+          ))}
+        </ScrollView>
+      </View>
+
+      {/* Naalvar Saint Sub-Filter (shown when browsing Thevaram / Thiruvasagam) */}
+      {showSaintFilter && visibleSaints.length > 1 ? (
+        <View style={styles.filterBlock}>
+          <AppText size={12} bold color={colors.muted}>
+            {t('filter.bySaint')}
+          </AppText>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
+            <FilterPill
+              label={t('filter.allSaints')}
+              active={saint === 'all'}
+              compact
+              onPress={() => {
+                hapticTap();
+                setSaint('all');
+              }}
+            />
+            {visibleSaints.map((s) => (
+              <FilterPill
+                key={s.id}
+                label={tr(s.shortLabel)}
+                active={saint === s.id}
+                compact
+                onPress={() => {
+                  hapticTap();
+                  setSaint(s.id);
+                }}
+              />
+            ))}
+          </ScrollView>
+        </View>
+      ) : null}
+
       {/* Relief / Blessing Category Filter */}
       <View style={styles.filterBlock}>
         <AppText size={12} bold color={colors.muted}>
@@ -150,8 +223,9 @@ export default function PadhigamLibraryScreen() {
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
           <FilterPill
             label={t('filter.all')}
-            icon="view-grid-outline"
+            icon="apps"
             active={category === 'all'}
+            compact
             onPress={() => {
               hapticTap();
               setCategory('all');
@@ -161,6 +235,7 @@ export default function PadhigamLibraryScreen() {
             label={favorites.length > 0 ? `${t('filter.favorites')} (${favorites.length})` : t('filter.favorites')}
             icon="heart-outline"
             active={category === 'favorites'}
+            compact
             onPress={() => {
               hapticTap();
               setCategory('favorites');
@@ -172,39 +247,10 @@ export default function PadhigamLibraryScreen() {
               label={tr(c.label)}
               icon={c.icon}
               active={category === c.id}
-              onPress={() => {
-                hapticTap();
-                setCategory(c.id);
-              }}
-            />
-          ))}
-        </ScrollView>
-      </View>
-
-      {/* Author / Saint (Naalvar) Filter */}
-      <View style={styles.filterBlock}>
-        <AppText size={12} bold color={colors.muted}>
-          {t('filter.bySaint')}
-        </AppText>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
-          <FilterPill
-            label={t('filter.allSaints')}
-            active={saint === 'all'}
-            compact
-            onPress={() => {
-              hapticTap();
-              setSaint('all');
-            }}
-          />
-          {SAINTS.map((s) => (
-            <FilterPill
-              key={s.id}
-              label={tr(s.shortLabel)}
-              active={saint === s.id}
               compact
               onPress={() => {
                 hapticTap();
-                setSaint(s.id);
+                setCategory(c.id);
               }}
             />
           ))}
@@ -229,6 +275,7 @@ export default function PadhigamLibraryScreen() {
             const countText = hasSections
               ? t('list.stanzasCount', { count: p.verses.length })
               : t('list.versesCount', { count: p.verses.length });
+            const trdMeta = TRADITION_BY_ID[p.tradition];
 
             return (
               <Pressable
@@ -270,6 +317,7 @@ export default function PadhigamLibraryScreen() {
                   </View>
 
                   <View style={styles.chipWrap}>
+                    <Chip label={tr(trdMeta.shortLabel)} color={trdMeta.color} />
                     {p.categories.map((catId) => {
                       const meta = CATEGORY_BY_ID[catId];
                       return <Chip key={catId} label={tr(meta.label)} color={meta.color} />;
@@ -294,7 +342,7 @@ export default function PadhigamLibraryScreen() {
       )}
 
       <AppText size={12} color={colors.muted} center style={styles.footerNote}>
-        {t('list.phase2Note')}
+        {t('list.catalogueNote', { count: PADHIGAMS.length })}
       </AppText>
     </ScrollView>
   );
