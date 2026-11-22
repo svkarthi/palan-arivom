@@ -1,3 +1,7 @@
+import type { NavigatorScreenParams } from '@react-navigation/native';
+
+import type { PadhigamStackParamList } from '../../features/padhigam/navigation/types';
+
 export type RootStackParamList = {
   Home: undefined;
   Settings: undefined;
@@ -6,4 +10,5 @@ export type RootStackParamList = {
   NallaNaal: undefined;
   Porutham: undefined;
   BirthStar: undefined;
+  Padhigam: NavigatorScreenParams<PadhigamStackParamList> | undefined;
 };

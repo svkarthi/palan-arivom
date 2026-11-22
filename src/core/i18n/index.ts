@@ -7,6 +7,8 @@ import nallaNaalEn from '../../features/nalla-naal/i18n/en';
 import nallaNaalTa from '../../features/nalla-naal/i18n/ta';
 import nallaNeramEn from '../../features/nalla-neram/i18n/en';
 import nallaNeramTa from '../../features/nalla-neram/i18n/ta';
+import padhigamEn from '../../features/padhigam/i18n/en';
+import padhigamTa from '../../features/padhigam/i18n/ta';
 import poruthamEn from '../../features/porutham/i18n/en';
 import poruthamTa from '../../features/porutham/i18n/ta';
 import vastuEn from '../../features/vastu/i18n/en';
@@ -26,8 +28,8 @@ export type Bilingual = Record<Lang, string>;
  */
 void i18n.use(initReactI18next).init({
   resources: {
-    ta: { translation: ta, vastu: vastuTa, nallaNeram: nallaNeramTa, nallaNaal: nallaNaalTa, porutham: poruthamTa, birthStar: birthStarTa },
-    en: { translation: en, vastu: vastuEn, nallaNeram: nallaNeramEn, nallaNaal: nallaNaalEn, porutham: poruthamEn, birthStar: birthStarEn },
+    ta: { translation: ta, vastu: vastuTa, nallaNeram: nallaNeramTa, nallaNaal: nallaNaalTa, porutham: poruthamTa, birthStar: birthStarTa, padhigam: padhigamTa },
+    en: { translation: en, vastu: vastuEn, nallaNeram: nallaNeramEn, nallaNaal: nallaNaalEn, porutham: poruthamEn, birthStar: birthStarEn, padhigam: padhigamEn },
   },
   lng: DEFAULT_LANG,
   fallbackLng: 'en',

@@ -12,13 +12,14 @@ import HomeScreen from '../src/core/screens/HomeScreen';
 import profile, { setBirthRashi } from '../src/core/store/profileSlice';
 import settings from '../src/core/store/settingsSlice';
 import { setLanguage } from '../src/core/store/settingsSlice';
+import padhigam from '../src/features/padhigam/store/padhigamSlice';
 import compass from '../src/features/vastu/store/compassSlice';
 import plan from '../src/features/vastu/store/planSlice';
 import NallaNaalScreen from '../src/features/nalla-naal/screens/NallaNaalScreen';
 import { nallaNeramDay } from '../src/features/nalla-neram/logic';
 import NallaNeramScreen from '../src/features/nalla-neram/screens/NallaNeramScreen';
 
-const makeStore = () => configureStore({ reducer: { settings, profile, plan, compass } });
+const makeStore = () => configureStore({ reducer: { settings, profile, plan, compass, padhigam } });
 
 describe('feature screens render', () => {
   beforeEach(async () => {
@@ -89,6 +90,7 @@ describe('feature screens render', () => {
     );
     expect(screen.getByText(/உங்கள் ராசிக்கு/)).toBeTruthy();
     expect(screen.getByText(/உங்கள் ராசி$/)).toBeTruthy();
+    expect(screen.getByText(/கோளறு திருப்பதிகம்/)).toBeTruthy();
   });
 
   it('shows Today at a Glance card on HomeScreen', async () => {

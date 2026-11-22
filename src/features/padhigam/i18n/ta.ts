@@ -1,0 +1,52 @@
+const ta = {
+  title: 'தமிழ் வேதத் திரட்டு',
+  subtitle: 'தேவாரம் & திருவாசகம் — பலன் தரும் பதிகங்கள்',
+  todayBanner: {
+    heading: 'இன்றைய பரிந்துரை',
+    readNow: 'பாராயணம் செய் ›',
+    nallaNeramTitle: 'இன்றைய பதிகம்',
+  },
+  search: {
+    placeholder: 'பலன், நோய், பயம், கடன், பதிகம் தேடுக…',
+    clear: 'தேடலை அழி',
+  },
+  filter: {
+    all: 'அனைத்தும்',
+    favorites: 'பிடித்தவை',
+    byRelief: 'பலன் / தேவை வாரியாக',
+    bySaint: 'அருளியவர் (நால்வர்)',
+    allSaints: 'அனைவர்',
+  },
+  list: {
+    versesCount: '{{count}} பாடல்கள்',
+    stanzasCount: '{{count}} பகுதிகள்',
+    recitedToday: 'இன்று ஓதியது',
+    empty: 'இந்தத் தேடலுக்குப் பொருந்தும் பதிகம் இல்லை.',
+    emptyFavorites: 'நீங்கள் இன்னும் எந்தப் பதிகத்தையும் பிடித்தவையில் சேர்க்கவில்லை.',
+    resetFilters: 'வடிகட்டலை நீக்கு',
+    phase2Note: 'தேவாரம் & திருவாசகம் பதிகங்கள் இப்போது சேர்க்கப்பட்டுள்ளன. முருகன், விநாயகர், அம்மன், பெருமாள் பாடல்கள் அடுத்த பதிப்பில் இணையும்.',
+  },
+  reader: {
+    blessingHeading: 'பாராயணப் பலன்',
+    howToRecite: 'ஓதும் முறை',
+    shrineLabel: 'தலம்',
+    verseLabel: 'பாடல் {{number}} / {{total}}',
+    stanzaLabel: 'பகுதி {{number}} / {{total}}',
+    meaningToggle: 'பொருள்',
+    meaningHeading: 'பொழிப்புரை',
+    fontSmaller: 'எழுத்தைச் சிறிதாக்கு',
+    fontLarger: 'எழுத்தை பெரிதாக்கு',
+    listenAll: 'ஒலி',
+    stopListening: 'நிறுத்து',
+    listenVerse: 'இப்பாடலைக் கேள்',
+    bookmarkAdd: 'பிடித்தவையில் சேர்',
+    bookmarkRemove: 'பிடித்தவையிலிருந்து நீக்கு',
+    markRecited: 'இன்று பாராயணம் முடிந்தது எனக் குறி',
+    recitedDone: 'இன்று பாராயணம் முடிந்தது ✓',
+    recitedHint: 'மீண்டும் தொட அழிக்கலாம்',
+    closingInvocation: 'திருச்சிற்றம்பலம்',
+    notFound: 'பதிகம் கிடைக்கவில்லை.',
+  },
+};
+
+export default ta;

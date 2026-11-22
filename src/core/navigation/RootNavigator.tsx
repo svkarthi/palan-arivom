@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import BirthStarScreen from '../../features/birth-star/screens/BirthStarScreen';
 import NallaNaalScreen from '../../features/nalla-naal/screens/NallaNaalScreen';
 import NallaNeramScreen from '../../features/nalla-neram/screens/NallaNeramScreen';
+import PadhigamNavigator from '../../features/padhigam/navigation/PadhigamNavigator';
 import PoruthamScreen from '../../features/porutham/screens/PoruthamScreen';
 import VastuNavigator from '../../features/vastu/navigation/VastuNavigator';
 import HomeScreen from '../screens/HomeScreen';
@@ -60,6 +61,7 @@ export default function RootNavigator() {
         <Stack.Screen name="NallaNaal" component={NallaNaalScreen} options={{ title: t('title', { ns: 'nallaNaal' }) }} />
         <Stack.Screen name="Porutham" component={PoruthamScreen} options={{ title: t('title', { ns: 'porutham' }) }} />
         <Stack.Screen name="BirthStar" component={BirthStarScreen} options={{ title: t('title', { ns: 'birthStar' }) }} />
+        <Stack.Screen name="Padhigam" component={PadhigamNavigator} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
   );

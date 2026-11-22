@@ -64,4 +64,16 @@ export const FEATURES: FeatureTile[] = [
     description: { ta: 'பிறந்த தேதி, நேரத்திலிருந்து நட்சத்திரம், ராசி, லக்னம் அறிக', en: 'Find Janma Nakshatra, Pada, Rashi & Lagna from birth time' },
     route: 'BirthStar',
   },
+  {
+    id: 'padhigam',
+    icon: 'book-open-page-variant-outline',
+    tint: '#8D4B0A',
+    tintBg: colors.primaryBg,
+    title: { ta: 'பதிகங்கள்', en: 'Padhigams' },
+    description: {
+      ta: 'தேவாரம், திருவாசகம் — பலன் தரும் தமிழ் வேதத் திரட்டுப் பதிகங்கள்',
+      en: 'Thevaram & Thiruvasagam Padhigams for relief and daily blessings',
+    },
+    route: 'Padhigam',
+  },
 ];

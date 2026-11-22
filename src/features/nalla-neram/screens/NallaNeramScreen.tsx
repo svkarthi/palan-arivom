@@ -1,21 +1,25 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { NavigationContext } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AYANA, chandrashtamaRashi, DAY_YOGA_NAMES, dayYoga, DIRECTION_NAMES, isDakshinayana, PARIHARAM, ritu, sakaYear } from '@core/astro/dayExtras';
 import { GREGORIAN_MONTHS, PLANETS, RASHIS, SPECIAL_DAYS, TAMIL_MONTHS, TAMIL_YEARS, WEEKDAYS } from '@core/astro/names';
 import { addDays, daysInMonth, formatClock, sameDate, toLocal, type CivilDate } from '@core/astro/time';
 import BottomSheet from '@core/components/BottomSheet';
 import PlacePicker from '@core/components/PlacePicker';
-import { AppText, Button, Card, Chip, SectionHeader, Segmented, Stepper, useBottomInset } from '@core/components/ui';
+import { AppText, Button, Card, Chip, IconBadge, SectionHeader, Segmented, Stepper, useBottomInset } from '@core/components/ui';
 import { useLang } from '@core/hooks/useLang';
 import { useNow } from '@core/hooks/useNow';
 import { usePlace } from '@core/hooks/usePlace';
+import type { RootStackParamList } from '@core/navigation/types';
 import { useAppDispatch, useAppSelector } from '@core/store/hooks';
 import { setDayPartBasis } from '@core/store/profileSlice';
 import { colors, spacing } from '@core/theme';
 import { hapticTap } from '@core/utils/haptics';
-import { useMemo, useState } from 'react';
+import { useContext, useMemo, useState } from 'react';
 import { Pressable, ScrollView, Share, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
+import { todayPadhigamRecommendation } from '../../padhigam/data';
 import DayTimes from '../components/DayTimes';
 import { nallaNeramDay, statusAt } from '../logic';
 
@@ -30,7 +34,9 @@ export default function NallaNeramScreen() {
   const birthRashi = useAppSelector((s) => s.profile.birthRashi);
   const now = useNow();
   const bottomInset = useBottomInset();
-  const today = useMemo(() => toLocal(now, place.utcOffsetMin).date, [now, place.utcOffsetMin]);
+  const navigation = useContext(NavigationContext) as NativeStackNavigationProp<RootStackParamList> | undefined;
+  const localNow = useMemo(() => toLocal(now, place.utcOffsetMin), [now, place.utcOffsetMin]);
+  const today = localNow.date;
   const [picked, setPicked] = useState<CivilDate | null>(null);
   const [showHoras, setShowHoras] = useState(false);
   const [jumpOpen, setJumpOpen] = useState(false);
@@ -41,6 +47,11 @@ export default function NallaNeramScreen() {
   const { y, m, d } = date;
   const day = useMemo(() => nallaNeramDay({ y, m, d }, place, basis), [y, m, d, place, basis]);
   const status = isToday ? statusAt(day, now.getTime()) : null;
+  const localHour = isToday ? Math.floor(localNow.minutes / 60) : undefined;
+  const padhigamRec = useMemo(
+    () => todayPadhigamRecommendation(day, birthRashi, localHour),
+    [day, birthRashi, localHour],
+  );
 
   const clock = (ms: number | Date) => formatClock(new Date(ms), place.utcOffsetMin);
   const range = (i: { start: number; end: number }) => `${clock(i.start)} – ${clock(i.end)}`;
@@ -197,6 +208,38 @@ export default function NallaNeramScreen() {
 
       <DayTimes day={day} date={date} place={place} />
 
+      <Pressable
+        accessibilityRole="button"
+        onPress={() => {
+          hapticTap();
+          navigation?.navigate('Padhigam', {
+            screen: 'PadhigamReader',
+            params: { padhigamId: padhigamRec.padhigam.id },
+          });
+        }}
+        style={({ pressed }) => pressed && { opacity: 0.86, transform: [{ scale: 0.99 }] }}
+      >
+        <Card variant="tinted" style={styles.padhigamCard}>
+          <View style={styles.row}>
+            <IconBadge icon="book-open-page-variant-outline" color="#8D4B0A" bg={colors.primaryBg} size={40} />
+            <View style={styles.flex}>
+              <View style={styles.padhigamTopRow}>
+                <AppText size={11} bold color={colors.primary}>
+                  {t('todayBanner.nallaNeramTitle', { ns: 'padhigam' })} · {tr(padhigamRec.badge)}
+                </AppText>
+              </View>
+              <AppText bold size={14} color={colors.primaryDark}>
+                {tr(padhigamRec.padhigam.title)}
+              </AppText>
+              <AppText size={12} color={colors.muted} numberOfLines={2}>
+                {tr(padhigamRec.reason)}
+              </AppText>
+            </View>
+            <MaterialCommunityIcons name="chevron-right" size={22} color={colors.primary} />
+          </View>
+        </Card>
+      </Pressable>
+
       <Card style={styles.gap}>
         <AppText bold size={13} color={colors.primaryDark}>
           {t('basis.label')}
@@ -336,6 +379,8 @@ const styles = StyleSheet.create({
   },
   statusCard: { borderWidth: 1.5, paddingVertical: 10 },
   alertCard: { borderColor: colors.bad, borderWidth: 1.5, backgroundColor: colors.badBg, paddingVertical: 10 },
+  padhigamCard: { borderColor: colors.primary + '44', paddingVertical: 12 },
+  padhigamTopRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   gap: { gap: spacing.sm },
   flex: { flex: 1 },
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
