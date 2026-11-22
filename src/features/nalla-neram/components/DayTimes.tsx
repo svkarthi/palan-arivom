@@ -6,6 +6,7 @@ import type { Place } from '@core/astro/sunrise';
 import { formatClock, sameDate, toLocal, type CivilDate } from '@core/astro/time';
 import { AppText, Card, Chip } from '@core/components/ui';
 import { useLang } from '@core/hooks/useLang';
+import { useAppSelector } from '@core/store/hooks';
 import { colors, spacing } from '@core/theme';
 import { StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
@@ -23,6 +24,7 @@ type Props = { day: NallaNeramDay; date: CivilDate; place: Place };
 export default function DayTimes({ day, date, place }: Props) {
   const { t } = useTranslation('nallaNeram');
   const { tr } = useLang();
+  const birthRashi = useAppSelector((s) => s.profile.birthRashi);
   const clock = (ms: number | Date) => formatClock(new Date(ms), place.utcOffsetMin);
   const range = (i: { start: number; end: number }) => `${clock(i.start)} – ${clock(i.end)}`;
 
@@ -265,11 +267,15 @@ export default function DayTimes({ day, date, place }: Props) {
       <Card style={styles.gap}>
         {day.moonRashi.map((s) => {
           const rashi = chandrashtamaRashi(s.index);
+          const isMine = birthRashi === rashi;
           return (
             <View key={`${s.index}-${s.end.getTime()}`} style={styles.gap}>
-              <AppText bold color={colors.bad}>
-                {t('chandrashtama.row', { rashi: tr(RASHIS[rashi]) })}
-              </AppText>
+              <View style={styles.row}>
+                <AppText bold color={colors.bad} style={styles.flex}>
+                  {t('chandrashtama.row', { rashi: tr(RASHIS[rashi]) })}
+                </AppText>
+                {isMine ? <Chip label={t('chandrashtama.yours')} color={colors.bad} style={styles.noMargin} /> : null}
+              </View>
               <AppText size={12} color={colors.muted}>
                 {starsOf(rashi)}
               </AppText>

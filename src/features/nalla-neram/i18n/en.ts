@@ -53,6 +53,8 @@ const en: typeof ta = {
     title: 'Chandrashtamam',
     row: 'For {{rashi}} rashi',
     moonIn: 'Moon in {{rashi}}',
+    personalAlert: 'Chandrashtamam for your rashi ({{rashi}}) — {{until}}',
+    yours: 'Your rashi',
     hint: 'Chandrashtamam applies to people whose rashi is the 8th from the Moon. Nakshatra padas are in brackets. The list changes when the Moon changes rashi.',
   },
   lagna: {

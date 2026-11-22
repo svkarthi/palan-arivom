@@ -12,6 +12,7 @@ const ta = {
     comingSoon: 'விரைவில்',
     openSettings: 'அமைப்புகள்',
     back: 'முகப்பு',
+    viewDay: 'முழு விவரம் பார்க்க ›',
   },
   place: {
     choose: 'நகரத்தைத் தேர்வு செய்க',

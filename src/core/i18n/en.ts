@@ -16,6 +16,7 @@ const en: Translation = {
     comingSoon: 'Coming soon',
     openSettings: 'Settings',
     back: 'Home',
+    viewDay: 'View full day ›',
   },
   place: {
     choose: 'Choose a city',

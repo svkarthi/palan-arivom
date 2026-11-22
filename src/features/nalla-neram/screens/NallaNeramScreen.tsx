@@ -1,5 +1,5 @@
-import { AYANA, isDakshinayana, ritu, sakaYear } from '@core/astro/dayExtras';
-import { GREGORIAN_MONTHS, PLANETS, TAMIL_MONTHS, TAMIL_YEARS, WEEKDAYS } from '@core/astro/names';
+import { AYANA, chandrashtamaRashi, isDakshinayana, ritu, sakaYear } from '@core/astro/dayExtras';
+import { GREGORIAN_MONTHS, PLANETS, RASHIS, TAMIL_MONTHS, TAMIL_YEARS, WEEKDAYS } from '@core/astro/names';
 import { addDays, formatClock, sameDate, toLocal, type CivilDate } from '@core/astro/time';
 import PlacePicker from '@core/components/PlacePicker';
 import { AppText, Button, Card, Chip, Segmented, Stepper } from '@core/components/ui';
@@ -24,6 +24,7 @@ export default function NallaNeramScreen() {
   const place = usePlace();
   const dispatch = useAppDispatch();
   const basis = useAppSelector((s) => s.profile.dayPartBasis) ?? 'sun';
+  const birthRashi = useAppSelector((s) => s.profile.birthRashi);
   const now = useNow();
   const today = useMemo(() => toLocal(now, place.utcOffsetMin).date, [now, place.utcOffsetMin]);
   const [picked, setPicked] = useState<CivilDate | null>(null);
@@ -47,6 +48,16 @@ export default function NallaNeramScreen() {
 
   const statusColor = !status ? colors.muted : status.kind === 'good' ? colors.good : status.kind === 'neutral' ? colors.muted : colors.bad;
   const statusText = !status ? '' : t(`now.${status.kind}`, { time: 'until' in status ? clock(status.until) : '' });
+  const myChandrashtama =
+    birthRashi !== null ? day.moonRashi.find((s) => chandrashtamaRashi(s.index) === birthRashi) : undefined;
+  const myChandrashtamaUntil = myChandrashtama
+    ? sameDate(toLocal(myChandrashtama.end, place.utcOffsetMin).date, date)
+      ? t('panchang.until', { time: clock(myChandrashtama.end) })
+      : t('panchang.untilNext', {
+          time: clock(myChandrashtama.end),
+          nextDay: t('datetime.nextDay', { ns: 'translation' }),
+        })
+    : '';
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -84,6 +95,14 @@ export default function NallaNeramScreen() {
         <Card style={{ borderColor: statusColor, borderWidth: 2 }}>
           <AppText bold color={statusColor} center>
             {statusText}
+          </AppText>
+        </Card>
+      ) : null}
+
+      {myChandrashtama && birthRashi !== null ? (
+        <Card style={{ borderColor: colors.bad, borderWidth: 2, backgroundColor: '#FFF5F5' }}>
+          <AppText bold color={colors.bad} center>
+            ⚠️ {t('chandrashtama.personalAlert', { rashi: tr(RASHIS[birthRashi]), until: myChandrashtamaUntil })}
           </AppText>
         </Card>
       ) : null}
