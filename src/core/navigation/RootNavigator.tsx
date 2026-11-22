@@ -1,6 +1,7 @@
+import { Ionicons } from '@expo/vector-icons';
 import { DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { Pressable, Text } from 'react-native';
+import { Pressable } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import BirthStarScreen from '../../features/birth-star/screens/BirthStarScreen';
@@ -46,8 +47,9 @@ export default function RootNavigator() {
                 accessibilityLabel={t('home.openSettings')}
                 onPress={() => navigation.navigate('Settings')}
                 hitSlop={12}
+                style={({ pressed }) => ({ opacity: pressed ? 0.65 : 1, paddingHorizontal: 4 })}
               >
-                <Text style={{ fontSize: 22 }}>⚙️</Text>
+                <Ionicons name="settings-outline" size={23} color={colors.heroText} />
               </Pressable>
             ),
           })}

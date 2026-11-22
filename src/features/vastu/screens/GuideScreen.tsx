@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
-import { AppText, Card, Chip, Segmented } from '@core/components/ui';
+import { AppText, Card, Chip, Segmented, useBottomInset } from '@core/components/ui';
 import { ROOMS } from '../data/rooms';
 import { DIRECTION_INFO, ZONE_BY_ID } from '../data/zones';
 import { useLang } from '@core/hooks/useLang';
@@ -18,9 +18,10 @@ export default function GuideScreen() {
   const { tr } = useLang();
   const navigation = useNavigation<NativeStackNavigationProp<VastuStackParamList>>();
   const [section, setSection] = useState<Section>('rooms');
+  const bottomInset = useBottomInset();
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView contentContainerStyle={[styles.container, { paddingBottom: bottomInset }]}>
       <Segmented
         value={section}
         onChange={setSection}

@@ -1,7 +1,7 @@
 import { GREGORIAN_MONTHS, NAKSHATRAS, RASHIS, tithiName } from '@core/astro/names';
 import { daysInMonth } from '@core/astro/time';
 import PlacePicker from '@core/components/PlacePicker';
-import { AppText, Button, Card, Segmented, Stepper } from '@core/components/ui';
+import { AppText, Button, Card, SectionHeader, Segmented, Stepper, useBottomInset } from '@core/components/ui';
 import { useLang } from '@core/hooks/useLang';
 import { usePlace } from '@core/hooks/usePlace';
 import { useAppDispatch } from '@core/store/hooks';
@@ -18,6 +18,7 @@ export default function BirthStarScreen() {
   const { tr } = useLang();
   const place = usePlace();
   const dispatch = useAppDispatch();
+  const bottomInset = useBottomInset();
 
   const [year, setYear] = useState(1995);
   const [month, setMonth] = useState(1);
@@ -43,7 +44,7 @@ export default function BirthStarScreen() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView contentContainerStyle={[styles.container, { paddingBottom: bottomInset }]}>
       <AppText size={13} color={colors.muted}>
         {t('subtitle')}
       </AppText>
@@ -51,9 +52,7 @@ export default function BirthStarScreen() {
       <PlacePicker />
 
       <Card style={styles.gap}>
-        <AppText bold color={colors.primaryDark}>
-          📅 {t('birthDate')}
-        </AppText>
+        <SectionHeader icon="calendar-account-outline" title={t('birthDate')} />
         <Stepper
           label={`${t('year')}: ${year}`}
           onPrev={() => { setYear((y) => Math.max(1920, y - 1)); setSavedMsg(false); }}
@@ -86,9 +85,7 @@ export default function BirthStarScreen() {
       </Card>
 
       <Card style={styles.gap}>
-        <AppText bold color={colors.primaryDark}>
-          ⏰ {t('birthTime')}
-        </AppText>
+        <SectionHeader icon="clock-outline" title={t('birthTime')} />
         <View style={styles.row}>
           <View style={styles.flex}>
             <Stepper
@@ -115,46 +112,46 @@ export default function BirthStarScreen() {
         />
       </Card>
 
-      <Card style={[styles.gap, { borderColor: colors.primary, borderWidth: 2 }]}>
-        <AppText bold size={17} color={colors.primaryDark}>
-          ✨ {t('resultTitle')}
+      <Card variant="hero" style={styles.gap}>
+        <AppText bold size={17} color={colors.heroAccent}>
+          {t('resultTitle')}
         </AppText>
         <View style={styles.row}>
-          <AppText size={13} color={colors.muted} style={styles.label}>
+          <AppText size={13} color={colors.heroMuted} style={styles.label}>
             {t('nakshatra')}
           </AppText>
-          <AppText bold color={colors.primaryDark} style={styles.flex}>
+          <AppText bold color={colors.heroText} style={styles.flex}>
             {tr(NAKSHATRAS[result.nakshatra])} ({t('pada', { value: result.pada })})
           </AppText>
         </View>
         <View style={styles.row}>
-          <AppText size={13} color={colors.muted} style={styles.label}>
+          <AppText size={13} color={colors.heroMuted} style={styles.label}>
             {t('rashi')}
           </AppText>
-          <AppText bold color={colors.primaryDark} style={styles.flex}>
+          <AppText bold color={colors.heroText} style={styles.flex}>
             {tr(RASHIS[result.rashi])}
           </AppText>
         </View>
         <View style={styles.row}>
-          <AppText size={13} color={colors.muted} style={styles.label}>
+          <AppText size={13} color={colors.heroMuted} style={styles.label}>
             {t('lagna')}
           </AppText>
-          <AppText bold style={styles.flex}>
+          <AppText bold color={colors.heroText} style={styles.flex}>
             {tr(RASHIS[result.lagna])}
           </AppText>
         </View>
         <View style={styles.row}>
-          <AppText size={13} color={colors.muted} style={styles.label}>
+          <AppText size={13} color={colors.heroMuted} style={styles.label}>
             {t('tithi')}
           </AppText>
-          <AppText bold style={styles.flex}>
+          <AppText bold color={colors.heroText} style={styles.flex}>
             {tr(tithiName(result.tithi))}
           </AppText>
         </View>
 
-        <Button title={`💾 ${t('saveProfile')}`} onPress={saveToProfile} />
+        <Button title={t('saveProfile')} icon="content-save-outline" onPress={saveToProfile} />
         {savedMsg ? (
-          <AppText size={13} color={colors.good}>
+          <AppText size={13} bold color="#A5F3AC">
             ✓ {t('saved')}
           </AppText>
         ) : null}

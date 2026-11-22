@@ -40,7 +40,7 @@ export default function App() {
         <SafeAreaProvider>
           <LanguageSync />
           <RootNavigator />
-          <StatusBar style="dark" />
+          <StatusBar style="light" />
         </SafeAreaProvider>
       </PersistGate>
     </Provider>

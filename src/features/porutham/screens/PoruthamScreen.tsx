@@ -1,5 +1,6 @@
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { NAKSHATRAS, RASHIS } from '@core/astro/names';
-import { AppText, Button, Card, Chip } from '@core/components/ui';
+import { AppText, Button, Card, Chip, SectionHeader, useBottomInset } from '@core/components/ui';
 import { useLang } from '@core/hooks/useLang';
 import { colors, spacing } from '@core/theme';
 import { useMemo, useState } from 'react';
@@ -109,6 +110,7 @@ function PersonPicker({
 export default function PoruthamScreen() {
   const { t } = useTranslation('porutham');
   const { tr } = useLang();
+  const bottomInset = useBottomInset();
   const [brideNak, setBrideNak] = useState(3); // Rohini
   const [brideRashi, setBrideRashi] = useState(1); // Rishabha
   const [groomNak, setGroomNak] = useState(20); // Uthiradam
@@ -141,43 +143,43 @@ export default function PoruthamScreen() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView contentContainerStyle={[styles.container, { paddingBottom: bottomInset }]}>
       <AppText size={13} color={colors.muted}>
         {t('subtitle')}
       </AppText>
 
       <PersonPicker
-        title={`👰 ${t('bride')}`}
+        title={t('bride')}
         nakshatra={brideNak}
         rashi={brideRashi}
         onSelectNakshatra={setBrideNak}
         onSelectRashi={setBrideRashi}
       />
       <PersonPicker
-        title={`🤵 ${t('groom')}`}
+        title={t('groom')}
         nakshatra={groomNak}
         rashi={groomRashi}
         onSelectNakshatra={setGroomNak}
         onSelectRashi={setGroomRashi}
       />
 
-      <Card style={[styles.center, { borderColor: verdictColor, borderWidth: 2 }]}>
+      <Card style={[styles.center, { borderColor: verdictColor, borderWidth: 2, backgroundColor: verdictColor + '0F' }]}>
+        <MaterialCommunityIcons name="heart-multiple" size={28} color={verdictColor} />
         <AppText bold size={26} color={verdictColor} center>
           {t('score', { score: result.score })}
         </AppText>
-        <AppText bold size={15} color={verdictColor} center>
+        <AppText bold size={14} color={verdictColor} center>
           {t(`verdict.${result.verdict}`)}
         </AppText>
         <Button
-          title={`📤 ${t('common.share', { ns: 'translation' })}`}
+          title={t('common.share', { ns: 'translation' })}
+          icon="share-variant-outline"
           variant="outline"
           onPress={shareResult}
         />
       </Card>
 
-      <AppText bold size={17}>
-        {t('breakdown')}
-      </AppText>
+      <SectionHeader icon="format-list-checks" title={t('breakdown')} color="#AD1457" bg="#FCE4EC" />
       <Card style={styles.gap}>
         {result.items.map((item) => {
           const color = STATUS_COLOR[item.status];

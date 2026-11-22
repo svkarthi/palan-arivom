@@ -1,8 +1,9 @@
 import { colors, fonts } from '../theme';
 
-/** Shared header look for every navigator in the app. */
+/** Shared temple-maroon header look for every navigator in the app. */
 export const headerStyle = {
-  headerStyle: { backgroundColor: colors.card },
-  headerTitleStyle: { fontFamily: fonts.bold, color: colors.primaryDark },
-  headerTintColor: colors.primary,
+  headerStyle: { backgroundColor: colors.heroBg },
+  headerTitleStyle: { fontFamily: fonts.bold, color: colors.heroText },
+  headerTintColor: colors.heroText,
+  headerShadowVisible: false,
 };

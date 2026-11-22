@@ -1,9 +1,10 @@
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { GREGORIAN_MONTHS, NAKSHATRAS, RASHIS, SPECIAL_DAYS, TAMIL_MONTHS, WEEKDAYS, YOGAS, karanaName, tithiName } from '@core/astro/names';
 import { tithiSeverity } from '@core/astro/inauspicious';
 import type { Place } from '@core/astro/sunrise';
 import { addDays, formatClock } from '@core/astro/time';
 import PlacePicker from '@core/components/PlacePicker';
-import { AppText, Button, Card, Chip, Segmented, Stepper } from '@core/components/ui';
+import { AppText, Button, Card, Chip, Segmented, Stepper, useBottomInset } from '@core/components/ui';
 import { useLang } from '@core/hooks/useLang';
 import { useNow } from '@core/hooks/useNow';
 import { usePlace } from '@core/hooks/usePlace';
@@ -58,7 +59,8 @@ function DayDetail({ verdict, place, purposeName }: { verdict: DayVerdict; place
   return (
     <View style={styles.gap}>
       <Button
-        title={`📤 ${t('common.share', { ns: 'translation' })}`}
+        title={t('common.share', { ns: 'translation' })}
+        icon="share-variant-outline"
         variant="outline"
         onPress={shareVerdict}
       />
@@ -76,6 +78,7 @@ export default function NallaNaalScreen() {
   const dispatch = useAppDispatch();
   const place = usePlace();
   const now = useNow(3_600_000);
+  const bottomInset = useBottomInset();
   const { birthNakshatra, birthRashi } = useAppSelector((s) => s.profile);
 
   const todayLocal = useMemo(() => {
@@ -97,8 +100,6 @@ export default function NallaNaalScreen() {
     setExpanded(null);
   };
 
-  // The month's summary does not depend on the purpose, so it is computed once per
-  // month and city and only the scoring is redone on a change.
   const monthKey = `${month.y}-${month.m}-${place.id}`;
   const [data, setData] = useState<{ key: string; days: MonthDay[] } | null>(null);
   useEffect(() => {
@@ -135,6 +136,12 @@ export default function NallaNaalScreen() {
   );
 
   const purposeName = tr(PURPOSE_BY_ID[purposeId].name);
+  const profileSummary = [
+    birthNakshatra !== null ? tr(NAKSHATRAS[birthNakshatra]) : null,
+    birthRashi !== null ? tr(RASHIS[birthRashi]) : null,
+  ]
+    .filter(Boolean)
+    .join(' · ');
 
   const renderCard = (v: DayVerdict, forceOpen = false) => {
     const color = GRADE_COLOR[v.grade];
@@ -145,19 +152,20 @@ export default function NallaNaalScreen() {
         key={v.date.d}
         accessibilityRole="button"
         onPress={() => setExpanded(expanded === v.date.d && !forceOpen ? null : v.date.d)}
+        style={({ pressed }) => pressed && !open && { opacity: 0.88 }}
       >
         <Card style={[styles.gap, isToday && { borderColor: colors.primary, borderWidth: 2 }]}>
           <View style={styles.row}>
-            <View style={styles.dateBox}>
-              <AppText bold size={22} color={colors.primaryDark} center>
+            <View style={[styles.dateBox, { backgroundColor: color + '14' }]}>
+              <AppText bold size={21} color={colors.primaryDark} center>
                 {v.date.d}
               </AppText>
-              <AppText size={11} color={colors.muted} center>
+              <AppText size={10} bold color={colors.muted} center numberOfLines={1}>
                 {tr(WEEKDAYS[v.weekday])}
               </AppText>
             </View>
             <View style={styles.flex}>
-              <AppText size={13} bold>
+              <AppText size={14} bold color={colors.primaryDark}>
                 {t('tamilShort', { month: tr(TAMIL_MONTHS[v.tamil.month]), day: v.tamil.day })}
               </AppText>
               <AppText size={12} color={colors.muted}>
@@ -213,9 +221,12 @@ export default function NallaNaalScreen() {
               <DayDetail verdict={v} place={place} purposeName={purposeName} />
             </View>
           ) : (
-            <AppText size={11} color={colors.muted}>
-              {t('details.tapHint')}
-            </AppText>
+            <View style={styles.tapRow}>
+              <AppText size={11} color={colors.muted}>
+                {t('details.tapHint')}
+              </AppText>
+              <MaterialCommunityIcons name="chevron-down" size={16} color={colors.muted} />
+            </View>
           )}
         </Card>
       </Pressable>
@@ -223,31 +234,69 @@ export default function NallaNaalScreen() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <PlacePicker />
+    <ScrollView contentContainerStyle={[styles.container, { paddingBottom: bottomInset }]}>
+      <View style={styles.topBar}>
+        <PlacePicker />
+        <View style={styles.viewToggle}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityState={{ selected: viewMode === 'list' }}
+            onPress={() => setViewMode('list')}
+            style={[styles.viewBtn, viewMode === 'list' && styles.viewBtnActive]}
+          >
+            <MaterialCommunityIcons
+              name="format-list-bulleted"
+              size={16}
+              color={viewMode === 'list' ? '#fff' : colors.primaryDark}
+            />
+            <AppText size={12} bold={viewMode === 'list'} color={viewMode === 'list' ? '#fff' : colors.primaryDark}>
+              {t('viewList')}
+            </AppText>
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityState={{ selected: viewMode === 'calendar' }}
+            onPress={() => setViewMode('calendar')}
+            style={[styles.viewBtn, viewMode === 'calendar' && styles.viewBtnActive]}
+          >
+            <MaterialCommunityIcons
+              name="calendar-month-outline"
+              size={16}
+              color={viewMode === 'calendar' ? '#fff' : colors.primaryDark}
+            />
+            <AppText size={12} bold={viewMode === 'calendar'} color={viewMode === 'calendar' ? '#fff' : colors.primaryDark}>
+              {t('viewCalendar')}
+            </AppText>
+          </Pressable>
+        </View>
+      </View>
 
-      <AppText bold>{t('purpose')}</AppText>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
-        {PURPOSES.map((p) => {
-          const active = p.id === purposeId;
-          return (
-            <Pressable
-              key={p.id}
-              accessibilityRole="button"
-              accessibilityState={{ selected: active }}
-              onPress={() => {
-                setPurposeId(p.id);
-                setExpanded(null);
-              }}
-              style={[styles.purpose, active && styles.purposeActive]}
-            >
-              <AppText size={13} bold={active} color={active ? '#fff' : colors.primary}>
-                {p.icon} {tr(p.name)}
-              </AppText>
-            </Pressable>
-          );
-        })}
-      </ScrollView>
+      <View style={styles.gapXs}>
+        <AppText bold size={13} color={colors.muted}>
+          {t('purpose')}
+        </AppText>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
+          {PURPOSES.map((p) => {
+            const active = p.id === purposeId;
+            return (
+              <Pressable
+                key={p.id}
+                accessibilityRole="button"
+                accessibilityState={{ selected: active }}
+                onPress={() => {
+                  setPurposeId(p.id);
+                  setExpanded(null);
+                }}
+                style={({ pressed }) => [styles.purpose, active && styles.purposeActive, pressed && { opacity: 0.8 }]}
+              >
+                <AppText size={13} bold={active} color={active ? '#fff' : colors.primaryDark}>
+                  {p.icon} {tr(p.name)}
+                </AppText>
+              </Pressable>
+            );
+          })}
+        </ScrollView>
+      </View>
 
       <Stepper
         label={`${tr(GREGORIAN_MONTHS[month.m - 1])} ${month.y}`}
@@ -255,15 +304,6 @@ export default function NallaNaalScreen() {
         onNext={() => shiftMonth(1)}
         onReset={month.y === todayLocal.y && month.m === todayLocal.m ? undefined : () => { setCursor(null); setExpanded(null); }}
         resetLabel={t('goCurrentMonth')}
-      />
-
-      <Segmented<ViewMode>
-        value={viewMode}
-        onChange={setViewMode}
-        options={[
-          { value: 'list', label: `📋 ${t('viewList')}` },
-          { value: 'calendar', label: `📅 ${t('viewCalendar')}` },
-        ]}
       />
 
       <Segmented<FilterMode>
@@ -276,23 +316,31 @@ export default function NallaNaalScreen() {
         ]}
       />
 
-      <Card style={styles.gap}>
-        <View style={styles.row}>
-          <AppText bold style={styles.flex}>
-            {t('profile.title')}
+      <Card style={styles.profileCard}>
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => setPersonalise((v) => !v)}
+          style={styles.row}
+        >
+          <MaterialCommunityIcons name="star-four-points-outline" size={18} color={colors.primary} />
+          <AppText bold size={13} color={colors.primaryDark} style={styles.flex} numberOfLines={1}>
+            {profileSummary ? profileSummary : t('profile.title')}
           </AppText>
-          <Button
-            title={personalise ? t('profile.hide') : t('profile.show')}
-            variant="outline"
-            onPress={() => setPersonalise((v) => !v)}
+          <AppText size={12} bold color={colors.primary}>
+            {personalise ? t('profile.hide') : t('profile.show')}
+          </AppText>
+          <MaterialCommunityIcons
+            name={personalise ? 'chevron-up' : 'chevron-down'}
+            size={18}
+            color={colors.primary}
           />
-        </View>
-        <AppText size={12} color={colors.muted}>
-          {t('profile.hint')}
-        </AppText>
+        </Pressable>
         {personalise ? (
-          <>
-            <AppText bold size={14}>
+          <View style={styles.gap}>
+            <AppText size={12} color={colors.muted}>
+              {t('profile.hint')}
+            </AppText>
+            <AppText bold size={13}>
               {t('profile.nakshatra')}
             </AppText>
             <View style={styles.wrap}>
@@ -312,7 +360,7 @@ export default function NallaNaalScreen() {
                 </Pressable>
               ))}
             </View>
-            <AppText bold size={14}>
+            <AppText bold size={13}>
               {t('profile.rashi')}
             </AppText>
             <View style={styles.wrap}>
@@ -342,7 +390,7 @@ export default function NallaNaalScreen() {
                 }}
               />
             ) : null}
-          </>
+          </View>
         ) : null}
       </Card>
 
@@ -351,6 +399,20 @@ export default function NallaNaalScreen() {
       ) : viewMode === 'calendar' ? (
         <>
           <Card style={styles.gap}>
+            <View style={styles.legendRow}>
+              <View style={styles.legendItem}>
+                <View style={[styles.dot, { backgroundColor: colors.good }]} />
+                <AppText size={11} color={colors.muted}>{t('grade.good')}</AppText>
+              </View>
+              <View style={styles.legendItem}>
+                <View style={[styles.dot, { backgroundColor: colors.ok }]} />
+                <AppText size={11} color={colors.muted}>{t('grade.fair')}</AppText>
+              </View>
+              <View style={styles.legendItem}>
+                <View style={[styles.dot, { backgroundColor: colors.bad }]} />
+                <AppText size={11} color={colors.muted}>{t('grade.poor')}</AppText>
+              </View>
+            </View>
             <View style={styles.calRow}>
               {WEEKDAYS.map((w, idx) => (
                 <View key={idx} style={styles.calCell}>
@@ -382,7 +444,7 @@ export default function NallaNaalScreen() {
                     style={[
                       styles.calCell,
                       styles.calDay,
-                      matched && { backgroundColor: gradeColor + '22', borderColor: gradeColor },
+                      matched && { backgroundColor: gradeColor + '1A', borderColor: gradeColor + '88' },
                       !matched && styles.calDim,
                       isToday && { borderWidth: 2, borderColor: colors.primary },
                       selected && { backgroundColor: colors.primary, borderColor: colors.primary },
@@ -417,26 +479,51 @@ export default function NallaNaalScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { padding: spacing.md, gap: spacing.md, backgroundColor: colors.bg },
+  container: { padding: spacing.md, gap: spacing.sm + 4, backgroundColor: colors.bg },
+  topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: spacing.sm },
+  viewToggle: {
+    flexDirection: 'row',
+    backgroundColor: colors.surface,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: 2,
+    gap: 2,
+  },
+  viewBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
+  },
+  viewBtnActive: { backgroundColor: colors.primary },
   chips: { gap: spacing.sm, paddingVertical: 2 },
   purpose: {
     paddingVertical: 6,
-    paddingHorizontal: 14,
+    paddingHorizontal: 13,
     borderRadius: 999,
-    borderWidth: 1.5,
-    borderColor: colors.primary,
+    borderWidth: 1,
+    borderColor: colors.border,
     backgroundColor: colors.card,
   },
-  purposeActive: { backgroundColor: colors.primary },
+  purposeActive: { backgroundColor: colors.primary, borderColor: colors.primary },
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  tapRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   flex: { flex: 1 },
   gap: { gap: spacing.sm },
+  gapXs: { gap: 4 },
   wrap: { flexDirection: 'row', flexWrap: 'wrap' },
-  dateBox: { width: 52, alignItems: 'center' },
+  profileCard: { paddingVertical: 11, gap: spacing.sm },
+  dateBox: { width: 54, paddingVertical: 4, borderRadius: 12, alignItems: 'center' },
   badge: { alignItems: 'flex-end' },
   noMargin: { marginRight: 0, marginBottom: 2 },
   chipOn: { backgroundColor: colors.primary },
   chipOnText: { color: '#fff' },
+  legendRow: { flexDirection: 'row', justifyContent: 'center', gap: spacing.md },
+  legendItem: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  dot: { width: 8, height: 8, borderRadius: 4 },
   calRow: { flexDirection: 'row' },
   calGrid: { flexDirection: 'row', flexWrap: 'wrap' },
   calCell: { width: '14.285%', padding: 2 },
@@ -447,5 +534,5 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     alignItems: 'center',
   },
-  calDim: { opacity: 0.3 },
+  calDim: { opacity: 0.28 },
 });

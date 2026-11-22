@@ -1,10 +1,12 @@
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import type { IconName } from '@core/components/ui';
 import { headerStyle } from '@core/navigation/headerStyle';
 import type { RootStackParamList } from '@core/navigation/types';
 import { colors, fonts } from '@core/theme';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator, type NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Pressable, Text } from 'react-native';
+import { Pressable } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import CompassScreen from '../screens/CompassScreen';
@@ -17,11 +19,11 @@ import type { VastuStackParamList, VastuTabParamList } from './types';
 const Stack = createNativeStackNavigator<VastuStackParamList>();
 const Tab = createBottomTabNavigator<VastuTabParamList>();
 
-const TAB_ICONS: Record<keyof VastuTabParamList, string> = {
-  Compass: '🧭',
-  Guide: '📖',
-  Plan: '🏠',
-  Report: '📊',
+const TAB_ICONS: Record<keyof VastuTabParamList, { active: IconName; inactive: IconName }> = {
+  Compass: { active: 'compass', inactive: 'compass-outline' },
+  Guide: { active: 'book-open-variant', inactive: 'book-open-outline' },
+  Plan: { active: 'floor-plan', inactive: 'floor-plan' },
+  Report: { active: 'chart-donut', inactive: 'chart-donut' },
 };
 
 function Tabs() {
@@ -40,16 +42,26 @@ function Tabs() {
         ...headerStyle,
         title: titles[route.name],
         headerLeft: () => (
-          <Pressable accessibilityRole="button" accessibilityLabel={t('home.back')} onPress={() => root.navigate('Home')} hitSlop={12}>
-            <Text style={{ fontSize: 26, color: colors.primary, paddingHorizontal: 16 }}>‹</Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('home.back')}
+            onPress={() => root.navigate('Home')}
+            hitSlop={12}
+            style={({ pressed }) => ({ paddingHorizontal: 12, opacity: pressed ? 0.65 : 1 })}
+          >
+            <Ionicons name="chevron-back" size={26} color={colors.heroText} />
           </Pressable>
         ),
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.muted,
-        tabBarLabelStyle: { fontFamily: fonts.regular, fontSize: 11 },
+        tabBarLabelStyle: { fontFamily: fonts.bold, fontSize: 11 },
         tabBarStyle: { backgroundColor: colors.card, borderTopColor: colors.border },
-        tabBarIcon: ({ focused }) => (
-          <Text style={{ fontSize: 20, opacity: focused ? 1 : 0.55 }}>{TAB_ICONS[route.name]}</Text>
+        tabBarIcon: ({ focused, color }) => (
+          <MaterialCommunityIcons
+            name={focused ? TAB_ICONS[route.name].active : TAB_ICONS[route.name].inactive}
+            size={23}
+            color={color}
+          />
         ),
       })}
     >

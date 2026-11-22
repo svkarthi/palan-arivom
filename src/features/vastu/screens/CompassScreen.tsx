@@ -5,7 +5,7 @@ import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 
 import CompassDial from '../components/CompassDial';
-import { AppText, Button, Card } from '@core/components/ui';
+import { AppText, Button, Card, SectionHeader, useBottomInset } from '@core/components/ui';
 import { ROOMS } from '../data/rooms';
 import { ZONE_BY_ID } from '../data/zones';
 import { useHeading } from '../hooks/useHeading';
@@ -32,6 +32,7 @@ export default function CompassScreen() {
   const focused = useIsFocused();
   const { width } = useWindowDimensions();
   const insets = useContext(SafeAreaInsetsContext);
+  const bottomInset = useBottomInset();
   const voice = useAppSelector((s) => s.settings.voice);
   const { declination, history } = useAppSelector((s) => s.compass);
   const { heading, available, source, accuracy } = useHeading(focused, declination);
@@ -61,7 +62,7 @@ export default function CompassScreen() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView contentContainerStyle={[styles.container, { paddingBottom: bottomInset }]}>
       {available === false ? (
         <Card>
           <AppText color={colors.bad}>{t('compass.unavailable')}</AppText>
@@ -85,10 +86,8 @@ export default function CompassScreen() {
           </Card>
 
           {cardinal ? (
-            <Card style={styles.declination}>
-              <AppText bold size={14} color={colors.primaryDark}>
-                🏠 {t('compass.facingGuide')}
-              </AppText>
+            <Card variant="tinted" style={styles.declination}>
+              <SectionHeader icon="home-outline" title={t('compass.facingGuide')} />
               <AppText size={13} color={colors.muted}>
                 {t(`compass.facingSummary.${cardinal}`)}
               </AppText>
@@ -96,9 +95,10 @@ export default function CompassScreen() {
           ) : null}
 
           <View style={styles.row}>
-            <Button title={t('compass.lock')} onPress={lock} disabled={heading === null} style={styles.flex} />
+            <Button title={t('compass.lock')} icon="lock-outline" onPress={lock} disabled={heading === null} style={styles.flex} />
             <Button
               title={t('compass.useAsPlanTop')}
+              icon="compass-outline"
               onPress={useAsPlanTop}
               variant="outline"
               disabled={heading === null}
@@ -107,7 +107,8 @@ export default function CompassScreen() {
           </View>
 
           <Button
-            title={`📍 ${t('compass.assignRoom')}`}
+            title={t('compass.assignRoom')}
+            icon="map-marker-plus-outline"
             variant="outline"
             disabled={zone === null}
             onPress={() => setAssignOpen(true)}

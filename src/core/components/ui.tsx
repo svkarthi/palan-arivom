@@ -1,4 +1,5 @@
-import type { ReactNode } from 'react';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useContext, type ComponentProps, type ReactNode } from 'react';
 import {
   Pressable,
   StyleSheet,
@@ -9,8 +10,17 @@ import {
   type TextStyle,
   type ViewStyle,
 } from 'react-native';
+import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 
-import { colors, fonts, spacing } from '../theme';
+import { colors, fonts, shadows, spacing } from '../theme';
+
+export type IconName = ComponentProps<typeof MaterialCommunityIcons>['name'];
+
+/** Safe bottom inset for ScrollViews and bottom sheets (safe outside SafeAreaProvider in tests). */
+export function useBottomInset(extra = spacing.md): number {
+  const insets = useContext(SafeAreaInsetsContext);
+  return Math.max(insets?.bottom ?? 0, spacing.sm) + extra;
+}
 
 type AppTextProps = TextProps & {
   bold?: boolean;
@@ -38,17 +48,80 @@ export function AppText({ bold, size = 16, color = colors.text, center, style, .
   );
 }
 
+type IconBadgeProps = {
+  icon: IconName;
+  color?: string;
+  bg?: string;
+  size?: number;
+  iconSize?: number;
+};
+
+/** Tinted circular/squircle vector icon container. */
+export function IconBadge({
+  icon,
+  color = colors.primary,
+  bg = colors.primaryBg,
+  size = 44,
+  iconSize = Math.round(size * 0.52),
+}: IconBadgeProps) {
+  return (
+    <View
+      style={{
+        width: size,
+        height: size,
+        borderRadius: Math.round(size * 0.34),
+        backgroundColor: bg,
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <MaterialCommunityIcons name={icon} size={iconSize} color={color} />
+    </View>
+  );
+}
+
+type SectionHeaderProps = {
+  icon: IconName;
+  title: string;
+  color?: string;
+  bg?: string;
+  right?: ReactNode;
+};
+
+/** Crisp section heading with a tinted vector icon badge and optional right action. */
+export function SectionHeader({
+  icon,
+  title,
+  color = colors.primaryDark,
+  bg = colors.primaryBg,
+  right,
+}: SectionHeaderProps) {
+  return (
+    <View style={styles.sectionHeader}>
+      <View style={[styles.sectionIcon, { backgroundColor: bg }]}>
+        <MaterialCommunityIcons name={icon} size={17} color={color} />
+      </View>
+      <AppText bold size={16} color={colors.primaryDark} style={styles.flex}>
+        {title}
+      </AppText>
+      {right}
+    </View>
+  );
+}
+
 type ButtonProps = {
   title: string;
   onPress: () => void;
   variant?: 'primary' | 'outline' | 'danger';
+  icon?: IconName;
   disabled?: boolean;
   style?: StyleProp<ViewStyle>;
 };
 
-export function Button({ title, onPress, variant = 'primary', disabled, style }: ButtonProps) {
+export function Button({ title, onPress, variant = 'primary', icon, disabled, style }: ButtonProps) {
   const filled = variant !== 'outline';
   const tint = variant === 'danger' ? colors.bad : colors.primary;
+  const fg = filled ? '#fff' : tint;
   return (
     <Pressable
       accessibilityRole="button"
@@ -57,28 +130,49 @@ export function Button({ title, onPress, variant = 'primary', disabled, style }:
       onPress={onPress}
       style={({ pressed }) => [
         styles.button,
-        filled ? { backgroundColor: tint } : { borderColor: tint, borderWidth: 1.5 },
-        (pressed || disabled) && { opacity: disabled ? 0.45 : 0.8 },
+        filled ? { backgroundColor: tint } : { borderColor: tint, borderWidth: 1.5, backgroundColor: colors.card },
+        (pressed || disabled) && { opacity: disabled ? 0.45 : 0.82 },
+        pressed && !disabled && { transform: [{ scale: 0.985 }] },
         style,
       ]}
     >
-      <AppText bold size={15} color={filled ? '#fff' : tint} center>
-        {title}
-      </AppText>
+      <View style={styles.buttonInner}>
+        {icon ? <MaterialCommunityIcons name={icon} size={18} color={fg} /> : null}
+        <AppText bold size={14} color={fg} center>
+          {title}
+        </AppText>
+      </View>
     </Pressable>
   );
 }
 
-export function Card({ children, style }: { children: ReactNode; style?: StyleProp<ViewStyle> }) {
-  return <View style={[styles.card, style]}>{children}</View>;
+type CardProps = {
+  children: ReactNode;
+  variant?: 'default' | 'hero' | 'tinted';
+  style?: StyleProp<ViewStyle>;
+};
+
+export function Card({ children, variant = 'default', style }: CardProps) {
+  return (
+    <View
+      style={[
+        styles.card,
+        variant === 'hero' && styles.cardHero,
+        variant === 'tinted' && styles.cardTinted,
+        style,
+      ]}
+    >
+      {children}
+    </View>
+  );
 }
 
 type ChipProps = { label: string; color: string; style?: StyleProp<ViewStyle>; textStyle?: StyleProp<TextStyle> };
 
 export function Chip({ label, color, style, textStyle }: ChipProps) {
   return (
-    <View style={[styles.chip, { backgroundColor: color + '22', borderColor: color }, style]}>
-      <AppText size={12} color={color} style={textStyle}>
+    <View style={[styles.chip, { backgroundColor: color + '1A', borderColor: color + '66' }, style]}>
+      <AppText size={12} bold color={color} style={textStyle}>
         {label}
       </AppText>
     </View>
@@ -102,9 +196,21 @@ export function Segmented<T extends string>({ options, value, onChange }: Segmen
             accessibilityRole="button"
             accessibilityState={{ selected: active }}
             onPress={() => onChange(o.value)}
-            style={[styles.segment, active && { backgroundColor: colors.primary }]}
+            style={({ pressed }) => [
+              styles.segment,
+              active && styles.segmentActive,
+              pressed && !active && { opacity: 0.7 },
+            ]}
           >
-            <AppText bold={active} size={14} color={active ? '#fff' : colors.primary} center>
+            <AppText
+              bold={active}
+              size={13}
+              color={active ? '#fff' : colors.primaryDark}
+              center
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.8}
+            >
               {o.label}
             </AppText>
           </Pressable>
@@ -120,31 +226,48 @@ type StepperProps = { label: string; onPrev: () => void; onNext: () => void; onR
 export function Stepper({ label, onPrev, onNext, onReset, resetLabel }: StepperProps) {
   return (
     <View style={styles.stepper}>
-      <Pressable accessibilityRole="button" accessibilityLabel="previous" onPress={onPrev} hitSlop={10} style={styles.stepButton}>
-        <AppText bold size={22} color={colors.primary}>
-          ‹
-        </AppText>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="previous"
+        onPress={onPrev}
+        hitSlop={10}
+        style={({ pressed }) => [styles.stepButton, pressed && { opacity: 0.6 }]}
+      >
+        <MaterialCommunityIcons name="chevron-left" size={26} color={colors.primary} />
       </Pressable>
       <Pressable accessibilityRole="button" disabled={!onReset} onPress={onReset} style={styles.stepLabel}>
-        <AppText bold size={16} center>
+        <AppText bold size={15} color={colors.primaryDark} center>
           {label}
         </AppText>
         {onReset && resetLabel ? (
-          <AppText size={11} color={colors.primary} center>
+          <AppText size={11} bold color={colors.primary} center>
             {resetLabel}
           </AppText>
         ) : null}
       </Pressable>
-      <Pressable accessibilityRole="button" accessibilityLabel="next" onPress={onNext} hitSlop={10} style={styles.stepButton}>
-        <AppText bold size={22} color={colors.primary}>
-          ›
-        </AppText>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="next"
+        onPress={onNext}
+        hitSlop={10}
+        style={({ pressed }) => [styles.stepButton, pressed && { opacity: 0.6 }]}
+      >
+        <MaterialCommunityIcons name="chevron-right" size={26} color={colors.primary} />
       </Pressable>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  flex: { flex: 1 },
+  sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginTop: 2 },
+  sectionIcon: {
+    width: 30,
+    height: 30,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   stepper: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -152,9 +275,10 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     borderWidth: 1,
     borderColor: colors.border,
+    ...shadows.card,
   },
-  stepButton: { paddingHorizontal: spacing.md, paddingVertical: spacing.sm },
-  stepLabel: { flex: 1, alignItems: 'center' },
+  stepButton: { paddingHorizontal: spacing.sm + 2, paddingVertical: spacing.sm },
+  stepLabel: { flex: 1, alignItems: 'center', paddingVertical: 4 },
   button: {
     paddingVertical: 11,
     paddingHorizontal: spacing.md,
@@ -162,27 +286,41 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  buttonInner: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 },
   card: {
     backgroundColor: colors.card,
     borderRadius: 16,
     padding: spacing.md,
     borderWidth: 1,
     borderColor: colors.border,
+    ...shadows.card,
+  },
+  cardHero: {
+    backgroundColor: colors.heroBg,
+    borderColor: colors.heroBg,
+    ...shadows.hero,
+  },
+  cardTinted: {
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
   },
   chip: {
     borderWidth: 1,
     borderRadius: 999,
     paddingHorizontal: 10,
-    paddingVertical: 1,
+    paddingVertical: 2,
     marginRight: 6,
     marginBottom: 6,
   },
   segmented: {
     flexDirection: 'row',
-    borderWidth: 1.5,
-    borderColor: colors.primary,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
     borderRadius: 12,
-    overflow: 'hidden',
+    padding: 3,
+    gap: 3,
   },
-  segment: { flex: 1, paddingVertical: 8, paddingHorizontal: 6 },
+  segment: { flex: 1, paddingVertical: 7, paddingHorizontal: 6, borderRadius: 9 },
+  segmentActive: { backgroundColor: colors.primary },
 });

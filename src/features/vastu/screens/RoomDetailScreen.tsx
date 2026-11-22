@@ -5,7 +5,7 @@ import { ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native'
 import { useTranslation } from 'react-i18next';
 
 import ZoneMap from '../components/ZoneMap';
-import { AppText, Button, Card, Chip } from '@core/components/ui';
+import { AppText, Button, Card, Chip, useBottomInset } from '@core/components/ui';
 import { ROOM_BY_ID } from '../data/rooms';
 import { ZONE_BY_ID, type ZoneId } from '../data/zones';
 import { useLang } from '@core/hooks/useLang';
@@ -28,6 +28,7 @@ export default function RoomDetailScreen({ route }: Props) {
   const room = ROOM_BY_ID[route.params.roomId];
   const voice = useAppSelector((s) => s.settings.voice);
   const [speaking, setSpeaking] = useState(false);
+  const bottomInset = useBottomInset();
 
   useEffect(() => {
     navigation.setOptions({ title: tr(room.name) });
@@ -65,7 +66,7 @@ export default function RoomDetailScreen({ route }: Props) {
   );
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView contentContainerStyle={[styles.container, { paddingBottom: bottomInset }]}>
       <View style={styles.center}>
         <AppText size={48}>{room.icon}</AppText>
         <AppText bold size={22} color={colors.primaryDark} center>

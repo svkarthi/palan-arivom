@@ -2,7 +2,7 @@ import Constants from 'expo-constants';
 import { Alert, ScrollView, StyleSheet, Switch, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
-import { AppText, Button, Card, Segmented } from '../components/ui';
+import { AppText, Button, Card, SectionHeader, Segmented, useBottomInset } from '../components/ui';
 import { usePlace } from '../hooks/usePlace';
 import type { Lang } from '../i18n';
 import { resetAll } from '../store/actions';
@@ -17,6 +17,7 @@ export default function SettingsScreen() {
   const place = usePlace();
   const { language, voice, reminders } = useAppSelector((s) => s.settings);
   const birthRashi = useAppSelector((s) => s.profile.birthRashi);
+  const bottomInset = useBottomInset();
 
   const toggleReminders = async (v: boolean) => {
     try {
@@ -35,9 +36,9 @@ export default function SettingsScreen() {
     ]);
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView contentContainerStyle={[styles.container, { paddingBottom: bottomInset }]}>
       <Card style={styles.gap}>
-        <AppText bold>{t('settings.language')}</AppText>
+        <SectionHeader icon="translate" title={t('settings.language')} />
         <Segmented<Lang>
           value={language}
           onChange={(l) => dispatch(setLanguage(l))}
@@ -83,14 +84,14 @@ export default function SettingsScreen() {
       </Card>
 
       <Card style={styles.gap}>
-        <AppText bold>{t('settings.about')}</AppText>
+        <SectionHeader icon="information-outline" title={t('settings.about')} />
         <AppText size={14}>{t('settings.aboutText')}</AppText>
         <AppText size={12} color={colors.muted}>
           {t('settings.version', { value: Constants.expoConfig?.version ?? '1.0.0' })}
         </AppText>
       </Card>
 
-      <Button title={t('settings.resetData')} variant="danger" onPress={confirmReset} />
+      <Button title={t('settings.resetData')} icon="trash-can-outline" variant="danger" onPress={confirmReset} />
     </ScrollView>
   );
 }

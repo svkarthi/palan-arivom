@@ -1,3 +1,4 @@
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useMemo } from 'react';
@@ -7,9 +8,9 @@ import { useTranslation } from 'react-i18next';
 import { chandrashtamaRashi } from '../astro/dayExtras';
 import { RASHIS, SPECIAL_DAYS, TAMIL_MONTHS, TAMIL_YEARS, WEEKDAYS } from '../astro/names';
 import { formatClock, sameDate, toLocal } from '../astro/time';
-import { FEATURES } from '../../features/registry';
+import { FEATURES, type FeatureTile } from '../../features/registry';
 import { nallaNeramDay, statusAt } from '../../features/nalla-neram/logic';
-import { AppText, Card, Chip } from '../components/ui';
+import { AppText, Card, Chip, IconBadge, useBottomInset } from '../components/ui';
 import { useLang } from '../hooks/useLang';
 import { useNow } from '../hooks/useNow';
 import { usePlace } from '../hooks/usePlace';
@@ -24,6 +25,7 @@ export default function HomeScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const place = usePlace();
   const now = useNow();
+  const bottomInset = useBottomInset();
   const basis = useAppSelector((s) => s.profile.dayPartBasis) ?? 'sun';
   const birthRashi = useAppSelector((s) => s.profile.birthRashi);
 
@@ -36,7 +38,14 @@ export default function HomeScreen() {
   const range = (i: { start: number; end: number }) => `${clock(i.start)} – ${clock(i.end)}`;
   const { tamil } = day.panchang;
 
-  const statusColor = !status ? colors.muted : status.kind === 'good' ? colors.good : status.kind === 'neutral' ? colors.muted : colors.bad;
+  const statusTone =
+    !status
+      ? { fg: colors.heroMuted, bg: colors.heroSurface, dot: colors.heroAccent }
+      : status.kind === 'good'
+        ? { fg: '#D8F5DA', bg: '#1F5C27', dot: '#6EE77A' }
+        : status.kind === 'neutral'
+          ? { fg: colors.heroText, bg: colors.heroSurface, dot: colors.heroAccent }
+          : { fg: '#FFD8D8', bg: '#8C1D1D', dot: '#FF8A8A' };
   const statusText = !status ? '' : tn(`now.${status.kind}`, { time: 'until' in status ? clock(status.until) : '' });
 
   const myChandrashtama =
@@ -50,75 +59,112 @@ export default function HomeScreen() {
   const nnMorning = day.calendarNallaNeram.morning ? range(day.calendarNallaNeram.morning) : '—';
   const nnEvening = day.calendarNallaNeram.evening ? range(day.calendarNallaNeram.evening) : '—';
 
+  const hasTrailingSingle = FEATURES.length % 2 === 1;
+  const gridTiles = hasTrailingSingle ? FEATURES.slice(0, -1) : FEATURES;
+  const bannerTile: FeatureTile | null = hasTrailingSingle ? FEATURES[FEATURES.length - 1] : null;
+
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Pressable accessibilityRole="button" onPress={() => navigation.navigate('NallaNeram')}>
-        <Card style={styles.todayCard}>
-          <View style={styles.todayHeader}>
+    <ScrollView contentContainerStyle={[styles.container, { paddingBottom: bottomInset }]}>
+      <Pressable
+        accessibilityRole="button"
+        onPress={() => navigation.navigate('NallaNeram')}
+        style={({ pressed }) => pressed && styles.pressed}
+      >
+        <Card variant="hero" style={styles.heroCard}>
+          <View style={styles.heroTop}>
             <View style={styles.flex}>
-              <AppText bold size={17} color={colors.primaryDark}>
-                {tr(WEEKDAYS[day.weekday])} · {tr(TAMIL_MONTHS[tamil.month])} {tamil.day}
+              <AppText bold size={19} color={colors.heroText}>
+                {tr(TAMIL_MONTHS[tamil.month])} {tamil.day} · {tr(WEEKDAYS[day.weekday])}
               </AppText>
-              <AppText size={12} color={colors.muted}>
-                {tr(TAMIL_YEARS[tamil.yearIndex])} · 📍 {tr(place.name)}
+              <View style={styles.metaRow}>
+                <Ionicons name="location-sharp" size={13} color={colors.heroAccent} />
+                <AppText size={12} color={colors.heroMuted}>
+                  {tr(TAMIL_YEARS[tamil.yearIndex])} · {tr(place.name)}
+                </AppText>
+              </View>
+            </View>
+            <View style={styles.ctaPill}>
+              <AppText size={11} bold color={colors.heroAccent}>
+                {t('home.viewDay')}
               </AppText>
             </View>
-            <AppText size={12} bold color={colors.primary}>
-              {t('home.viewDay')}
-            </AppText>
           </View>
 
           {status ? (
-            <View style={[styles.statusPill, { borderColor: statusColor }]}>
-              <AppText bold size={13} color={statusColor} center>
+            <View style={[styles.statusPill, { backgroundColor: statusTone.bg }]}>
+              <View style={[styles.statusDot, { backgroundColor: statusTone.dot }]} />
+              <AppText bold size={13} color={statusTone.fg} style={styles.flex}>
                 {statusText}
               </AppText>
             </View>
           ) : null}
 
           {myChandrashtama && birthRashi !== null ? (
-            <View style={styles.alertBox}>
-              <AppText bold size={13} color={colors.bad}>
-                ⚠️ {tn('chandrashtama.personalAlert', { rashi: tr(RASHIS[birthRashi]), until: myChandrashtamaUntil })}
+            <View style={styles.heroAlert}>
+              <MaterialCommunityIcons name="alert-circle" size={16} color="#FFD8D8" />
+              <AppText bold size={12} color="#FFD8D8" style={styles.flex}>
+                {tn('chandrashtama.personalAlert', { rashi: tr(RASHIS[birthRashi]), until: myChandrashtamaUntil })}
               </AppText>
             </View>
           ) : null}
 
-          <View style={styles.row}>
-            <AppText size={13} color={colors.muted} style={styles.label}>
-              {tn('good.nallaNeram')}
-            </AppText>
-            <AppText bold size={13} color={colors.good} style={styles.flex}>
-              {nnMorning} · {nnEvening}
-            </AppText>
-          </View>
-
-          <View style={styles.row}>
-            <AppText size={13} color={colors.muted} style={styles.label}>
-              {tn('avoid.rahu')}
-            </AppText>
-            <AppText bold size={13} color={colors.bad} style={styles.flex}>
-              {range(day.rahu)}
-            </AppText>
+          <View style={styles.heroGrid}>
+            <View style={styles.heroCol}>
+              <AppText size={11} bold color={colors.heroAccent}>
+                {tn('good.nallaNeram')}
+              </AppText>
+              <AppText bold size={12} color={colors.heroText}>
+                {nnMorning}
+              </AppText>
+              <AppText size={12} color={colors.heroMuted}>
+                {nnEvening}
+              </AppText>
+            </View>
+            <View style={styles.heroDivider} />
+            <View style={styles.heroCol}>
+              <AppText size={11} bold color="#FFB4A9">
+                {tn('avoid.rahu')}
+              </AppText>
+              <AppText bold size={13} color={colors.heroText}>
+                {range(day.rahu)}
+              </AppText>
+              <AppText size={11} color={colors.heroMuted}>
+                {tn('date.sunrise')} {clock(day.panchang.sunrise)}
+              </AppText>
+            </View>
           </View>
 
           {day.specials.length > 0 ? (
             <View style={styles.wrap}>
               {day.specials.map((s) => (
-                <Chip
+                <View
                   key={s.id}
-                  label={`${s.id === 'karinaal' ? '⚠️' : '🪔'} ${tr(SPECIAL_DAYS[s.id])}`}
-                  color={s.id === 'karinaal' ? colors.bad : colors.primary}
-                />
+                  style={[
+                    styles.heroChip,
+                    s.id === 'karinaal' && { backgroundColor: '#9E2A2B' },
+                  ]}
+                >
+                  <MaterialCommunityIcons
+                    name={s.id === 'karinaal' ? 'alert-outline' : 'candle'}
+                    size={12}
+                    color={colors.heroAccent}
+                  />
+                  <AppText size={11} bold color={colors.heroText}>
+                    {tr(SPECIAL_DAYS[s.id])}
+                  </AppText>
+                </View>
               ))}
             </View>
           ) : null}
         </Card>
       </Pressable>
 
-      <AppText color={colors.muted}>{t('home.subtitle')}</AppText>
+      <AppText size={13} bold color={colors.muted}>
+        {t('home.subtitle')}
+      </AppText>
+
       <View style={styles.grid}>
-        {FEATURES.map((f) => {
+        {gridTiles.map((f) => {
           const route = f.route;
           return (
             <Pressable
@@ -127,14 +173,14 @@ export default function HomeScreen() {
               accessibilityState={{ disabled: route === null }}
               disabled={route === null}
               onPress={() => route && navigation.navigate(route)}
-              style={styles.cell}
+              style={({ pressed }) => [styles.cell, pressed && styles.pressed]}
             >
               <Card style={[styles.tile, route === null && styles.disabled]}>
-                <AppText size={40}>{f.icon}</AppText>
-                <AppText bold size={18} color={colors.primaryDark} center>
+                <IconBadge icon={f.icon} color={f.tint} bg={f.tintBg} size={48} />
+                <AppText bold size={16} color={colors.primaryDark}>
                   {tr(f.title)}
                 </AppText>
-                <AppText size={12} color={colors.muted} center>
+                <AppText size={12} color={colors.muted} numberOfLines={3}>
                   {tr(f.description)}
                 </AppText>
                 {route === null ? <Chip label={t('home.comingSoon')} color={colors.neutral} /> : null}
@@ -143,22 +189,87 @@ export default function HomeScreen() {
           );
         })}
       </View>
+
+      {bannerTile ? (
+        <Pressable
+          accessibilityRole="button"
+          disabled={bannerTile.route === null}
+          onPress={() => bannerTile.route && navigation.navigate(bannerTile.route)}
+          style={({ pressed }) => pressed && styles.pressed}
+        >
+          <Card style={styles.bannerCard}>
+            <IconBadge icon={bannerTile.icon} color={bannerTile.tint} bg={bannerTile.tintBg} size={48} />
+            <View style={styles.flex}>
+              <AppText bold size={16} color={colors.primaryDark}>
+                {tr(bannerTile.title)}
+              </AppText>
+              <AppText size={12} color={colors.muted}>
+                {tr(bannerTile.description)}
+              </AppText>
+            </View>
+            <MaterialCommunityIcons name="chevron-right" size={24} color={colors.primary} />
+          </Card>
+        </Pressable>
+      ) : null}
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: { padding: spacing.md, gap: spacing.md, backgroundColor: colors.bg, flexGrow: 1 },
-  todayCard: { gap: spacing.sm, borderColor: colors.primary, borderWidth: 1.5 },
-  todayHeader: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm },
+  pressed: { opacity: 0.85, transform: [{ scale: 0.985 }] },
+  heroCard: { gap: spacing.sm + 2 },
+  heroTop: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm },
+  metaRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 },
+  ctaPill: {
+    backgroundColor: colors.heroSurface,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
+  },
+  statusPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    borderRadius: 12,
+    paddingVertical: 7,
+    paddingHorizontal: 12,
+  },
+  statusDot: { width: 8, height: 8, borderRadius: 4 },
+  heroAlert: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#5C1111',
+    borderRadius: 10,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+  },
+  heroGrid: {
+    flexDirection: 'row',
+    backgroundColor: colors.heroSurface,
+    borderRadius: 12,
+    padding: 12,
+    gap: 12,
+  },
+  heroCol: { flex: 1, gap: 2 },
+  heroDivider: { width: 1, backgroundColor: '#913838' },
+  heroChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: colors.heroSurface,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: 999,
+    marginRight: 6,
+    marginBottom: 4,
+  },
   flex: { flex: 1 },
-  row: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  label: { width: 96 },
-  statusPill: { borderWidth: 1.5, borderRadius: 10, paddingVertical: 4, paddingHorizontal: spacing.sm },
-  alertBox: { backgroundColor: '#FFF5F5', borderColor: colors.bad, borderWidth: 1, borderRadius: 10, padding: spacing.sm },
   wrap: { flexDirection: 'row', flexWrap: 'wrap' },
   grid: { flexDirection: 'row', flexWrap: 'wrap', marginHorizontal: -spacing.xs },
   cell: { width: '50%', padding: spacing.xs },
-  tile: { alignItems: 'center', gap: spacing.xs, minHeight: 190, justifyContent: 'center' },
+  tile: { alignItems: 'flex-start', gap: 6, minHeight: 168, justifyContent: 'flex-start' },
+  bannerCard: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   disabled: { opacity: 0.6 },
 });

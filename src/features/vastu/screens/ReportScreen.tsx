@@ -6,7 +6,7 @@ import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import ScoreRing from '../components/ScoreRing';
-import { AppText, Button, Card, Chip } from '@core/components/ui';
+import { AppText, Button, Card, Chip, useBottomInset } from '@core/components/ui';
 import { ROOM_BY_ID } from '../data/rooms';
 import { ZONE_BY_ID } from '../data/zones';
 import { useLang } from '@core/hooks/useLang';
@@ -29,6 +29,7 @@ export default function ReportScreen() {
   const placements = useAppSelector((s) => s.plan.placements);
   const analysis = useMemo(() => analyse(placements), [placements]);
   const [busy, setBusy] = useState(false);
+  const bottomInset = useBottomInset();
 
   const exportPdf = async () => {
     setBusy(true);
@@ -56,7 +57,7 @@ export default function ReportScreen() {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView contentContainerStyle={[styles.container, { paddingBottom: bottomInset }]}>
       <Card style={styles.scoreCard}>
         <ScoreRing score={analysis.score} />
         <AppText bold size={20} color={colors.primaryDark}>
@@ -104,7 +105,7 @@ export default function ReportScreen() {
         </>
       ) : null}
 
-      <Button title={busy ? t('report.exporting') : t('report.exportPdf')} onPress={exportPdf} disabled={busy} />
+      <Button title={busy ? t('report.exporting') : t('report.exportPdf')} icon="file-pdf-box" onPress={exportPdf} disabled={busy} />
       <AppText size={12} color={colors.muted}>
         {t('report.disclaimer')}
       </AppText>

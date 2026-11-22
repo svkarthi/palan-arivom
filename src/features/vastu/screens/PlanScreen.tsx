@@ -6,7 +6,7 @@ import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 
 import ZoneMap from '../components/ZoneMap';
-import { AppText, Button, Segmented } from '@core/components/ui';
+import { AppText, Button, Segmented, useBottomInset } from '@core/components/ui';
 import { ROOMS, ROOM_BY_ID } from '../data/rooms';
 import { ZONE_BY_ID, type ZoneId } from '../data/zones';
 import { useLang } from '@core/hooks/useLang';
@@ -46,6 +46,7 @@ export default function PlanScreen() {
   const { imageUri, mode, rotation, placements } = useAppSelector((s) => s.plan);
   const [activeZone, setActiveZone] = useState<ZoneId | null>(null);
   const insets = useContext(SafeAreaInsetsContext);
+  const bottomInset = useBottomInset();
 
   const size = Math.min(width - spacing.md * 2, 420);
 
@@ -96,7 +97,7 @@ export default function PlanScreen() {
   const nudge = (delta: number) => dispatch(setRotation(rotation + delta));
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView contentContainerStyle={[styles.container, { paddingBottom: bottomInset }]}>
       <Segmented<PlanMode>
         value={mode}
         onChange={(m) => dispatch(setMode(m))}
