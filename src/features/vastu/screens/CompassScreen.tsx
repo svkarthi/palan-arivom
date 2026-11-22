@@ -1,19 +1,29 @@
 import { useIsFocused } from '@react-navigation/native';
-import { useState } from 'react';
-import { ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { useContext, useState } from 'react';
+import { FlatList, Modal, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 
 import CompassDial from '../components/CompassDial';
 import { AppText, Button, Card } from '@core/components/ui';
+import { ROOMS } from '../data/rooms';
 import { ZONE_BY_ID } from '../data/zones';
 import { useHeading } from '../hooks/useHeading';
 import { useLang } from '@core/hooks/useLang';
 import { clearReadings, lockReading, setDeclination } from '../store/compassSlice';
 import { useAppDispatch, useAppSelector } from '@core/store/hooks';
-import { setRotation } from '../store/planSlice';
+import { placeRoom, setRotation } from '../store/planSlice';
 import { colors, spacing } from '@core/theme';
 import { normalizeDegrees, zoneForHeading } from '../utils/heading';
 import { speak } from '@core/utils/speech';
+
+function cardinalOf(deg: number): 'N' | 'E' | 'S' | 'W' {
+  const n = normalizeDegrees(deg);
+  if (n >= 315 || n < 45) return 'N';
+  if (n < 135) return 'E';
+  if (n < 225) return 'S';
+  return 'W';
+}
 
 export default function CompassScreen() {
   const { t } = useTranslation('vastu');
@@ -21,13 +31,16 @@ export default function CompassScreen() {
   const dispatch = useAppDispatch();
   const focused = useIsFocused();
   const { width } = useWindowDimensions();
+  const insets = useContext(SafeAreaInsetsContext);
   const voice = useAppSelector((s) => s.settings.voice);
   const { declination, history } = useAppSelector((s) => s.compass);
   const { heading, available, source, accuracy } = useHeading(focused, declination);
   const [message, setMessage] = useState<string | null>(null);
+  const [assignOpen, setAssignOpen] = useState(false);
 
   const dial = Math.min(width - spacing.md * 2, 320);
   const zone = heading === null ? null : zoneForHeading(heading);
+  const cardinal = heading === null ? null : cardinalOf(heading);
 
   const lock = () => {
     if (heading === null || zone === null) return;
@@ -42,7 +55,6 @@ export default function CompassScreen() {
 
   const useAsPlanTop = () => {
     if (heading === null) return;
-    // If the top of the plan faces `heading`, north lies at -heading from the top.
     const rotation = normalizeDegrees(-heading);
     dispatch(setRotation(rotation));
     setMessage(t('compass.planTopSet', { deg: Math.round(heading) }));
@@ -72,6 +84,17 @@ export default function CompassScreen() {
             </AppText>
           </Card>
 
+          {cardinal ? (
+            <Card style={styles.declination}>
+              <AppText bold size={14} color={colors.primaryDark}>
+                🏠 {t('compass.facingGuide')}
+              </AppText>
+              <AppText size={13} color={colors.muted}>
+                {t(`compass.facingSummary.${cardinal}`)}
+              </AppText>
+            </Card>
+          ) : null}
+
           <View style={styles.row}>
             <Button title={t('compass.lock')} onPress={lock} disabled={heading === null} style={styles.flex} />
             <Button
@@ -82,6 +105,13 @@ export default function CompassScreen() {
               style={styles.flex}
             />
           </View>
+
+          <Button
+            title={`📍 ${t('compass.assignRoom')}`}
+            variant="outline"
+            disabled={zone === null}
+            onPress={() => setAssignOpen(true)}
+          />
 
           {message ? (
             <AppText size={14} color={colors.good}>
@@ -111,19 +141,19 @@ export default function CompassScreen() {
       )}
 
       {source === 'magnetometer' ? (
-      <Card style={styles.declination}>
-        <AppText bold>{t('compass.declination')}</AppText>
-        <View style={styles.row}>
-          <Button title="−0.5" variant="outline" onPress={() => stepDeclination(-0.5)} style={styles.flex} />
-          <AppText bold size={20} center style={styles.declinationValue}>
-            {declination}°
+        <Card style={styles.declination}>
+          <AppText bold>{t('compass.declination')}</AppText>
+          <View style={styles.row}>
+            <Button title="−0.5" variant="outline" onPress={() => stepDeclination(-0.5)} style={styles.flex} />
+            <AppText bold size={20} center style={styles.declinationValue}>
+              {declination}°
+            </AppText>
+            <Button title="+0.5" variant="outline" onPress={() => stepDeclination(0.5)} style={styles.flex} />
+          </View>
+          <AppText size={12} color={colors.muted}>
+            {t('compass.declinationHint')}
           </AppText>
-          <Button title="+0.5" variant="outline" onPress={() => stepDeclination(0.5)} style={styles.flex} />
-        </View>
-        <AppText size={12} color={colors.muted}>
-          {t('compass.declinationHint')}
-        </AppText>
-      </Card>
+        </Card>
       ) : null}
 
       <View style={styles.historyHeader}>
@@ -149,6 +179,39 @@ export default function CompassScreen() {
           </Card>
         ))
       )}
+
+      <Modal visible={assignOpen && zone !== null} transparent animationType="slide" onRequestClose={() => setAssignOpen(false)}>
+        <Pressable style={styles.backdrop} onPress={() => setAssignOpen(false)} />
+        {zone ? (
+          <View style={[styles.sheet, { paddingBottom: Math.max(insets?.bottom ?? 0, spacing.md) }]}>
+            <AppText bold size={17} color={colors.primaryDark}>
+              {t('compass.assignTitle', { zone: tr(zone.name) })}
+            </AppText>
+            <FlatList
+              data={ROOMS}
+              keyExtractor={(r) => r.id}
+              style={styles.list}
+              renderItem={({ item }) => (
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={() => {
+                    dispatch(placeRoom({ roomId: item.id, zone: zone.id }));
+                    setMessage(t('compass.roomAssigned', { room: tr(item.name), zone: tr(zone.name) }));
+                    setAssignOpen(false);
+                  }}
+                  style={styles.option}
+                >
+                  <AppText size={22}>{item.icon}</AppText>
+                  <AppText bold style={styles.flex}>
+                    {tr(item.name)}
+                  </AppText>
+                </Pressable>
+              )}
+            />
+            <Button title={t('common.cancel', { ns: 'translation' })} variant="outline" onPress={() => setAssignOpen(false)} />
+          </View>
+        ) : null}
+      </Modal>
     </ScrollView>
   );
 }
@@ -162,4 +225,15 @@ const styles = StyleSheet.create({
   declinationValue: { minWidth: 70 },
   historyHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   historyItem: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingVertical: spacing.sm },
+  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)' },
+  sheet: {
+    backgroundColor: colors.bg,
+    padding: spacing.md,
+    gap: spacing.sm,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    maxHeight: '70%',
+  },
+  list: { flexGrow: 0 },
+  option: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingVertical: spacing.sm, paddingHorizontal: spacing.sm },
 });

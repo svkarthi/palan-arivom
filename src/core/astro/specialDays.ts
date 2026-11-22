@@ -5,6 +5,7 @@ import { nakshatraIndexAt, tithiIndexAt, tithiSpans, type DaySummary } from './p
 export type SpecialId =
   | 'pournami'
   | 'amavasai'
+  | 'ekadashi'
   | 'pradosham'
   | 'sankashti'
   | 'vinayakaChaturthi'
@@ -69,9 +70,14 @@ export function specialDays(p: DaySummary): SpecialDay[] {
 
   const aparahnaTithi = tithiIndexAt(aparahna);
   const noonTithi = tithiIndexAt(noon);
+  const sunriseTithi = tithiIndexAt(p.sunrise);
 
   if (aparahnaTithi === 14) found.push({ id: 'pournami' });
   if (aparahnaTithi === 29) found.push({ id: 'amavasai' });
+  // Ekadashi: tithi 10 (Shukla) or 25 (Krishna) prevailing at sunrise or midday.
+  if (sunriseTithi === 10 || sunriseTithi === 25 || (sunriseTithi !== 9 && sunriseTithi !== 24 && (noonTithi === 10 || noonTithi === 25))) {
+    found.push({ id: 'ekadashi' });
+  }
 
   // Neighbouring evenings only matter when this one has Trayodashi too.
   const today = trayodashiOverlap(sunset);

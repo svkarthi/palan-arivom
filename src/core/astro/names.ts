@@ -107,6 +107,7 @@ export const TAMIL_YEARS: Bilingual[] = [
 export const SPECIAL_DAYS: Record<string, Bilingual> = {
   pournami: pair('பௌர்ணமி', 'Pournami'),
   amavasai: pair('அமாவாசை', 'Amavasai'),
+  ekadashi: pair('ஏகாதசி', 'Ekadashi'),
   pradosham: pair('பிரதோஷம்', 'Pradosham'),
   sankashti: pair('சங்கடஹர சதுர்த்தி', 'Sankashta Chaturthi'),
   vinayakaChaturthi: pair('வளர்பிறை சதுர்த்தி (விநாயகர்)', 'Vinayaka Chaturthi'),

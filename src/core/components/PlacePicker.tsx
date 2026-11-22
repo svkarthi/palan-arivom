@@ -1,9 +1,10 @@
+import * as Location from 'expo-location';
 import { useContext, useState } from 'react';
-import { FlatList, Modal, Pressable, StyleSheet, View } from 'react-native';
+import { Alert, FlatList, Modal, Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 
-import { PLACES } from '../astro/places';
+import { nearestPlace, PLACES } from '../astro/places';
 import { useLang } from '../hooks/useLang';
 import { usePlace } from '../hooks/usePlace';
 import { setPlace } from '../store/profileSlice';
@@ -18,7 +19,27 @@ export default function PlacePicker() {
   const dispatch = useAppDispatch();
   const place = usePlace();
   const [open, setOpen] = useState(false);
+  const [detecting, setDetecting] = useState(false);
   const insets = useContext(SafeAreaInsetsContext);
+
+  const detectCity = async () => {
+    setDetecting(true);
+    try {
+      const perm = await Location.requestForegroundPermissionsAsync();
+      if (!perm.granted) {
+        Alert.alert(t('place.detectFailed'));
+        return;
+      }
+      const pos = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+      const closest = nearestPlace(pos.coords.latitude, pos.coords.longitude);
+      dispatch(setPlace(closest.id));
+      setOpen(false);
+    } catch {
+      Alert.alert(t('place.detectFailed'));
+    } finally {
+      setDetecting(false);
+    }
+  };
 
   return (
     <>
@@ -33,6 +54,12 @@ export default function PlacePicker() {
           <AppText bold size={17} color={colors.primaryDark}>
             {t('place.choose')}
           </AppText>
+          <Button
+            title={`🎯 ${detecting ? t('place.detecting') : t('place.detect')}`}
+            variant="outline"
+            disabled={detecting}
+            onPress={detectCity}
+          />
           <FlatList
             data={PLACES}
             keyExtractor={(p) => p.id}

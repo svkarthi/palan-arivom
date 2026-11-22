@@ -1,4 +1,4 @@
-import { chandrashtamaRashi, DIRECTION_NAMES, nakshatrasOfRashi, NOKKU_NAMES, nokkuNaal, PARIHARAM } from '@core/astro/dayExtras';
+import { chandrashtamaRashi, DAY_YOGA_NAMES, dayYoga, DIRECTION_NAMES, nakshatrasOfRashi, NOKKU_NAMES, nokkuNaal, PARIHARAM } from '@core/astro/dayExtras';
 import { BAD_NAKSHATRAS, isBadYoga, tithiSeverity, type Severity } from '@core/astro/inauspicious';
 import { karanaName, NAKSHATRAS, PLANETS, RASHIS, SPECIAL_DAYS, tithiName, YOGAS } from '@core/astro/names';
 import { isVishti, pakshaOf, type Span } from '@core/astro/panchang';
@@ -328,6 +328,22 @@ export default function DayTimes({ day, date, place }: Props) {
             {tr(NOKKU_NAMES[nokkuNaal(nakshatra[0].index)])}
           </AppText>
         </View>
+        {(() => {
+          const dy = dayYoga(day.weekday, nakshatra[0].index);
+          return (
+            <View style={styles.row}>
+              <AppText size={13} color={colors.muted} style={styles.spanLabel}>
+                {t('panchang.dayYoga')}
+              </AppText>
+              <AppText bold color={dy === 'marana' ? colors.bad : colors.good} style={styles.flex}>
+                {tr(DAY_YOGA_NAMES[dy])}
+              </AppText>
+              {dy === 'marana' ? (
+                <Chip label={t('panchang.avoidFlag')} color={colors.bad} style={styles.noMargin} />
+              ) : null}
+            </View>
+          );
+        })()}
         <AppText size={12} color={colors.muted}>
           {t('panchang.flagNote')}
         </AppText>

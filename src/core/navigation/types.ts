@@ -4,4 +4,6 @@ export type RootStackParamList = {
   Vastu: undefined;
   NallaNeram: undefined;
   NallaNaal: undefined;
+  Porutham: undefined;
+  BirthStar: undefined;
 };

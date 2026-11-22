@@ -1,3 +1,4 @@
+import { File, Paths } from 'expo-file-system';
 import * as ImagePicker from 'expo-image-picker';
 import { useContext, useMemo, useState } from 'react';
 import { Alert, FlatList, Modal, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
@@ -71,7 +72,16 @@ export default function PlanScreen() {
         allowsEditing: false,
         quality: 0.8,
       });
-      if (!result.canceled && result.assets[0]) dispatch(setImage(result.assets[0].uri));
+      if (!result.canceled && result.assets[0]) {
+        const pickedUri = result.assets[0].uri;
+        try {
+          const dest = new File(Paths.document, `floor-plan-${Date.now()}.jpg`);
+          new File(pickedUri).copy(dest);
+          dispatch(setImage(dest.uri));
+        } catch {
+          dispatch(setImage(pickedUri));
+        }
+      }
     } catch {
       Alert.alert(t('plan.pickFailed'));
     }

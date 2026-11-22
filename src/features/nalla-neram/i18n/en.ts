@@ -8,6 +8,8 @@ const en: typeof ta = {
     sunrise: 'Sunrise',
     sunset: 'Sunset',
     goToday: 'Go to today',
+    pickDate: 'Pick date',
+    jumpTitle: 'Jump to date',
   },
   now: {
     good: 'Good time now — until {{time}}',
@@ -81,6 +83,7 @@ const en: typeof ta = {
     untilNext: 'until {{time}} ({{nextDay}})',
     cautionFlag: 'Caution',
     nokku: 'Nokku Naal',
+    dayYoga: 'Day Yogam',
     avoidFlag: 'Avoid',
     flagNote: 'Chaturthi, Ashtami, Navami, Chaturdashi and Amavasai tithis, unfavourable yogas and nakshatras, and the Bhadra karanam are marked Avoid. They are shown even when they last only part of the day.',
     shukla: 'Waxing',
