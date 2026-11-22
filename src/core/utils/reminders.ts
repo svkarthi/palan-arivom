@@ -8,7 +8,11 @@ import type { Place } from '../astro/sunrise';
 import { addDays, julianDay, toLocal } from '../astro/time';
 import type { Lang } from '../i18n';
 
-const REMIND_SPECIALS = new Set(['pournami', 'amavasai', 'ekadashi', 'pradosham', 'shashti', 'karthigai', 'karthigaiDeepam']);
+const REMIND_SPECIALS = new Set([
+  'tamilNewYear', 'pongal', 'thaiPoosam', 'mahaShivaratri', 'panguniUthiram',
+  'aadiPerukku', 'saraswatiPooja', 'vijayadashami', 'deepavali',
+  'pournami', 'amavasai', 'ekadashi', 'pradosham', 'shashti', 'karthigai', 'karthigaiDeepam',
+]);
 
 /**
  * Schedules offline morning (7:00 AM local) notifications for upcoming Viratham /

@@ -1,8 +1,20 @@
 import type { Interval } from './intervals';
 import { isKarinaal } from './karinaal';
-import { nakshatraIndexAt, tithiIndexAt, tithiSpans, type DaySummary } from './panchang';
+import { nakshatraIndexAt, rashiAt, tithiIndexAt, tithiSpans, type DaySummary } from './panchang';
+import { julianDay } from './time';
 
 export type SpecialId =
+  | 'tamilNewYear'
+  | 'pongal'
+  | 'mattuPongal'
+  | 'thaiPoosam'
+  | 'mahaShivaratri'
+  | 'panguniUthiram'
+  | 'aadiPerukku'
+  | 'navarathri'
+  | 'saraswatiPooja'
+  | 'vijayadashami'
+  | 'deepavali'
   | 'pournami'
   | 'amavasai'
   | 'ekadashi'
@@ -17,9 +29,12 @@ export type SpecialId =
 export type SpecialDay = { id: SpecialId; window?: Interval };
 
 const MIN = 60_000;
+const HOUR = 60 * MIN;
 const PRADOSHAM_LENGTH_MIN = 144; // 2 h 24 min, three muhurtas after sunset
 const TRAYODASHI = [12, 27];
 const KRITTIKA = 2;
+const POOSAM = 7;
+const UTHIRAM = 11;
 const KARTHIGAI_MONTH = 7;
 
 const at = (ms: number) => new Date(ms);
@@ -47,31 +62,92 @@ function trayodashiOverlap(sunset: number): number {
 }
 
 /**
- * Observance days of the Tamil calendar, found from the tithi or nakshatra at the
- * time of day each one is reckoned by. Checked against the Pournami, Amavasai and
- * Pradosham lists of tamildailycalendar.com for 2026.
- * - Pournami and Amavasai: the tithi in the afternoon (aparahna, about 70% into the day).
- * - Pradosham: Trayodashi present in the 2 h 24 min after sunset; when two days both
- *   qualify, the one with more of it.
- * - Sankashti Chaturthi: waning Chaturthi during the first hours of the night,
- *   when the moon rises (moonrise is approximated, not computed).
- * - Vinayaka Chaturthi (monthly): waxing Chaturthi at midday.
- * - Shashti: waxing Shashthi at midday.
- * - Karthigai: Krittika present during the evening (sunset to 2 h 24 min later); in the
- *   month of Karthigai it is Karthigai Deepam.
- * - Karinaal: by Tamil date, see `karinaal.ts`.
+ * True when a Shukla Paksha day (`tithi` 0..14) belongs to the Ashwin (Purattasi)
+ * lunar month: the preceding New Moon occurred in Kanya (rashi 5) and the next
+ * New Moon occurs in Thulam (rashi 6, handling Adhika Ashwin automatically).
+ */
+function isAshwinShukla(noonMs: number, tithi: number): boolean {
+  if (tithi < 0 || tithi > 14) return false;
+  const approxPrevAmavasaiJd = julianDay(at(noonMs - (tithi + 0.5) * 24 * HOUR));
+  const approxNextAmavasaiJd = julianDay(at(noonMs + (29.5 - tithi) * 24 * HOUR));
+  return rashiAt(approxPrevAmavasaiJd) === 5 && rashiAt(approxNextAmavasaiJd) === 6;
+}
+
+/**
+ * Observance days and major annual Tamil festivals, found from the solar date
+ * and the tithi or nakshatra at the time of day each one is reckoned by.
  */
 export function specialDays(p: DaySummary): SpecialDay[] {
   const sunset = p.sunset.getTime();
   const sunrise = p.sunrise.getTime();
-  const noon = at((sunrise + sunset) / 2);
+  const noonMs = (sunrise + sunset) / 2;
+  const noon = at(noonMs);
   const aparahna = at(sunrise + 0.7 * (sunset - sunrise));
+  const arunodaya = at(sunrise - 60 * MIN);
+  const midnight = at(sunset + 6 * HOUR);
   const found: SpecialDay[] = [];
 
   const aparahnaTithi = tithiIndexAt(aparahna);
   const noonTithi = tithiIndexAt(noon);
   const sunriseTithi = tithiIndexAt(p.sunrise);
+  const arunodayaTithi = tithiIndexAt(arunodaya);
+  const midnightTithi = tithiIndexAt(midnight);
 
+  // --- Major Annual Tamil Solar Festivals ---
+  if (p.tamil.month === 0 && p.tamil.day === 1) found.push({ id: 'tamilNewYear' });
+  if (p.tamil.month === 9 && p.tamil.day === 1) found.push({ id: 'pongal' });
+  if (p.tamil.month === 9 && p.tamil.day === 2) found.push({ id: 'mattuPongal' });
+  if (p.tamil.month === 3 && p.tamil.day === 18) found.push({ id: 'aadiPerukku' });
+
+  // --- Major Annual Lunar / Star Festivals ---
+  // Thai Poosam: Poosam nakshatra around Pournami in Thai (month 9).
+  if (
+    p.tamil.month === 9 &&
+    (nakshatraIndexAt(noon) === POOSAM || nakshatraIndexAt(aparahna) === POOSAM) &&
+    (noonTithi === 13 || noonTithi === 14 || noonTithi === 15)
+  ) {
+    found.push({ id: 'thaiPoosam' });
+  }
+
+  // Panguni Uthiram: Uthiram nakshatra around Pournami in Panguni (month 11).
+  if (
+    p.tamil.month === 11 &&
+    (nakshatraIndexAt(noon) === UTHIRAM || nakshatraIndexAt(aparahna) === UTHIRAM) &&
+    (noonTithi === 13 || noonTithi === 14 || noonTithi === 15)
+  ) {
+    found.push({ id: 'panguniUthiram' });
+  }
+
+  // Maha Shivaratri: Krishna Chaturdashi (28) at Nishita (midnight) in Maasi (month 10).
+  if (p.tamil.month === 10 && midnightTithi === 28) {
+    found.push({ id: 'mahaShivaratri' });
+  }
+
+  // Navarathri (days 1-8), Saraswati / Ayudha Pooja (Navami), Vijayadashami (Dashami).
+  if (isAshwinShukla(noonMs, aparahnaTithi)) {
+    if (aparahnaTithi >= 0 && aparahnaTithi <= 7) {
+      found.push({ id: 'navarathri' });
+    } else if (aparahnaTithi === 8) {
+      found.push({ id: 'saraswatiPooja' });
+    } else if (aparahnaTithi === 9) {
+      found.push({ id: 'vijayadashami' });
+    }
+  } else if (isAshwinShukla(noonMs, noonTithi)) {
+    if (noonTithi === 8) found.push({ id: 'saraswatiPooja' });
+    else if (noonTithi === 9) found.push({ id: 'vijayadashami' });
+  }
+
+  // Deepavali (Tamil Nadu Naraka Chaturdashi): Krishna Chaturdashi (28) at Arunodaya
+  // (before sunrise) when the Sun at the upcoming New Moon is in Thulam (rashi 6 = Aippasi).
+  if (arunodayaTithi === 28) {
+    const upcomingNewMoonRashi = rashiAt(julianDay(at(sunrise + 36 * HOUR)));
+    const prevDayArunodaya = tithiIndexAt(at(arunodaya.getTime() - 24 * HOUR));
+    if (upcomingNewMoonRashi === 6 && prevDayArunodaya !== 28) {
+      found.push({ id: 'deepavali' });
+    }
+  }
+
+  // --- Monthly Observance Days ---
   if (aparahnaTithi === 14) found.push({ id: 'pournami' });
   if (aparahnaTithi === 29) found.push({ id: 'amavasai' });
   // Ekadashi: tithi 10 (Shukla) or 25 (Krishna) prevailing at sunrise or midday.
@@ -81,8 +157,8 @@ export function specialDays(p: DaySummary): SpecialDay[] {
 
   // Neighbouring evenings only matter when this one has Trayodashi too.
   const today = trayodashiOverlap(sunset);
-  const before = today > 0 ? trayodashiOverlap(sunset - 24 * 60 * MIN) : 0;
-  const after = today > 0 ? trayodashiOverlap(sunset + 24 * 60 * MIN) : 0;
+  const before = today > 0 ? trayodashiOverlap(sunset - 24 * HOUR) : 0;
+  const after = today > 0 ? trayodashiOverlap(sunset + 24 * HOUR) : 0;
   if (today > 0 && today > before && today >= after) {
     found.push({ id: 'pradosham', window: { start: sunset, end: sunset + PRADOSHAM_LENGTH_MIN * MIN } });
   }

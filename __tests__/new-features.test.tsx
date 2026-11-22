@@ -93,13 +93,45 @@ describe('new feature screens', () => {
 
   it('renders custom devotional ObservanceIcon for every special day and prioritises correctly', async () => {
     const ids: SpecialId[] = [
-      'pradosham', 'ekadashi', 'vinayakaChaturthi', 'sankashti',
+      'tamilNewYear', 'pongal', 'mattuPongal', 'thaiPoosam', 'mahaShivaratri',
+      'panguniUthiram', 'aadiPerukku', 'navarathri', 'saraswatiPooja', 'vijayadashami',
+      'deepavali', 'pradosham', 'ekadashi', 'vinayakaChaturthi', 'sankashti',
       'shashti', 'karthigai', 'karthigaiDeepam', 'pournami', 'amavasai', 'karinaal',
     ];
     for (const id of ids) {
       await render(<ObservanceIcon id={id} size={16} />);
     }
     expect(primaryObservance([{ id: 'karinaal' }, { id: 'pradosham' }])).toBe('pradosham');
+    expect(primaryObservance([{ id: 'pournami' }, { id: 'thaiPoosam' }])).toBe('thaiPoosam');
     expect(primaryObservance([{ id: 'karinaal' }])).toBeNull();
+  });
+
+  it('detects major annual Tamil festivals accurately for 2025 and 2026', () => {
+    const chennai = placeById('chennai');
+    const checks: [number, number, number, SpecialId][] = [
+      [2025, 1, 14, 'pongal'],
+      [2025, 2, 11, 'thaiPoosam'],
+      [2025, 2, 26, 'mahaShivaratri'],
+      [2025, 4, 14, 'tamilNewYear'],
+      [2025, 8, 2, 'aadiPerukku'],
+      [2025, 9, 22, 'navarathri'],
+      [2025, 10, 1, 'saraswatiPooja'],
+      [2025, 10, 2, 'vijayadashami'],
+      [2025, 10, 20, 'deepavali'],
+      [2026, 1, 14, 'pongal'],
+      [2026, 2, 1, 'thaiPoosam'],
+      [2026, 2, 15, 'mahaShivaratri'],
+      [2026, 4, 1, 'panguniUthiram'],
+      [2026, 4, 14, 'tamilNewYear'],
+      [2026, 8, 3, 'aadiPerukku'],
+      [2026, 10, 11, 'navarathri'],
+      [2026, 10, 19, 'saraswatiPooja'],
+      [2026, 10, 20, 'vijayadashami'],
+      [2026, 11, 8, 'deepavali'],
+    ];
+    const missed = checks.filter(
+      ([y, m, d, id]) => !specialDays(daySummary({ y, m, d }, chennai)).some((s) => s.id === id),
+    );
+    expect(missed).toEqual([]);
   });
 });

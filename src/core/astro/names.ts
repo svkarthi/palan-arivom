@@ -105,6 +105,17 @@ export const TAMIL_YEARS: Bilingual[] = [
 ];
 
 export const SPECIAL_DAYS: Record<string, Bilingual> = {
+  tamilNewYear: pair('தமிழ் புத்தாண்டு', 'Tamil New Year'),
+  pongal: pair('தைப்பொங்கல்', 'Thai Pongal'),
+  mattuPongal: pair('மாட்டுப் பொங்கல்', 'Mattu Pongal'),
+  thaiPoosam: pair('தைப்பூசம்', 'Thai Poosam'),
+  mahaShivaratri: pair('மகா சிவராத்திரி', 'Maha Shivaratri'),
+  panguniUthiram: pair('பங்குனி உத்திரம்', 'Panguni Uthiram'),
+  aadiPerukku: pair('ஆடிப்பெருக்கு', 'Aadi Perukku'),
+  navarathri: pair('நவராத்திரி', 'Navarathri'),
+  saraswatiPooja: pair('சரஸ்வதி / ஆயுத பூஜை', 'Saraswati & Ayudha Pooja'),
+  vijayadashami: pair('விஜயதசமி', 'Vijayadashami'),
+  deepavali: pair('தீபாவளி', 'Deepavali'),
   pournami: pair('பௌர்ணமி', 'Pournami'),
   amavasai: pair('அமாவாசை', 'Amavasai'),
   ekadashi: pair('ஏகாதசி', 'Ekadashi'),
