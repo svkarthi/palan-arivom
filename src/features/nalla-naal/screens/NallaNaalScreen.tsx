@@ -12,8 +12,10 @@ import { usePlace } from '@core/hooks/usePlace';
 import { useAppDispatch, useAppSelector } from '@core/store/hooks';
 import { setBirthNakshatra, setBirthRashi } from '@core/store/profileSlice';
 import { colors, spacing } from '@core/theme';
+import { hapticTap } from '@core/utils/haptics';
 import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, Share, StyleSheet, View } from 'react-native';
+import Animated, { FadeInDown, LinearTransition } from 'react-native-reanimated';
 import { useTranslation } from 'react-i18next';
 
 import DayTimes from '../../nalla-neram/components/DayTimes';
@@ -149,10 +151,13 @@ export default function NallaNaalScreen() {
     const open = forceOpen || expanded === v.date.d;
     const isToday = v.date.y === todayLocal.y && v.date.m === todayLocal.m && v.date.d === todayLocal.d;
     return (
+      <Animated.View key={v.date.d} layout={LinearTransition.springify().damping(18)}>
       <Pressable
-        key={v.date.d}
         accessibilityRole="button"
-        onPress={() => setExpanded(expanded === v.date.d && !forceOpen ? null : v.date.d)}
+        onPress={() => {
+          hapticTap();
+          setExpanded(expanded === v.date.d && !forceOpen ? null : v.date.d);
+        }}
         style={({ pressed }) => pressed && !open && { opacity: 0.88 }}
       >
         <Card style={[styles.gap, isToday && { borderColor: colors.primary, borderWidth: 2 }]}>
@@ -204,7 +209,7 @@ export default function NallaNaalScreen() {
             </View>
           ) : null}
           {open ? (
-            <View style={styles.gap}>
+            <Animated.View entering={FadeInDown.duration(220)} style={styles.gap}>
               <View style={styles.wrap}>
                 {v.reasons.length === 0 ? (
                   <AppText size={13} color={colors.muted}>
@@ -224,7 +229,7 @@ export default function NallaNaalScreen() {
                 {t('details.yoga')}: {tr(YOGAS[v.yoga])} · {t('details.karana')}: {tr(karanaName(v.karana))}
               </AppText>
               <DayDetail verdict={v} place={place} purposeName={purposeName} />
-            </View>
+            </Animated.View>
           ) : (
             <View style={styles.tapRow}>
               <AppText size={11} color={colors.muted}>
@@ -235,6 +240,7 @@ export default function NallaNaalScreen() {
           )}
         </Card>
       </Pressable>
+      </Animated.View>
     );
   };
 
@@ -445,7 +451,10 @@ export default function NallaNaalScreen() {
                     key={v.date.d}
                     accessibilityRole="button"
                     accessibilityState={{ selected }}
-                    onPress={() => setExpanded(v.date.d)}
+                    onPress={() => {
+                      hapticTap();
+                      setExpanded(v.date.d);
+                    }}
                     style={[
                       styles.calCell,
                       styles.calDay,

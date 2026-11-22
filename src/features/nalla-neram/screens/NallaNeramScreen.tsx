@@ -2,6 +2,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { AYANA, chandrashtamaRashi, DAY_YOGA_NAMES, dayYoga, DIRECTION_NAMES, isDakshinayana, PARIHARAM, ritu, sakaYear } from '@core/astro/dayExtras';
 import { GREGORIAN_MONTHS, PLANETS, RASHIS, SPECIAL_DAYS, TAMIL_MONTHS, TAMIL_YEARS, WEEKDAYS } from '@core/astro/names';
 import { addDays, daysInMonth, formatClock, sameDate, toLocal, type CivilDate } from '@core/astro/time';
+import BottomSheet from '@core/components/BottomSheet';
 import PlacePicker from '@core/components/PlacePicker';
 import { AppText, Button, Card, Chip, SectionHeader, Segmented, Stepper, useBottomInset } from '@core/components/ui';
 import { useLang } from '@core/hooks/useLang';
@@ -10,8 +11,9 @@ import { usePlace } from '@core/hooks/usePlace';
 import { useAppDispatch, useAppSelector } from '@core/store/hooks';
 import { setDayPartBasis } from '@core/store/profileSlice';
 import { colors, spacing } from '@core/theme';
+import { hapticTap } from '@core/utils/haptics';
 import { useMemo, useState } from 'react';
-import { Modal, Pressable, ScrollView, Share, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, Share, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import DayTimes from '../components/DayTimes';
@@ -250,61 +252,58 @@ export default function NallaNeramScreen() {
         {t('note')}
       </AppText>
 
-      <Modal visible={jumpOpen} transparent animationType="slide" onRequestClose={() => setJumpOpen(false)}>
-        <Pressable style={styles.backdrop} onPress={() => setJumpOpen(false)} />
-        <View style={[styles.sheet, { paddingBottom: bottomInset }]}>
-          <View style={styles.handle} />
-          <AppText bold size={17} color={colors.primaryDark}>
-            {t('date.jumpTitle')}
-          </AppText>
-          <Stepper
-            label={String(draft.y)}
-            onPrev={() => setDraft((p) => ({ ...p, y: p.y - 1, d: Math.min(p.d, daysInMonth(p.y - 1, p.m)) }))}
-            onNext={() => setDraft((p) => ({ ...p, y: p.y + 1, d: Math.min(p.d, daysInMonth(p.y + 1, p.m)) }))}
-          />
-          <View style={styles.monthGrid}>
-            {GREGORIAN_MONTHS.map((gm, idx) => {
-              const mm = idx + 1;
-              const active = draft.m === mm;
-              return (
-                <Pressable
-                  key={mm}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: active }}
-                  onPress={() => setDraft((p) => ({ ...p, m: mm, d: Math.min(p.d, daysInMonth(p.y, mm)) }))}
-                  style={[styles.monthCell, active && styles.cellActive]}
-                >
-                  <AppText size={12} bold={active} color={active ? '#fff' : colors.text} center>
-                    {tr(gm)}
-                  </AppText>
-                </Pressable>
-              );
-            })}
-          </View>
-          <View style={styles.dayGrid}>
-            {Array.from({ length: maxDay }, (_, i) => i + 1).map((dd) => {
-              const active = draft.d === dd;
-              return (
-                <Pressable
-                  key={dd}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: active }}
-                  onPress={() => {
-                    setPicked({ y: draft.y, m: draft.m, d: dd });
-                    setJumpOpen(false);
-                  }}
-                  style={[styles.dayCell, active && styles.cellActive]}
-                >
-                  <AppText size={13} bold={active} color={active ? '#fff' : colors.text} center>
-                    {dd}
-                  </AppText>
-                </Pressable>
-              );
-            })}
-          </View>
-          <Button title={t('common.cancel', { ns: 'translation' })} variant="outline" onPress={() => setJumpOpen(false)} />
+      <BottomSheet visible={jumpOpen} title={t('date.jumpTitle')} onClose={() => setJumpOpen(false)} maxHeight="85%">
+        <Stepper
+          label={String(draft.y)}
+          onPrev={() => setDraft((p) => ({ ...p, y: p.y - 1, d: Math.min(p.d, daysInMonth(p.y - 1, p.m)) }))}
+          onNext={() => setDraft((p) => ({ ...p, y: p.y + 1, d: Math.min(p.d, daysInMonth(p.y + 1, p.m)) }))}
+        />
+        <View style={styles.monthGrid}>
+          {GREGORIAN_MONTHS.map((gm, idx) => {
+            const mm = idx + 1;
+            const active = draft.m === mm;
+            return (
+              <Pressable
+                key={mm}
+                accessibilityRole="button"
+                accessibilityState={{ selected: active }}
+                onPress={() => {
+                  hapticTap();
+                  setDraft((p) => ({ ...p, m: mm, d: Math.min(p.d, daysInMonth(p.y, mm)) }));
+                }}
+                style={[styles.monthCell, active && styles.cellActive]}
+              >
+                <AppText size={12} bold={active} color={active ? '#fff' : colors.text} center>
+                  {tr(gm)}
+                </AppText>
+              </Pressable>
+            );
+          })}
         </View>
-      </Modal>
+        <View style={styles.dayGrid}>
+          {Array.from({ length: maxDay }, (_, i) => i + 1).map((dd) => {
+            const active = draft.d === dd;
+            return (
+              <Pressable
+                key={dd}
+                accessibilityRole="button"
+                accessibilityState={{ selected: active }}
+                onPress={() => {
+                  hapticTap();
+                  setPicked({ y: draft.y, m: draft.m, d: dd });
+                  setJumpOpen(false);
+                }}
+                style={[styles.dayCell, active && styles.cellActive]}
+              >
+                <AppText size={13} bold={active} color={active ? '#fff' : colors.text} center>
+                  {dd}
+                </AppText>
+              </Pressable>
+            );
+          })}
+        </View>
+        <Button title={t('common.cancel', { ns: 'translation' })} variant="outline" onPress={() => setJumpOpen(false)} />
+      </BottomSheet>
     </ScrollView>
   );
 }

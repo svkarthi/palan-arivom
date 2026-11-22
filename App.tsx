@@ -4,6 +4,7 @@ import { useFonts } from 'expo-font';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { ActivityIndicator, View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
@@ -35,14 +36,16 @@ export default function App() {
   if (!fontsLoaded && !fontError) return Loading;
 
   return (
-    <Provider store={store}>
-      <PersistGate loading={Loading} persistor={persistor}>
-        <SafeAreaProvider>
-          <LanguageSync />
-          <RootNavigator />
-          <StatusBar style="light" />
-        </SafeAreaProvider>
-      </PersistGate>
-    </Provider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <Provider store={store}>
+        <PersistGate loading={Loading} persistor={persistor}>
+          <SafeAreaProvider>
+            <LanguageSync />
+            <RootNavigator />
+            <StatusBar style="light" />
+          </SafeAreaProvider>
+        </PersistGate>
+      </Provider>
+    </GestureHandlerRootView>
   );
 }

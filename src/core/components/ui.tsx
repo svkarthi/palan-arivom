@@ -1,4 +1,5 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useContext, type ComponentProps, type ReactNode } from 'react';
 import {
   Pressable,
@@ -13,6 +14,7 @@ import {
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 
 import { colors, fonts, shadows, spacing } from '../theme';
+import { hapticTap } from '../utils/haptics';
 
 export type IconName = ComponentProps<typeof MaterialCommunityIcons>['name'];
 
@@ -153,11 +155,22 @@ type CardProps = {
 };
 
 export function Card({ children, variant = 'default', style }: CardProps) {
+  if (variant === 'hero') {
+    return (
+      <LinearGradient
+        colors={['#982A1E', '#7A1F1F', '#551414']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={[styles.card, styles.cardHero, style]}
+      >
+        {children}
+      </LinearGradient>
+    );
+  }
   return (
     <View
       style={[
         styles.card,
-        variant === 'hero' && styles.cardHero,
         variant === 'tinted' && styles.cardTinted,
         style,
       ]}
@@ -195,7 +208,10 @@ export function Segmented<T extends string>({ options, value, onChange }: Segmen
             key={o.value}
             accessibilityRole="button"
             accessibilityState={{ selected: active }}
-            onPress={() => onChange(o.value)}
+            onPress={() => {
+              if (!active) hapticTap();
+              onChange(o.value);
+            }}
             style={({ pressed }) => [
               styles.segment,
               active && styles.segmentActive,
@@ -229,13 +245,26 @@ export function Stepper({ label, onPrev, onNext, onReset, resetLabel }: StepperP
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="previous"
-        onPress={onPrev}
+        onPress={() => {
+          hapticTap();
+          onPrev();
+        }}
         hitSlop={10}
         style={({ pressed }) => [styles.stepButton, pressed && { opacity: 0.6 }]}
       >
         <MaterialCommunityIcons name="chevron-left" size={26} color={colors.primary} />
       </Pressable>
-      <Pressable accessibilityRole="button" disabled={!onReset} onPress={onReset} style={styles.stepLabel}>
+      <Pressable
+        accessibilityRole="button"
+        disabled={!onReset}
+        onPress={() => {
+          if (onReset) {
+            hapticTap();
+            onReset();
+          }
+        }}
+        style={styles.stepLabel}
+      >
         <AppText bold size={15} color={colors.primaryDark} center>
           {label}
         </AppText>
@@ -248,7 +277,10 @@ export function Stepper({ label, onPrev, onNext, onReset, resetLabel }: StepperP
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="next"
-        onPress={onNext}
+        onPress={() => {
+          hapticTap();
+          onNext();
+        }}
         hitSlop={10}
         style={({ pressed }) => [styles.stepButton, pressed && { opacity: 0.6 }]}
       >
@@ -297,7 +329,7 @@ const styles = StyleSheet.create({
   },
   cardHero: {
     backgroundColor: colors.heroBg,
-    borderColor: colors.heroBg,
+    borderColor: 'rgba(245, 196, 105, 0.35)',
     ...shadows.hero,
   },
   cardTinted: {

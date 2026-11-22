@@ -7,6 +7,7 @@ import { usePlace } from '@core/hooks/usePlace';
 import { useAppDispatch } from '@core/store/hooks';
 import { setBirthNakshatra, setBirthRashi } from '@core/store/profileSlice';
 import { colors, spacing } from '@core/theme';
+import { hapticSuccess, hapticTap } from '@core/utils/haptics';
 import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
@@ -38,6 +39,7 @@ export default function BirthStarScreen() {
   );
 
   const saveToProfile = () => {
+    hapticSuccess();
     dispatch(setBirthNakshatra(result.nakshatra));
     dispatch(setBirthRashi(result.rashi));
     setSavedMsg(true);
@@ -67,7 +69,7 @@ export default function BirthStarScreen() {
                 key={m}
                 accessibilityRole="button"
                 accessibilityState={{ selected: active }}
-                onPress={() => { setMonth(m); setSavedMsg(false); }}
+                onPress={() => { hapticTap(); setMonth(m); setSavedMsg(false); }}
                 style={[styles.cell, active && styles.cellActive]}
               >
                 <AppText size={12} bold={active} color={active ? '#fff' : colors.text} center>

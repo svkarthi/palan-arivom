@@ -1,10 +1,10 @@
 import { useIsFocused } from '@react-navigation/native';
-import { useContext, useState } from 'react';
-import { FlatList, Modal, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
-import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
+import { useState } from 'react';
+import { FlatList, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import CompassDial from '../components/CompassDial';
+import BottomSheet from '@core/components/BottomSheet';
 import { AppText, Button, Card, SectionHeader, useBottomInset } from '@core/components/ui';
 import { ROOMS } from '../data/rooms';
 import { ZONE_BY_ID } from '../data/zones';
@@ -14,6 +14,7 @@ import { clearReadings, lockReading, setDeclination } from '../store/compassSlic
 import { useAppDispatch, useAppSelector } from '@core/store/hooks';
 import { placeRoom, setRotation } from '../store/planSlice';
 import { colors, spacing } from '@core/theme';
+import { hapticImpact, hapticSuccess } from '@core/utils/haptics';
 import { normalizeDegrees, zoneForHeading } from '../utils/heading';
 import { speak } from '@core/utils/speech';
 
@@ -31,7 +32,6 @@ export default function CompassScreen() {
   const dispatch = useAppDispatch();
   const focused = useIsFocused();
   const { width } = useWindowDimensions();
-  const insets = useContext(SafeAreaInsetsContext);
   const bottomInset = useBottomInset();
   const voice = useAppSelector((s) => s.settings.voice);
   const { declination, history } = useAppSelector((s) => s.compass);
@@ -45,6 +45,7 @@ export default function CompassScreen() {
 
   const lock = () => {
     if (heading === null || zone === null) return;
+    hapticImpact();
     const rounded = Math.round(heading);
     dispatch(lockReading({ id: String(Date.now()), heading: rounded, zone: zone.id, at: Date.now() }));
     setMessage(t('compass.locked', { zone: tr(zone.name), deg: rounded }));
@@ -56,6 +57,7 @@ export default function CompassScreen() {
 
   const useAsPlanTop = () => {
     if (heading === null) return;
+    hapticSuccess();
     const rotation = normalizeDegrees(-heading);
     dispatch(setRotation(rotation));
     setMessage(t('compass.planTopSet', { deg: Math.round(heading) }));
@@ -181,13 +183,14 @@ export default function CompassScreen() {
         ))
       )}
 
-      <Modal visible={assignOpen && zone !== null} transparent animationType="slide" onRequestClose={() => setAssignOpen(false)}>
-        <Pressable style={styles.backdrop} onPress={() => setAssignOpen(false)} />
+      <BottomSheet
+        visible={assignOpen && zone !== null}
+        title={zone ? t('compass.assignTitle', { zone: tr(zone.name) }) : undefined}
+        onClose={() => setAssignOpen(false)}
+        maxHeight="70%"
+      >
         {zone ? (
-          <View style={[styles.sheet, { paddingBottom: Math.max(insets?.bottom ?? 0, spacing.md) }]}>
-            <AppText bold size={17} color={colors.primaryDark}>
-              {t('compass.assignTitle', { zone: tr(zone.name) })}
-            </AppText>
+          <>
             <FlatList
               data={ROOMS}
               keyExtractor={(r) => r.id}
@@ -196,11 +199,12 @@ export default function CompassScreen() {
                 <Pressable
                   accessibilityRole="button"
                   onPress={() => {
+                    hapticSuccess();
                     dispatch(placeRoom({ roomId: item.id, zone: zone.id }));
                     setMessage(t('compass.roomAssigned', { room: tr(item.name), zone: tr(zone.name) }));
                     setAssignOpen(false);
                   }}
-                  style={styles.option}
+                  style={({ pressed }) => [styles.option, pressed && { opacity: 0.7 }]}
                 >
                   <AppText size={22}>{item.icon}</AppText>
                   <AppText bold style={styles.flex}>
@@ -210,9 +214,9 @@ export default function CompassScreen() {
               )}
             />
             <Button title={t('common.cancel', { ns: 'translation' })} variant="outline" onPress={() => setAssignOpen(false)} />
-          </View>
+          </>
         ) : null}
-      </Modal>
+      </BottomSheet>
     </ScrollView>
   );
 }

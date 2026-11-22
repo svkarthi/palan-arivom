@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import { useState } from 'react';
-import { Alert, FlatList, Modal, Pressable, StyleSheet, View } from 'react-native';
+import { Alert, FlatList, Pressable, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { nearestPlace, PLACES } from '../astro/places';
@@ -10,9 +10,11 @@ import { usePlace } from '../hooks/usePlace';
 import { setPlace } from '../store/profileSlice';
 import { useAppDispatch } from '../store/hooks';
 import { colors, spacing } from '../theme';
-import { AppText, Button, useBottomInset } from './ui';
+import { hapticSuccess, hapticTap } from '../utils/haptics';
+import BottomSheet from './BottomSheet';
+import { AppText, Button } from './ui';
 
-/** Compact button showing the chosen city that opens a list to change it. */
+/** Compact button showing the chosen city that opens a swipeable sheet to change it. */
 export default function PlacePicker() {
   const { t } = useTranslation();
   const { tr } = useLang();
@@ -20,7 +22,6 @@ export default function PlacePicker() {
   const place = usePlace();
   const [open, setOpen] = useState(false);
   const [detecting, setDetecting] = useState(false);
-  const bottomInset = useBottomInset(spacing.sm);
 
   const detectCity = async () => {
     setDetecting(true);
@@ -33,6 +34,7 @@ export default function PlacePicker() {
       const pos = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
       const closest = nearestPlace(pos.coords.latitude, pos.coords.longitude);
       dispatch(setPlace(closest.id));
+      hapticSuccess();
       setOpen(false);
     } catch {
       Alert.alert(t('place.detectFailed'));
@@ -45,7 +47,10 @@ export default function PlacePicker() {
     <>
       <Pressable
         accessibilityRole="button"
-        onPress={() => setOpen(true)}
+        onPress={() => {
+          hapticTap();
+          setOpen(true);
+        }}
         style={({ pressed }) => [styles.button, pressed && { opacity: 0.75 }]}
       >
         <Ionicons name="location-sharp" size={15} color={colors.primary} />
@@ -54,51 +59,46 @@ export default function PlacePicker() {
         </AppText>
         <Ionicons name="chevron-down" size={14} color={colors.primary} />
       </Pressable>
-      <Modal visible={open} transparent animationType="slide" onRequestClose={() => setOpen(false)}>
-        <Pressable style={styles.backdrop} onPress={() => setOpen(false)} />
-        <View style={[styles.sheet, { paddingBottom: bottomInset }]}>
-          <View style={styles.handle} />
-          <AppText bold size={17} color={colors.primaryDark}>
-            {t('place.choose')}
-          </AppText>
-          <Button
-            title={detecting ? t('place.detecting') : t('place.detect')}
-            icon="crosshairs-gps"
-            variant="outline"
-            disabled={detecting}
-            onPress={detectCity}
-          />
-          <FlatList
-            data={PLACES}
-            keyExtractor={(p) => p.id}
-            style={styles.list}
-            renderItem={({ item }) => {
-              const selected = item.id === place.id;
-              return (
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityState={{ selected }}
-                  onPress={() => {
-                    dispatch(setPlace(item.id));
-                    setOpen(false);
-                  }}
-                  style={({ pressed }) => [
-                    styles.option,
-                    selected && styles.active,
-                    pressed && { opacity: 0.75 },
-                  ]}
-                >
-                  <AppText bold={selected} color={selected ? colors.primaryDark : colors.text} style={styles.flex}>
-                    {tr(item.name)}
-                  </AppText>
-                  {selected ? <Ionicons name="checkmark-circle" size={18} color={colors.primary} /> : null}
-                </Pressable>
-              );
-            }}
-          />
-          <Button title={t('common.cancel')} variant="outline" onPress={() => setOpen(false)} />
-        </View>
-      </Modal>
+
+      <BottomSheet visible={open} title={t('place.choose')} onClose={() => setOpen(false)} maxHeight="72%">
+        <Button
+          title={detecting ? t('place.detecting') : t('place.detect')}
+          icon="crosshairs-gps"
+          variant="outline"
+          disabled={detecting}
+          onPress={detectCity}
+        />
+        <FlatList
+          data={PLACES}
+          keyExtractor={(p) => p.id}
+          style={styles.list}
+          renderItem={({ item }) => {
+            const selected = item.id === place.id;
+            return (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityState={{ selected }}
+                onPress={() => {
+                  hapticTap();
+                  dispatch(setPlace(item.id));
+                  setOpen(false);
+                }}
+                style={({ pressed }) => [
+                  styles.option,
+                  selected && styles.active,
+                  pressed && { opacity: 0.75 },
+                ]}
+              >
+                <AppText bold={selected} color={selected ? colors.primaryDark : colors.text} style={styles.flex}>
+                  {tr(item.name)}
+                </AppText>
+                {selected ? <Ionicons name="checkmark-circle" size={18} color={colors.primary} /> : null}
+              </Pressable>
+            );
+          }}
+        />
+        <Button title={t('common.cancel')} variant="outline" onPress={() => setOpen(false)} />
+      </BottomSheet>
     </>
   );
 }
@@ -115,23 +115,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
     backgroundColor: colors.card,
-  },
-  backdrop: { flex: 1, backgroundColor: 'rgba(20,10,5,0.45)' },
-  handle: {
-    width: 38,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: colors.border,
-    alignSelf: 'center',
-    marginBottom: 4,
-  },
-  sheet: {
-    backgroundColor: colors.bg,
-    padding: spacing.md,
-    gap: spacing.sm,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    maxHeight: '72%',
   },
   list: { flexGrow: 0 },
   flex: { flex: 1 },

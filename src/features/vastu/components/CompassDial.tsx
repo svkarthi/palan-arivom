@@ -1,8 +1,10 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { View } from 'react-native';
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import Svg, { Circle, Line, Polygon, Text as SvgText } from 'react-native-svg';
 
 import { ZONES } from '../data/zones';
+import { angleDelta } from '../utils/heading';
 import type { Lang } from '@core/i18n';
 import { colors, fonts } from '@core/theme';
 
@@ -10,9 +12,24 @@ type Props = { size: number; heading: number; lang: Lang };
 
 const rad = (deg: number) => (deg * Math.PI) / 180;
 
-/** Compass card that turns opposite to the heading so north stays true. */
+/**
+ * 60fps Reanimated compass card that turns opposite to the heading so north stays true,
+ * unwrapping across 359°↔0° so the dial never spins backwards.
+ */
 export default function CompassDial({ size, heading, lang }: Props) {
   const c = size / 2;
+  const continuous = useRef(heading);
+  const rotation = useSharedValue(-heading);
+
+  useEffect(() => {
+    const delta = angleDelta(continuous.current, heading);
+    continuous.current += delta;
+    rotation.value = withTiming(-continuous.current, { duration: 110 });
+  }, [heading, rotation]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${rotation.value}deg` }],
+  }));
 
   const dialSvg = useMemo(() => {
     const r = c - 6;
@@ -67,9 +84,9 @@ export default function CompassDial({ size, heading, lang }: Props) {
 
   return (
     <View style={{ width: size, height: size }}>
-      <View style={{ width: size, height: size, transform: [{ rotate: `${-heading}deg` }] }}>
+      <Animated.View style={[{ width: size, height: size }, animatedStyle]}>
         {dialSvg}
-      </View>
+      </Animated.View>
       <Svg width={size} height={size} style={{ position: 'absolute', left: 0, top: 0 }} pointerEvents="none">
         <Polygon points={`${c},${6} ${c - 9},${28} ${c + 9},${28}`} fill={colors.primaryDark} />
         <Circle cx={c} cy={c} r={4} fill={colors.primaryDark} />

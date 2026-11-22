@@ -1,12 +1,13 @@
 import { File, Paths } from 'expo-file-system';
 import * as ImagePicker from 'expo-image-picker';
-import { useContext, useMemo, useState } from 'react';
-import { Alert, FlatList, Modal, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
-import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
+import { useMemo, useState } from 'react';
+import { Alert, FlatList, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import ZoneMap from '../components/ZoneMap';
+import BottomSheet from '@core/components/BottomSheet';
 import { AppText, Button, Segmented, useBottomInset } from '@core/components/ui';
+import { hapticImpact, hapticSuccess } from '@core/utils/haptics';
 import { ROOMS, ROOM_BY_ID } from '../data/rooms';
 import { ZONE_BY_ID, type ZoneId } from '../data/zones';
 import { useLang } from '@core/hooks/useLang';
@@ -45,7 +46,6 @@ export default function PlanScreen() {
   const { width } = useWindowDimensions();
   const { imageUri, mode, rotation, placements } = useAppSelector((s) => s.plan);
   const [activeZone, setActiveZone] = useState<ZoneId | null>(null);
-  const insets = useContext(SafeAreaInsetsContext);
   const bottomInset = useBottomInset();
 
   const size = Math.min(width - spacing.md * 2, 420);
@@ -117,6 +117,8 @@ export default function PlanScreen() {
           labels={labels}
           imageUri={imageUri}
           onPressZone={setActiveZone}
+          interactive
+          onRotateBy={(delta) => dispatch(setRotation(rotation + delta))}
         />
       </View>
       <AppText size={13} color={colors.muted} center>
@@ -159,13 +161,14 @@ export default function PlanScreen() {
         <Button title={t('plan.clearAll')} variant="danger" onPress={confirmClearAll} />
       ) : null}
 
-      <Modal visible={activeZone !== null} transparent animationType="slide" onRequestClose={() => setActiveZone(null)}>
-        <Pressable style={styles.backdrop} onPress={() => setActiveZone(null)} />
+      <BottomSheet
+        visible={activeZone !== null}
+        title={activeZone ? t('plan.chooseRoom', { zone: tr(ZONE_BY_ID[activeZone].name) }) : undefined}
+        onClose={() => setActiveZone(null)}
+        maxHeight="72%"
+      >
         {activeZone ? (
-          <View style={[styles.sheet, { paddingBottom: Math.max(insets?.bottom ?? 0, spacing.md) }]}>
-            <AppText bold size={17} color={colors.primaryDark}>
-              {t('plan.chooseRoom', { zone: tr(ZONE_BY_ID[activeZone].name) })}
-            </AppText>
+          <>
             <FlatList
               data={ROOMS}
               keyExtractor={(r) => r.id}
@@ -177,10 +180,11 @@ export default function PlanScreen() {
                 return (
                   <Pressable
                     accessibilityRole="button"
-                    onPress={() =>
-                      dispatch(here ? removeRoom(item.id) : placeRoom({ roomId: item.id, zone: activeZone }))
-                    }
-                    style={[styles.option, here && styles.optionActive]}
+                    onPress={() => {
+                      hapticImpact();
+                      dispatch(here ? removeRoom(item.id) : placeRoom({ roomId: item.id, zone: activeZone }));
+                    }}
+                    style={({ pressed }) => [styles.option, here && styles.optionActive, pressed && { opacity: 0.75 }]}
                   >
                     <AppText size={24}>{item.icon}</AppText>
                     <View style={styles.flex}>
@@ -206,11 +210,11 @@ export default function PlanScreen() {
                 onPress={() => dispatch(clearZone(activeZone))}
                 style={styles.flex}
               />
-              <Button title={t('common.ok')} onPress={() => setActiveZone(null)} style={styles.flex} />
+              <Button title={t('common.ok')} onPress={() => { hapticSuccess(); setActiveZone(null); }} style={styles.flex} />
             </View>
-          </View>
+          </>
         ) : null}
-      </Modal>
+      </BottomSheet>
     </ScrollView>
   );
 }

@@ -12,6 +12,7 @@ import { ZONE_BY_ID } from '../data/zones';
 import { useLang } from '@core/hooks/useLang';
 import { useAppSelector } from '@core/store/hooks';
 import { colors, spacing } from '@core/theme';
+import { hapticSuccess } from '@core/utils/haptics';
 import { buildReportHtml } from '../utils/reportHtml';
 import { analyse, gradeFor, type Verdict } from '../utils/scoring';
 
@@ -36,8 +37,10 @@ export default function ReportScreen() {
     try {
       const html = buildReportHtml(analysis, lang, new Date().toLocaleDateString(lang === 'ta' ? 'ta-IN' : 'en-IN'));
       const { uri } = await Print.printToFileAsync({ html });
-      if (await Sharing.isAvailableAsync()) await Sharing.shareAsync(uri, { mimeType: 'application/pdf' });
-      else Alert.alert(t('report.exportFailed'));
+      if (await Sharing.isAvailableAsync()) {
+        hapticSuccess();
+        await Sharing.shareAsync(uri, { mimeType: 'application/pdf' });
+      } else Alert.alert(t('report.exportFailed'));
     } catch {
       Alert.alert(t('report.exportFailed'));
     } finally {
