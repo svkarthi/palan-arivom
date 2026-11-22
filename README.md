@@ -66,4 +66,3 @@ Findings from reading its rules, which differ from this app on purpose: its Chan
 - Results use the Thirukanitha (Drik) method; traditional Vakya panchangams can differ by minutes, and occasionally by a tithi or nakshatra boundary.
 - Vastu rules differ between schools. Have a practitioner review `src/features/vastu/data/rooms.ts` and the Tamil text before release.
 - The compass prefers the OS-fused tilt-compensated heading (true north via `expo-location`) and falls back to the raw magnetometer (which needs the phone held flat) if location permission is unavailable.
-- App name and bundle identifiers (`com.utilityapp`) in `app.json` are placeholders.
