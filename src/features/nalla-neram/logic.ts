@@ -1,6 +1,6 @@
-import { abhijit, dayPart, goodHoraWindows, horas, type Hora } from '@core/astro/dayparts';
+import { abhijit, dayPart, goodHoraWindows, gowriNallaNeram, horas, traditionalNallaNeram, type CalendarWindow, type Hora } from '@core/astro/dayparts';
 import { sulamFor, thiyajyamWindows, type Direction, type Thiyajyam } from '@core/astro/dayExtras';
-import { subtractIntervals, type Interval } from '@core/astro/intervals';
+import { mergeIntervals, subtractIntervals, type Interval } from '@core/astro/intervals';
 import { dayPanchang, lagnaSpans, moonRashiSpans, type DayPanchang, type Span } from '@core/astro/panchang';
 import type { Place } from '@core/astro/sunrise';
 import { specialDays, type SpecialDay } from '@core/astro/specialDays';
@@ -29,6 +29,12 @@ export type NallaNeramDay = {
   moonRashi: Span[];
   thiyajyam: Thiyajyam[];
   basis: DayPartBasis;
+  /** Traditional Tamil calendar Nalla Neram (Morning & Evening). */
+  calendarNallaNeram: CalendarWindow;
+  /** Traditional Tamil calendar Gowri Nalla Neram (Morning & Evening). */
+  gowriNallaNeram: CalendarWindow;
+  /** Morning Subha Muhurtha Neram windows (sunrise to noon, excluding Rahu/Yama/Kuligai/Thiyajyam). */
+  muhurthaWindows: Interval[];
   /** Good-hora windows with Rahu Kalam, Yamagandam and Kuligai removed. */
   goodWindows: Interval[];
 };
@@ -44,10 +50,41 @@ export function nallaNeramDay(date: CivilDate, place: Place, basis: DayPartBasis
   const yama = dayPart('yama', weekday, partStart, partEnd);
   const kuligai = dayPart('kuligai', weekday, partStart, partEnd);
   const list = horas(weekday, sunrise, sunset, nextSunrise);
+  const thiyajyam = thiyajyamWindows(panchang.nakshatra, sunrise, nextSunrise);
   const goodWindows = subtractIntervals(goodHoraWindows(list), [rahu, yama, kuligai]).filter(
     (w) => w.end - w.start >= MIN_WINDOW_MS,
   );
-  return { weekday, panchang, rahu, yama, kuligai, abhijit: abhijit(weekday, sunrise, sunset), horas: list, specials: specialDays(panchang), sulam: sulamFor(weekday), lagna: lagnaSpans(place, sunrise, nextSunrise), moonRashi: moonRashiSpans(sunrise, nextSunrise), thiyajyam: thiyajyamWindows(panchang.nakshatra, sunrise, nextSunrise), basis, goodWindows };
+  const calendarNallaNeram = traditionalNallaNeram(date, weekday, place.utcOffsetMin);
+  const gowri = gowriNallaNeram(date, weekday, place.utcOffsetMin);
+  // Morning muhurtham candidates: traditional morning Nalla Neram + morning Gowri Nalla Neram
+  // clipped to [sunrise, local noon], minus Rahu/Yama/Kuligai/Thiyajyam.
+  const localNoon = midnight + (720 - place.utcOffsetMin) * 60_000;
+  const morningCandidates = [calendarNallaNeram.morning, gowri.morning]
+    .filter((w): w is Interval => w !== null)
+    .map((w) => ({ start: Math.max(w.start, sunrise.getTime()), end: Math.min(w.end, localNoon) }))
+    .filter((w) => w.end > w.start);
+  const muhurthaWindows = subtractIntervals(mergeIntervals(morningCandidates), [rahu, yama, kuligai, ...thiyajyam]).filter(
+    (w) => w.end - w.start >= 30 * 60_000,
+  );
+  return {
+    weekday,
+    panchang,
+    rahu,
+    yama,
+    kuligai,
+    abhijit: abhijit(weekday, sunrise, sunset),
+    horas: list,
+    specials: specialDays(panchang),
+    sulam: sulamFor(weekday),
+    lagna: lagnaSpans(place, sunrise, nextSunrise),
+    moonRashi: moonRashiSpans(sunrise, nextSunrise),
+    thiyajyam,
+    basis,
+    calendarNallaNeram,
+    gowriNallaNeram: gowri,
+    muhurthaWindows,
+    goodWindows,
+  };
 }
 
 export type NowStatus =

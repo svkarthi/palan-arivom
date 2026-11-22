@@ -33,6 +33,8 @@ describe('feature screens render', () => {
     expect(screen.getAllByText(/சந்திராஷ்டமம்/).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/லக்னம்/).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/சூலம்/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/கௌரி நல்ல நேரம்/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/முகூர்த்த நேரம்/).length).toBeGreaterThan(0);
     expect(screen.queryByText(/^[a-zA-Z]+\.[a-zA-Z.]+$/)).toBeNull();
   });
 
@@ -46,6 +48,8 @@ describe('feature screens render', () => {
       </Provider>,
     );
     expect(screen.getByText(/Good times/)).toBeTruthy();
+    expect(screen.getAllByText(/Gowri Nalla Neram/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Muhurtha Neram/).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Rahu Kalam/).length).toBeGreaterThan(0);
   });
 

@@ -1,5 +1,6 @@
 import type { Interval } from './intervals';
 import { mergeIntervals } from './intervals';
+import { civilToUtcMidnight, type CivilDate } from './time';
 
 /** 1-based eighth of the day for each weekday (index 0 = Sunday). */
 const RAHU_PART = [8, 2, 7, 5, 6, 4, 3];
@@ -65,4 +66,47 @@ export function horas(weekday: number, sunrise: Date, sunset: Date, nextSunrise:
  */
 export function goodHoraWindows(list: Hora[]): Interval[] {
   return mergeIntervals(list.filter((h) => h.quality === 'good').map(({ start, end }) => ({ start, end })));
+}
+
+export type CalendarWindow = { morning: Interval | null; evening: Interval | null };
+
+type MinRange = [number, number] | null;
+
+// Traditional Tamil daily calendar (Pambu / Sivakasi) weekday slots, in minutes from local midnight.
+// Index 0 = Sunday … 6 = Saturday.
+const TRADITIONAL_NALLA_NERAM: [MinRange, MinRange][] = [
+  [[465, 525], [915, 975]], // Sun: 7:45–8:45 AM, 3:15–4:15 PM
+  [[375, 435], [1005, 1065]], // Mon: 6:15–7:15 AM, 4:45–5:45 PM
+  [[465, 525], [1005, 1065]], // Tue: 7:45–8:45 AM, 4:45–5:45 PM
+  [[555, 615], [840, 900]], // Wed: 9:15–10:15 AM, 2:00–3:00 PM
+  [[645, 705], [735, 795]], // Thu: 10:45–11:45 AM, 12:15–1:15 PM
+  [[555, 615], [1005, 1065]], // Fri: 9:15–10:15 AM, 4:45–5:45 PM
+  [[645, 705], [1005, 1065]], // Sat: 10:45–11:45 AM, 4:45–5:45 PM
+];
+
+const GOWRI_NALLA_NERAM: [MinRange, MinRange][] = [
+  [[645, 705], [810, 870]], // Sun: 10:45–11:45 AM, 1:30–2:30 PM
+  [[555, 615], [1170, 1230]], // Mon: 9:15–10:15 AM, 7:30–8:30 PM
+  [[645, 705], [1170, 1230]], // Tue: 10:45–11:45 AM, 7:30–8:30 PM
+  [[645, 705], [1110, 1170]], // Wed: 10:45–11:45 AM, 6:30–7:30 PM
+  [null, [1110, 1170]], // Thu: —, 6:30–7:30 PM
+  [[735, 795], [1110, 1170]], // Fri: 12:15–1:15 PM, 6:30–7:30 PM
+  [[735, 795], [1290, 1350]], // Sat: 12:15–1:15 PM, 9:30–10:30 PM
+];
+
+function toCalendarWindow(date: CivilDate, utcOffsetMin: number, [morning, evening]: [MinRange, MinRange]): CalendarWindow {
+  const localMidnight = civilToUtcMidnight(date) - utcOffsetMin * 60_000;
+  const toInterval = (r: MinRange): Interval | null =>
+    r ? { start: localMidnight + r[0] * 60_000, end: localMidnight + r[1] * 60_000 } : null;
+  return { morning: toInterval(morning), evening: toInterval(evening) };
+}
+
+/** Standard printed Tamil calendar Nalla Neram (Morning & Evening) for a weekday. */
+export function traditionalNallaNeram(date: CivilDate, weekday: number, utcOffsetMin: number): CalendarWindow {
+  return toCalendarWindow(date, utcOffsetMin, TRADITIONAL_NALLA_NERAM[weekday]);
+}
+
+/** Standard printed Tamil calendar Gowri Nalla Neram (Morning & Evening) for a weekday. */
+export function gowriNallaNeram(date: CivilDate, weekday: number, utcOffsetMin: number): CalendarWindow {
+  return toCalendarWindow(date, utcOffsetMin, GOWRI_NALLA_NERAM[weekday]);
 }

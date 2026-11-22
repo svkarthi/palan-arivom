@@ -1,4 +1,4 @@
-import { abhijit, dayPart, horas } from '../src/core/astro/dayparts';
+import { abhijit, dayPart, gowriNallaNeram, horas, traditionalNallaNeram } from '../src/core/astro/dayparts';
 import { moonMeanTrueLongitude, sunLongitude } from '../src/core/astro/ephemeris';
 import { mergeIntervals, subtractIntervals } from '../src/core/astro/intervals';
 import { PLACES, placeById } from '../src/core/astro/places';
@@ -93,6 +93,16 @@ describe('day parts', () => {
     const monday = horas(1, next, new Date('2025-01-07T12:30:00Z'), new Date('2025-01-08T00:30:00Z'));
     expect(monday[0].planet).toBe(1); // Moon
     expect((sunday[23].planet + 0) % 7).toBe(3); // Mercury, then the Moon starts Monday
+  });
+
+  it('matches printed Tamil calendar Nalla Neram and Gowri Nalla Neram for Sunday 22 Nov 2026', () => {
+    const d = { y: 2026, m: 11, d: 22 }; // Sunday
+    const nn = traditionalNallaNeram(d, weekdayOf(d), 330);
+    const gowri = gowriNallaNeram(d, weekdayOf(d), 330);
+    expect(ist(nn.morning!)).toEqual(['7:45 AM', '8:45 AM']);
+    expect(ist(nn.evening!)).toEqual(['3:15 PM', '4:15 PM']);
+    expect(ist(gowri.morning!)).toEqual(['10:45 AM', '11:45 AM']);
+    expect(ist(gowri.evening!)).toEqual(['1:30 PM', '2:30 PM']);
   });
 });
 

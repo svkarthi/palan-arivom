@@ -95,7 +95,85 @@ export default function DayTimes({ day, date, place }: Props) {
       ) : null}
 
       <AppText bold size={17}>
-        ✅ {t('good.title')}
+        ✅ {t('good.calendarTitle')}
+      </AppText>
+      <Card style={styles.gap}>
+        <AppText bold color={colors.primaryDark}>
+          {t('good.nallaNeram')}
+        </AppText>
+        <View style={styles.row}>
+          <AppText size={13} color={colors.muted} style={styles.spanLabel}>
+            {t('good.morning')}
+          </AppText>
+          <AppText bold color={colors.good} style={styles.flex}>
+            {day.calendarNallaNeram.morning ? range(day.calendarNallaNeram.morning) : '—'}
+          </AppText>
+        </View>
+        <View style={styles.row}>
+          <AppText size={13} color={colors.muted} style={styles.spanLabel}>
+            {t('good.evening')}
+          </AppText>
+          <AppText bold color={colors.good} style={styles.flex}>
+            {day.calendarNallaNeram.evening ? range(day.calendarNallaNeram.evening) : '—'}
+          </AppText>
+        </View>
+
+        <View style={styles.divider} />
+
+        <AppText bold color={colors.primaryDark}>
+          {t('good.gowriNallaNeram')}
+        </AppText>
+        <View style={styles.row}>
+          <AppText size={13} color={colors.muted} style={styles.spanLabel}>
+            {t('good.morning')}
+          </AppText>
+          <AppText bold color={colors.good} style={styles.flex}>
+            {day.gowriNallaNeram.morning ? range(day.gowriNallaNeram.morning) : '—'}
+          </AppText>
+        </View>
+        <View style={styles.row}>
+          <AppText size={13} color={colors.muted} style={styles.spanLabel}>
+            {t('good.evening')}
+          </AppText>
+          <AppText bold color={colors.good} style={styles.flex}>
+            {day.gowriNallaNeram.evening ? range(day.gowriNallaNeram.evening) : '—'}
+          </AppText>
+        </View>
+      </Card>
+
+      <Card style={styles.gap}>
+        <AppText bold color={colors.primaryDark}>
+          🪔 {t('good.muhurtham')}
+        </AppText>
+        {day.muhurthaWindows.length === 0 ? (
+          <AppText size={13} color={colors.muted}>
+            {t('good.muhurthamNone')}
+          </AppText>
+        ) : (
+          day.muhurthaWindows.map((w) => {
+            const mid = (w.start + w.end) / 2;
+            const activeLagna = day.lagna.find((s) => s.end.getTime() >= mid);
+            return (
+              <View key={w.start} style={styles.row}>
+                <AppText bold color={colors.good} style={styles.flex}>
+                  {range(w)}
+                </AppText>
+                {activeLagna ? (
+                  <AppText size={12} color={colors.muted}>
+                    {tr(RASHIS[activeLagna.index])}
+                  </AppText>
+                ) : null}
+              </View>
+            );
+          })
+        )}
+        <AppText size={12} color={colors.muted}>
+          {t('good.muhurthamHint')}
+        </AppText>
+      </Card>
+
+      <AppText bold size={17}>
+        ✅ {t('good.title')} ({t('good.horaTitle')})
       </AppText>
       <Card style={styles.gap}>
         {day.goodWindows.length === 0 ? (
@@ -259,5 +337,6 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   spanRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   spanLabel: { width: 78 },
+  divider: { height: 1, backgroundColor: colors.border, marginVertical: 2 },
   noMargin: { marginRight: 0, marginBottom: 0 },
 });
