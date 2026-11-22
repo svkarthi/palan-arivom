@@ -13,7 +13,6 @@ services:
       - android-native-dir:/app/android
       - android-gradle-cache:/root/.gradle
       - android-sdk-cache:/opt/android-sdk
-      - ./dist:/out
     command: >
       sh -c '
         set -e
@@ -22,9 +21,9 @@ services:
         cd android
         ./gradlew assembleRelease
         VERSION=$(node -p "require(\"/app/package.json\").version")
-        mkdir -p /out
-        cp app/build/outputs/apk/release/app-release.apk "/out/palan-arivom-v$${VERSION}.apk"
-        echo "Built /out/palan-arivom-v$${VERSION}.apk"
+        mkdir -p /app/dist
+        cp app/build/outputs/apk/release/app-release.apk "/app/dist/palan-arivom-v$${VERSION}.apk"
+        echo "Built dist/palan-arivom-v$${VERSION}.apk"
       '
 
 volumes:

@@ -45,7 +45,7 @@
     "web": "expo start --web",
     "test": "jest",
     "typecheck": "tsc --noEmit",
-    "build:android:docker": "docker compose run --rm android-build"
+    "build:android:docker": "mkdir -p dist && docker compose run --rm android-build"
   },
   "private": true,
   "jest": {
