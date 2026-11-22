@@ -8,8 +8,9 @@
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.utilityapp",
+      "bundleIdentifier": "com.svkarthi.palanarivom",
       "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
         "NSPhotoLibraryUsageDescription": "வீட்டு வரைபடத்தைத் தேர்வு செய்ய புகைப்படங்கள் தேவை. / Needed to pick your floor plan image."
       }
     },
