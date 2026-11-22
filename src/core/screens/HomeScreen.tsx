@@ -10,6 +10,7 @@ import { RASHIS, SPECIAL_DAYS, TAMIL_MONTHS, TAMIL_YEARS, WEEKDAYS } from '../as
 import { formatClock, sameDate, toLocal } from '../astro/time';
 import { FEATURES, type FeatureTile } from '../../features/registry';
 import { nallaNeramDay, statusAt } from '../../features/nalla-neram/logic';
+import ObservanceIcon from '../components/ObservanceIcon';
 import { AppText, Card, Chip, IconBadge, useBottomInset } from '../components/ui';
 import { useLang } from '../hooks/useLang';
 import { useNow } from '../hooks/useNow';
@@ -144,11 +145,7 @@ export default function HomeScreen() {
                     s.id === 'karinaal' && { backgroundColor: '#9E2A2B' },
                   ]}
                 >
-                  <MaterialCommunityIcons
-                    name={s.id === 'karinaal' ? 'alert-outline' : 'candle'}
-                    size={12}
-                    color={colors.heroAccent}
-                  />
+                  <ObservanceIcon id={s.id} size={14} onDark />
                   <AppText size={11} bold color={colors.heroText}>
                     {tr(SPECIAL_DAYS[s.id])}
                   </AppText>

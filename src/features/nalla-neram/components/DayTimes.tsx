@@ -5,6 +5,7 @@ import { karanaName, NAKSHATRAS, PLANETS, RASHIS, SPECIAL_DAYS, tithiName, YOGAS
 import { isVishti, pakshaOf, type Span } from '@core/astro/panchang';
 import type { Place } from '@core/astro/sunrise';
 import { formatClock, sameDate, toLocal, type CivilDate } from '@core/astro/time';
+import ObservanceIcon, { OBSERVANCE_COLOR } from '@core/components/ObservanceIcon';
 import { AppText, Card, Chip, SectionHeader } from '@core/components/ui';
 import { useLang } from '@core/hooks/useLang';
 import { useAppSelector } from '@core/store/hooks';
@@ -84,12 +85,8 @@ export default function DayTimes({ day, date, place }: Props) {
           <Card variant="tinted" style={styles.gap}>
             {day.specials.map((s) => (
               <View key={s.id} style={styles.row}>
-                <MaterialCommunityIcons
-                  name={s.id === 'karinaal' ? 'alert-circle-outline' : 'star-four-points'}
-                  size={16}
-                  color={s.id === 'karinaal' ? colors.bad : colors.primary}
-                />
-                <AppText bold size={14} color={s.id === 'karinaal' ? colors.bad : colors.primaryDark} style={styles.flex}>
+                <ObservanceIcon id={s.id} size={20} />
+                <AppText bold size={14} color={OBSERVANCE_COLOR[s.id]} style={styles.flex}>
                   {tr(SPECIAL_DAYS[s.id])}
                 </AppText>
                 {s.window ? <AppText size={12} color={colors.muted}>{range(s.window)}</AppText> : null}

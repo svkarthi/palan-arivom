@@ -7,7 +7,8 @@ import i18n from '../src/core/i18n';
 import { dayYoga } from '../src/core/astro/dayExtras';
 import { daySummary } from '../src/core/astro/panchang';
 import { nearestPlace, placeById } from '../src/core/astro/places';
-import { specialDays } from '../src/core/astro/specialDays';
+import { specialDays, type SpecialId } from '../src/core/astro/specialDays';
+import ObservanceIcon, { primaryObservance } from '../src/core/components/ObservanceIcon';
 import profile from '../src/core/store/profileSlice';
 import settings from '../src/core/store/settingsSlice';
 import compass from '../src/features/vastu/store/compassSlice';
@@ -88,5 +89,17 @@ describe('new feature screens', () => {
     );
     expect(screen.getByText(/உங்கள் பிறப்பு விவரம்/)).toBeTruthy();
     expect(screen.getByText(/என் சுயவிவரத்தில் சேமி/)).toBeTruthy();
+  });
+
+  it('renders custom devotional ObservanceIcon for every special day and prioritises correctly', async () => {
+    const ids: SpecialId[] = [
+      'pradosham', 'ekadashi', 'vinayakaChaturthi', 'sankashti',
+      'shashti', 'karthigai', 'karthigaiDeepam', 'pournami', 'amavasai', 'karinaal',
+    ];
+    for (const id of ids) {
+      await render(<ObservanceIcon id={id} size={16} />);
+    }
+    expect(primaryObservance([{ id: 'karinaal' }, { id: 'pradosham' }])).toBe('pradosham');
+    expect(primaryObservance([{ id: 'karinaal' }])).toBeNull();
   });
 });

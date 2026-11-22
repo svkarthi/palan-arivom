@@ -3,6 +3,7 @@ import { GREGORIAN_MONTHS, NAKSHATRAS, RASHIS, SPECIAL_DAYS, TAMIL_MONTHS, WEEKD
 import { tithiSeverity } from '@core/astro/inauspicious';
 import type { Place } from '@core/astro/sunrise';
 import { addDays, formatClock } from '@core/astro/time';
+import ObservanceIcon, { OBSERVANCE_COLOR, primaryObservance } from '@core/components/ObservanceIcon';
 import PlacePicker from '@core/components/PlacePicker';
 import { AppText, Button, Card, Chip, Segmented, Stepper, useBottomInset } from '@core/components/ui';
 import { useLang } from '@core/hooks/useLang';
@@ -189,13 +190,17 @@ export default function NallaNaalScreen() {
           </View>
           {v.specials.length > 0 ? (
             <View style={styles.wrap}>
-              {v.specials.map((s) => (
-                <Chip
-                  key={s.id}
-                  label={`${s.id === 'karinaal' ? '⚠️' : '🪔'} ${tr(SPECIAL_DAYS[s.id])}`}
-                  color={s.id === 'karinaal' ? colors.bad : colors.primary}
-                />
-              ))}
+              {v.specials.map((s) => {
+                const c = OBSERVANCE_COLOR[s.id];
+                return (
+                  <View key={s.id} style={[styles.obsChip, { backgroundColor: c + '16', borderColor: c + '66' }]}>
+                    <ObservanceIcon id={s.id} size={14} />
+                    <AppText size={12} bold color={c}>
+                      {tr(SPECIAL_DAYS[s.id])}
+                    </AppText>
+                  </View>
+                );
+              })}
             </View>
           ) : null}
           {open ? (
@@ -434,7 +439,7 @@ export default function NallaNaalScreen() {
                 const gradeColor = GRADE_COLOR[v.grade];
                 const selected = expanded === v.date.d;
                 const isToday = v.date.y === todayLocal.y && v.date.m === todayLocal.m && v.date.d === todayLocal.d;
-                const hasSpecial = v.specials.some((s) => s.id !== 'karinaal');
+                const obs = primaryObservance(v.specials);
                 return (
                   <Pressable
                     key={v.date.d}
@@ -453,12 +458,28 @@ export default function NallaNaalScreen() {
                     <AppText size={13} bold color={selected ? '#fff' : colors.text} center>
                       {v.date.d}
                     </AppText>
-                    <AppText size={9} color={selected ? '#fff' : colors.muted} center>
-                      {hasSpecial ? '🪔' : `${v.tamil.day}`}
-                    </AppText>
+                    <View style={styles.calSub}>
+                      {obs ? (
+                        <ObservanceIcon id={obs} size={14} onDark={selected} />
+                      ) : (
+                        <AppText size={9} color={selected ? '#fff' : colors.muted} center>
+                          {v.tamil.day}
+                        </AppText>
+                      )}
+                    </View>
                   </Pressable>
                 );
               })}
+            </View>
+            <View style={styles.obsLegend}>
+              {(['pradosham', 'ekadashi', 'vinayakaChaturthi', 'shashti', 'pournami', 'amavasai'] as const).map((id) => (
+                <View key={id} style={styles.legendItem}>
+                  <ObservanceIcon id={id} size={13} />
+                  <AppText size={10} color={colors.muted}>
+                    {tr(SPECIAL_DAYS[id]).split(' ')[0]}
+                  </AppText>
+                </View>
+              ))}
             </View>
           </Card>
           {selectedVerdict ? renderCard(selectedVerdict, true) : null}
@@ -534,5 +555,26 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     alignItems: 'center',
   },
+  calSub: { height: 15, alignItems: 'center', justifyContent: 'center' },
   calDim: { opacity: 0.28 },
+  obsChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    borderWidth: 1,
+    borderRadius: 999,
+    paddingHorizontal: 9,
+    paddingVertical: 2,
+    marginRight: 6,
+    marginBottom: 6,
+  },
+  obsLegend: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 10,
+    paddingTop: 6,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
 });
