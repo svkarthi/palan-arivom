@@ -3,7 +3,7 @@ import { NotoSansTamil_700Bold } from '@expo-google-fonts/noto-sans-tamil/700Bol
 import { useFonts } from 'expo-font';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator, Platform, StyleSheet, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Provider } from 'react-redux';
@@ -36,16 +36,34 @@ export default function App() {
   if (!fontsLoaded && !fontError) return Loading;
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <Provider store={store}>
-        <PersistGate loading={Loading} persistor={persistor}>
-          <SafeAreaProvider>
-            <LanguageSync />
-            <RootNavigator />
-            <StatusBar style="light" />
-          </SafeAreaProvider>
-        </PersistGate>
-      </Provider>
+    <GestureHandlerRootView style={styles.root}>
+      <View style={Platform.OS === 'web' ? styles.webShell : styles.fill}>
+        <Provider store={store}>
+          <PersistGate loading={Loading} persistor={persistor}>
+            <SafeAreaProvider>
+              <LanguageSync />
+              <RootNavigator />
+              <StatusBar style="light" />
+            </SafeAreaProvider>
+          </PersistGate>
+        </Provider>
+      </View>
     </GestureHandlerRootView>
   );
 }
+
+const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+    backgroundColor: Platform.OS === 'web' ? '#EFE7D8' : colors.bg,
+  },
+  fill: { flex: 1 },
+  webShell: {
+    flex: 1,
+    width: '100%',
+    maxWidth: 480,
+    alignSelf: 'center',
+    backgroundColor: colors.bg,
+    boxShadow: '0 0 32px rgba(45, 22, 16, 0.14)',
+  },
+});

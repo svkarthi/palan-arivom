@@ -1,4 +1,5 @@
 import * as Notifications from 'expo-notifications';
+import { Platform } from 'react-native';
 
 import { chandrashtamaRashi } from '../astro/dayExtras';
 import { RASHIS, SPECIAL_DAYS } from '../astro/names';
@@ -25,6 +26,7 @@ export async function syncReminders(
   birthRashi: number | null,
   lang: Lang,
 ): Promise<boolean> {
+  if (Platform.OS === 'web') return false;
   await Notifications.cancelAllScheduledNotificationsAsync();
   if (!enabled) return true;
 
